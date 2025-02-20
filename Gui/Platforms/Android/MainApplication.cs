@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace Gui;
+namespace FomoCal.Gui;
 
 [Application]
 public class MainApplication : MauiApplication

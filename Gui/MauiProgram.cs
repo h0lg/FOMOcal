@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Gui;
+namespace FomoCal.Gui;
 
 public static class MauiProgram
 {

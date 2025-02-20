@@ -1,4 +1,4 @@
-﻿namespace Gui
+﻿namespace FomoCal.Gui
 {
     public partial class AppShell : Shell
     {

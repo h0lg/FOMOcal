@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace Gui;
+namespace FomoCal.Gui;
 
 public class Program
 {
