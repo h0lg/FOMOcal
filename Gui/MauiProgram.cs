@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CommunityToolkit.Maui.Markup;
+using FomoCal.Gui.ViewModels;
+using Microsoft.Extensions.Logging;
 
 namespace FomoCal.Gui;
 
@@ -10,11 +12,25 @@ public static class MauiProgram
 
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkitMarkup()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
+
+        // set up storage
+        var storagePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), nameof(FomoCal));
+        Directory.CreateDirectory(storagePath); // Ensure directory exists
+        JsonFileStore jsonFileStore = new(storagePath); // handles raw file read/write and de/serialization
+
+        // register JSON file Repositories with file name for each type
+        builder.Services.AddSingleton(_ => new JsonFileRepository<Venue>(jsonFileStore, "venues"));
+
+        // register view models and views
+        builder.Services.AddSingleton<VenueList>();
+        builder.Services.AddSingleton<VenueList.View>();
+        builder.Services.AddSingleton<MainPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();
