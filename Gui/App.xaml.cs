@@ -2,14 +2,19 @@
 {
     public partial class App : Application
     {
-        public App()
+        private readonly IServiceProvider services;
+
+        public App(IServiceProvider services)
         {
+            this.services = services;
             InitializeComponent();
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new AppShell());
+            Window window = new(DeviceInfo.Idiom == DeviceIdiom.Desktop ? services.GetRequiredService<MainPage>() : new AppShell());
+            window.Title = "😱📅 FOMOcal";
+            return window;
         }
     }
 }
