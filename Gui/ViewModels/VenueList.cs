@@ -17,6 +17,8 @@ public partial class VenueList : ObservableObject
 
     public ObservableCollection<Venue> Venues { get; } = [];
 
+    internal event Action<Venue, List<Event>>? EventsScraped;
+
     public VenueList(JsonFileRepository<Venue> venueRepo, Scraper scraper, INavigation navigation)
     {
         this.venueRepo = venueRepo;
@@ -34,22 +36,26 @@ public partial class VenueList : ObservableObject
         {
             var venues = await venueRepo.LoadAllAsync();
 
-            // Ensure UI updates on the main thread
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                Venues.Clear();
-
-                foreach (var venue in venues)
-                {
-                    Venues.Add(venue);
-                }
-            });
+            RefreshList(venues);
         }
         finally
         {
             IsLoading = false;
         }
     }
+
+    private void RefreshList(IEnumerable<Venue>? venues = null) =>
+        // Ensure UI updates on the main thread
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (venues == null) venues = Venues.ToArray();
+            Venues.Clear();
+
+            foreach (var venue in venues)
+            {
+                Venues.Add(venue);
+            }
+        });
 
     [RelayCommand]
     private async Task AddVenue()
@@ -99,7 +105,30 @@ public partial class VenueList : ObservableObject
         await navigation.PopAsync();
     }
 
-    private Task SaveVenues() => venueRepo.SaveAllAsync(Venues.ToHashSet());
+    [RelayCommand]
+    private async Task RefreshVenue(Venue venue)
+    {
+        await RefreshEvents(venue);
+        RefreshList();
+        await SaveVenues();
+    }
+
+    [RelayCommand]
+    private async Task RefreshAllVenues()
+    {
+        await Task.WhenAll(Venues.Select(RefreshEvents));
+        RefreshList();
+        await SaveVenues();
+    }
+
+    private async Task RefreshEvents(Venue venue)
+    {
+        var events = await scraper.ScrapeVenueAsync(venue);
+        venue.LastRefreshed = DateTime.Now;
+        EventsScraped?.Invoke(venue, events); // notify subscribers
+    }
+
+    private Task SaveVenues() => venueRepo.SaveCompleteAsync(Venues.ToHashSet());
 
     public partial class View : ContentView
     {
@@ -117,6 +146,11 @@ public partial class VenueList : ObservableObject
                     var location = new Label().FontSize(12).TextColor(Colors.Gray).Wrap()
                         .Bind(Label.TextProperty, nameof(Venue.Location));
 
+                    var lastRefreshed = new Label().FontSize(12).TextColor(Colors.Gray)
+                        .Bind(Label.TextProperty, nameof(Venue.LastRefreshed), stringFormat: "last {0:G}")
+                        .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastRefreshed.HasValue);
+
+                    var refresh = new Button().Text("🔄").BindCommand(nameof(RefreshVenueCommand), source: model);
 
                     return new Border
                     {
@@ -124,29 +158,32 @@ public partial class VenueList : ObservableObject
                         Content = new StackLayout
                         {
                             Spacing = 5,
-                            Children = { name, location }
+                            Children = { name, location, lastRefreshed, refresh }
                         }
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
             var addVenue = Button("➕ Add Venue", nameof(AddVenueCommand));
+            var refreshAll = Button("🔄 Refresh All", nameof(RefreshAllVenuesCommand));
 
             Content = new Grid
             {
                 RowSpacing = 10,
                 ColumnDefinitions = Columns.Define(Star),
-                RowDefinitions = Rows.Define(Star, Auto),
-                Children = { list, addVenue.Row(1) }
+                RowDefinitions = Rows.Define(Star, Auto, Auto),
+                Children = { list, addVenue.Row(1), refreshAll.Row(2) }
             };
         }
     }
 
     public partial class Page : ContentPage
     {
-        public Page(JsonFileRepository<Venue> venueRepo, Scraper scraper)
+        public Page(JsonFileRepository<Venue> venueRepo, Scraper scraper, JsonFileRepository<Event> eventRepo)
         {
             Title = "Venues";
-            Content = new View(new VenueList(venueRepo, scraper, Navigation));
+            VenueList venueList = new(venueRepo, scraper, Navigation);
+            venueList.EventsScraped += async (venue, events) => await eventRepo.AddOrUpdateAsync(events);
+            Content = new View(venueList);
         }
     }
 }
