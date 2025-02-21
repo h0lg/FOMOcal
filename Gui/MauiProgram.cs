@@ -27,6 +27,8 @@ public static class MauiProgram
         // register JSON file Repositories with file name for each type
         builder.Services.AddSingleton(_ => new JsonFileRepository<Venue>(jsonFileStore, "venues"));
 
+        builder.Services.AddSingleton<Scraper>(); // just to have it disposed of properly by the service provider
+
         // register view models and views
         builder.Services.AddSingleton<VenueList>();
         builder.Services.AddSingleton<VenueList.View>();

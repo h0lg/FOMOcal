@@ -6,8 +6,10 @@ namespace FomoCal.Gui;
 
 public partial class MainPage : ContentPage
 {
-    public MainPage(VenueList.View venueList)
+    public MainPage(JsonFileRepository<Venue> venueRepo, Scraper scraper)
     {
+        var venueList = new VenueList(venueRepo, scraper, Navigation);
+
         Content = new Grid
         {
             ColumnDefinitions = Columns.Define(Auto),
@@ -15,7 +17,7 @@ public partial class MainPage : ContentPage
 
             Children =
             {
-                venueList.Column(0)
+                new VenueList.View(venueList)
             }
         };
     }
