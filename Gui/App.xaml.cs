@@ -12,9 +12,12 @@
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            Window window = new(DeviceInfo.Idiom == DeviceIdiom.Desktop ? services.GetRequiredService<MainPage>() : new AppShell());
-            window.Title = "😱📅 FOMOcal";
-            return window;
+            bool isSmall = DeviceInfo.Idiom != DeviceIdiom.Desktop;
+
+            Page rootPage = isSmall ? new AppShell()
+                : new NavigationPage(services.GetRequiredService<MainPage>());
+
+            return new(rootPage) { Title = "😱📅 FOMOcal" };
         }
     }
 }
