@@ -6,9 +6,10 @@ namespace FomoCal.Gui;
 
 public partial class MainPage : ContentPage
 {
-    public MainPage(JsonFileRepository<Venue> venueRepo, Scraper scraper)
+    public MainPage(JsonFileRepository<Venue> venueRepo, Scraper scraper, JsonFileRepository<Event> eventRepo)
     {
-        var venueList = new VenueList(venueRepo, scraper, Navigation);
+        VenueList venueList = new(venueRepo, scraper, Navigation);
+        venueList.EventsScraped += async (venue, events) => await eventRepo.AddOrUpdateAsync(events);
 
         Content = new Grid
         {
