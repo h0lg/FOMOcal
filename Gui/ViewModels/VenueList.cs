@@ -69,6 +69,20 @@ public partial class VenueList : ObservableObject
         await navigation.PushAsync(new VenueEditor.Page(model));
     }
 
+    [RelayCommand]
+    private async Task DeleteVenueAsync(Venue venue)
+    {
+        bool isConfirmed = await Application.Current!.Windows[0].Page!.DisplayAlert("Confirm Deletion",
+            $"Are you sure you want to delete the venue {venue.Name}?",
+            "Yes", "No");
+
+        if (isConfirmed)
+        {
+            Venues.Remove(venue);
+            await venueRepo.SaveAllAsync(Venues.ToHashSet());
+        }
+    }
+
     public partial class View : ContentView
     {
         public View(VenueList model)
@@ -83,6 +97,7 @@ public partial class VenueList : ObservableObject
                     var location = BndLbl(nameof(Venue.Location)).FontSize(12).TextColor(Colors.Gray).Wrap();
 
                     var edit = Btn("✏️", nameof(EditVenueCommand), source: model);
+                    var delete = Btn("🗑", nameof(DeleteVenueCommand), source: model);
 
                     return new Border
                     {
@@ -90,7 +105,7 @@ public partial class VenueList : ObservableObject
                         Content = new StackLayout
                         {
                             Spacing = 5,
-                            Children = { name, location, edit }
+                            Children = { name, location, edit, delete }
                         }
                     };
                 }));
