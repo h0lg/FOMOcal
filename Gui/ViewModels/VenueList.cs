@@ -149,10 +149,18 @@ public partial class VenueList : ObservableObject
                     return new Border
                     {
                         Padding = 10,
-                        Content = new StackLayout
+                        Content = new Grid
                         {
-                            Spacing = 5,
-                            Children = { name, location, lastRefreshed, refresh }
+                            RowSpacing = 5,
+                            ColumnSpacing = 5,
+                            ColumnDefinitions = Columns.Define(Star, Auto),
+                            RowDefinitions = Rows.Define(Auto, Auto, Auto),
+                            Children = {
+                                name.ColumnSpan(2),
+                                location.Row(1),
+                                refresh.Row(1).Column(1).RowSpan(2).Bottom(),
+                                lastRefreshed.Row(2).End()
+                            }
                         }
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));

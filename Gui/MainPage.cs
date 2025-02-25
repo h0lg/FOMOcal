@@ -18,7 +18,7 @@ public partial class MainPage : ContentPage
 
             Children =
             {
-                new VenueList.View(venueList)
+                new VenueList.View(venueList).Width(250)
             }
         };
     }
