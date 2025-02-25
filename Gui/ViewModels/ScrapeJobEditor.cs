@@ -16,6 +16,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
     [ObservableProperty] private string?[]? previewResults;
     [ObservableProperty] private string[]? errors;
+    [ObservableProperty] private bool hasFocus;
 
     #region ScrapeJob proxy properties
     public string Selector
@@ -189,19 +190,23 @@ public partial class ScrapeJobEditor : ObservableObject
 
                 new Label().Text("Selector").ToggleWithInputs(),
                 new Entry().Bind(Entry.TextProperty, nameof(Selector))
-                    .ToggleWithInputs(),
+                    .ToggleWithInputs()
+                    .ForwardFocusTo(model),
 
                 new Label().Text("Ignore nested text").ToggleWithInputs(),
                 Check(nameof(IgnoreNestedText))
-                    .ToggleWithInputs(),
+                    .ToggleWithInputs()
+                    .ForwardFocusTo(model),
 
                 new Label().Text("Attribute").ToggleWithInputs(),
                 new Entry().Bind(Entry.TextProperty, nameof(Attribute))
-                    .ToggleWithInputs(),
+                    .ToggleWithInputs()
+                    .ForwardFocusTo(model),
 
                 new Label().Text("Match (Regex)").ToggleWithInputs(),
                 new Entry().Bind(Entry.TextProperty, nameof(Match))
                     .ToggleWithInputs()
+                    .ForwardFocusTo(model)
             ];
 
             if (model.ScrapeJob is DateScrapeJob dateScrapeJob)
@@ -215,7 +220,8 @@ public partial class ScrapeJobEditor : ObservableObject
                         .Bind(Entry.TextProperty,
                             getter: (ScrapeJobEditor _) => dateScrapeJob.Format,
                             setter: (ScrapeJobEditor _, string value) => dateScrapeJob.Format = value)
-                        .OnTextChanged(_ => model.UpdatePreview()),
+                        .OnTextChanged(_ => model.UpdatePreview())
+                        .ForwardFocusTo(model),
 
                     new Label().Text("Culture"),
                     new Entry().Text(dateScrapeJob.Culture)
@@ -223,6 +229,7 @@ public partial class ScrapeJobEditor : ObservableObject
                             getter: (ScrapeJobEditor _) => dateScrapeJob.Culture,
                             setter: (ScrapeJobEditor _, string value) => dateScrapeJob.Culture = value)
                         .OnTextChanged(_ => model.UpdatePreview())
+                        .ForwardFocusTo(model)
                 );
             }
 
@@ -240,7 +247,8 @@ public partial class ScrapeJobEditor : ObservableObject
             Children.Add(
                 new VerticalStackLayout()
                     .Bind(BindableLayout.ItemsSourceProperty, nameof(PreviewResults))
-                    .ItemTemplate(() => new Label().TextColor(Colors.Green).Bind(Label.TextProperty, path: ".")));
+                    .ItemTemplate(() => new Label().TextColor(Colors.Green).Bind(Label.TextProperty, path: "."))
+                    .Bind(IsVisibleProperty, nameof(HasFocus)));
 
             Children.Add(
                 new VerticalStackLayout()
@@ -256,4 +264,11 @@ internal static class ScopeJobEditorExtensions
 {
     internal static T ToggleWithInputs<T>(this T vis) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, nameof(ScrapeJobEditor.DisplayInputs));
+
+    internal static T ForwardFocusTo<T>(this T vis, ScrapeJobEditor model) where T : VisualElement
+    {
+        vis.Focused += (_, _) => model.HasFocus = true;
+        vis.Unfocused += (_, _) => model.HasFocus = false;
+        return vis;
+    }
 }
