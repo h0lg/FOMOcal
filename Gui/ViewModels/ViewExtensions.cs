@@ -9,6 +9,13 @@ internal static class Widgets
 
 internal static class ViewExtensions
 {
+    internal static T OnFocusChanged<T>(this T vis, Action<bool> setFocused) where T : VisualElement
+    {
+        vis.Focused += (_, _) => setFocused(true);
+        vis.Unfocused += (_, _) => setFocused(false);
+        return vis;
+    }
+
     internal static T OnTextChanged<T>(this T input, Action<TextChangedEventArgs> handle) where T : InputView
     {
         input.TextChanged += (object? sender, TextChangedEventArgs e) => handle(e);
