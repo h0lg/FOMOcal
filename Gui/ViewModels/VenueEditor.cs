@@ -15,7 +15,8 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] private bool showEventContainer;
     [ObservableProperty] private bool showRequiredEventFields;
     [ObservableProperty] private bool showOptionalEventFields;
-    [ObservableProperty] private string? previewedEventCount;
+    [ObservableProperty] private bool eventSelectorHasFocus;
+    [ObservableProperty] private string[]? previewedEventTexts;
 
     private AngleSharp.Dom.IDocument? programDocument;
     private AngleSharp.Dom.IElement[]? previewedEvents;
@@ -103,7 +104,7 @@ public partial class VenueEditor : ObservableObject
         if (ShowRequiredEventFields && programDocument != null && previewedEvents == null)
         {
             previewedEvents = programDocument.SelectEvents(venue).Take(5).ToArray();
-            PreviewedEventCount = previewedEvents.Length.ToString();
+            PreviewedEventTexts = previewedEvents.Select(e => e.TextContent.NormalizeWhitespace()).ToArray();
             scrapeJobEditors.ForEach(e => e.UpdatePreview());
         }
 
@@ -148,11 +149,14 @@ public partial class VenueEditor : ObservableObject
 
             // Step 2: Event Selector
             var selectorText = new Entry { Placeholder = "Event Selector" }
-                .Bind(Entry.TextProperty, nameof(EventSelector));
+                .Bind(Entry.TextProperty, nameof(EventSelector))
+                .OnFocusChanged(value => model.EventSelectorHasFocus = value);
 
-            var eventCountPreview = new Label().Bind(Label.TextProperty, nameof(PreviewedEventCount));
+            var previewedEventTexts = ScrapeJobEditor.View.Preview(
+                itemsSource: nameof(PreviewedEventTexts),
+                isVisible: nameof(EventSelectorHasFocus));
 
-            var eventContainer = new StackLayout { Children = { selectorText, eventCountPreview } }
+            var eventContainer = new StackLayout { Children = { selectorText, previewedEventTexts } }
                 .BindVisible(nameof(ShowEventContainer));
 
             // Step 3: Event Details (Name, Date)

@@ -244,32 +244,24 @@ public partial class ScrapeJobEditor : ObservableObject
             }
 
             Children.Add(form);
-
-            // **Live Preview Section**
-            Children.Add(
-                new VerticalStackLayout()
-                    .Bind(BindableLayout.ItemsSourceProperty, nameof(PreviewResults))
-                    .ItemTemplate(() => new Label().TextColor(Colors.Green).Bind(Label.TextProperty, path: "."))
-                    .Bind(IsVisibleProperty, nameof(HasFocus)));
-
-            Children.Add(
-                new VerticalStackLayout()
-                    .Bind(BindableLayout.ItemsSourceProperty, nameof(Errors))
-                    .ItemTemplate(() => new Label().TextColor(Colors.Red).Bind(Label.TextProperty, path: ".")));
-
+            Children.Add(Preview(itemsSource: nameof(PreviewResults), isVisible: nameof(HasFocus)));
+            Children.Add(StringList(nameof(Errors), Colors.Red));
             model.UpdatePreview();
         }
+
+        internal static VerticalStackLayout Preview(string itemsSource, string isVisible)
+            => StringList(itemsSource, Colors.Green).BindVisible(isVisible);
+
+        private static VerticalStackLayout StringList(string itemsSource, Color textColor)
+            => new VerticalStackLayout().Bind(BindableLayout.ItemsSourceProperty, itemsSource)
+                .ItemTemplate(() => new Label().TextColor(textColor).Bind(Label.TextProperty, path: "."));
     }
 }
 
 internal static class ScopeJobEditorExtensions
 {
     internal static T ForwardFocusTo<T>(this T vis, ScrapeJobEditor model) where T : VisualElement
-    {
-        vis.Focused += (_, _) => model.HasFocus = true;
-        vis.Unfocused += (_, _) => model.HasFocus = false;
-        return vis;
-    }
+        => vis.OnFocusChanged(value => model.HasFocus = value);
 
     internal static T DisplayWithSignificant<T>(this T vis, string textPropertyName) where T : VisualElement
         => vis.Bind<T, bool, string, double>(VisualElement.OpacityProperty,
