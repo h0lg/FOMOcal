@@ -52,21 +52,41 @@ public partial class VenueList : ObservableObject
     [RelayCommand]
     private async Task AddVenue()
     {
-        var model = new VenueEditor(new Venue
-        {
-            Name = "",
-            ProgramUrl = "",
-            Event = new() { Selector = "", Name = new(), Date = new() }
-        }, scraper, venueRepo);
-
+        TaskCompletionSource<VenueEditor.Result?> adding = new();
+        VenueEditor model = new(null, scraper, adding);
         await navigation.PushAsync(new VenueEditor.Page(model));
+        VenueEditor.Result? result = await adding.Task; // wait for editor
+        if (result == null) return; // canceled, do nothing
+
+        switch (result.Action)
+        {
+            case VenueEditor.Result.Actions.Saved:
+                Venues.Add(result.Venue);
+                await SaveVenues();
+                break;
+        }
+
+        await navigation.PopAsync();
     }
 
     [RelayCommand]
     private async Task EditVenue(Venue venue)
     {
-        var model = new VenueEditor(venue, scraper, venueRepo);
+        TaskCompletionSource<VenueEditor.Result?> editing = new();
+        VenueEditor model = new(venue, scraper, editing);
         await navigation.PushAsync(new VenueEditor.Page(model));
+        VenueEditor.Result? result = await editing.Task; // wait for editor
+        if (result == null) return; // canceled, do nothing
+
+        switch (result.Action)
+        {
+            case VenueEditor.Result.Actions.Saved:
+                await SaveVenues(); // since we passed the venue by reference, it's already updated
+                await LoadVenuesAsync(); // to refresh UI
+                break;
+        }
+
+        await navigation.PopAsync();
     }
 
     [RelayCommand]
@@ -79,9 +99,11 @@ public partial class VenueList : ObservableObject
         if (isConfirmed)
         {
             Venues.Remove(venue);
-            await venueRepo.SaveAllAsync(Venues.ToHashSet());
+            await SaveVenues();
         }
     }
+
+    private Task SaveVenues() => venueRepo.SaveAllAsync(Venues.ToHashSet());
 
     public partial class View : ContentView
     {
