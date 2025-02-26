@@ -186,26 +186,28 @@ public partial class ScrapeJobEditor : ObservableObject
 
             List<IView> children = [
                 new Label().Text(model.label).Bold(),
-                Check(nameof(DisplayInputs)).BindVisible(nameof(IsEmpty)),
+                Check(nameof(DisplayInputs))
+                    .ForwardFocusTo(model)
+                    .BindVisible(nameof(IsEmpty)),
 
-                new Label().Text("Selector").ToggleWithInputs(),
+                new Label().Text("Selector").DisplayWithSignificant(nameof(Selector)),
                 new Entry().Bind(Entry.TextProperty, nameof(Selector))
-                    .ToggleWithInputs()
+                    .DisplayWithSignificant(nameof(Selector))
                     .ForwardFocusTo(model),
 
-                new Label().Text("Ignore nested text").ToggleWithInputs(),
+                new Label().Text("Ignore nested text").DisplayWithChecked(nameof(IgnoreNestedText)),
                 Check(nameof(IgnoreNestedText))
-                    .ToggleWithInputs()
+                    .DisplayWithChecked(nameof(IgnoreNestedText))
                     .ForwardFocusTo(model),
 
-                new Label().Text("Attribute").ToggleWithInputs(),
+                new Label().Text("Attribute").DisplayWithSignificant(nameof(Attribute)),
                 new Entry().Bind(Entry.TextProperty, nameof(Attribute))
-                    .ToggleWithInputs()
+                    .DisplayWithSignificant(nameof(Attribute))
                     .ForwardFocusTo(model),
 
-                new Label().Text("Match (Regex)").ToggleWithInputs(),
+                new Label().Text("Match (Regex)").DisplayWithSignificant(nameof(Match)),
                 new Entry().Bind(Entry.TextProperty, nameof(Match))
-                    .ToggleWithInputs()
+                    .DisplayWithSignificant(nameof(Match))
                     .ForwardFocusTo(model)
             ];
 
@@ -262,13 +264,22 @@ public partial class ScrapeJobEditor : ObservableObject
 
 internal static class ScopeJobEditorExtensions
 {
-    internal static T ToggleWithInputs<T>(this T vis) where T : VisualElement
-        => vis.Bind(VisualElement.IsVisibleProperty, nameof(ScrapeJobEditor.DisplayInputs));
-
     internal static T ForwardFocusTo<T>(this T vis, ScrapeJobEditor model) where T : VisualElement
     {
         vis.Focused += (_, _) => model.HasFocus = true;
         vis.Unfocused += (_, _) => model.HasFocus = false;
         return vis;
     }
+
+    internal static T DisplayWithSignificant<T>(this T vis, string textPropertyName) where T : VisualElement
+        => vis.Bind<T, bool, string, double>(VisualElement.OpacityProperty,
+            binding1: new Binding(nameof(ScrapeJobEditor.HasFocus)),
+            binding2: new Binding(textPropertyName),
+            convert: values => values.Item1 || values.Item2.IsSignificant() ? 1 : 0);
+
+    internal static T DisplayWithChecked<T>(this T vis, string boolPropertyName) where T : VisualElement
+        => vis.Bind<T, bool, bool, double>(VisualElement.OpacityProperty,
+            binding1: new Binding(nameof(ScrapeJobEditor.HasFocus)),
+            binding2: new Binding(boolPropertyName),
+            convert: values => values.Item1 || values.Item2 ? 1 : 0);
 }
