@@ -7,6 +7,7 @@ namespace FomoCal.Gui.ViewModels;
 
 public partial class VenueEditor : ObservableObject
 {
+    private readonly bool isDeletable;
     private readonly Scraper scraper;
     private readonly TaskCompletionSource<Result?> awaiter;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
@@ -64,6 +65,8 @@ public partial class VenueEditor : ObservableObject
 
     internal VenueEditor(Venue? venue, Scraper scraper, TaskCompletionSource<Result?> awaiter)
     {
+        isDeletable = venue != null;
+
         this.venue = venue ?? new Venue
         {
             Name = "",
@@ -141,11 +144,21 @@ public partial class VenueEditor : ObservableObject
         awaiter.SetResult(new Result() { Action = Result.Actions.Saved, Venue = venue });
     }
 
+    [RelayCommand]
+    private async Task DeleteAsync()
+    {
+        bool isConfirmed = await Application.Current!.Windows[0].Page!.DisplayAlert("Confirm Deletion",
+            $"Are you sure you want to delete the venue {venue.Name}?",
+            "Yes", "No");
+
+        if (isConfirmed) awaiter.SetResult(new Result() { Action = Result.Actions.Deleted, Venue = venue });
+    }
+
     internal record Result
     {
         public required Actions Action { get; set; }
         public required Venue Venue { get; set; }
-        internal enum Actions { Saved }
+        internal enum Actions { Saved, Deleted }
     }
 
     public partial class Page : ContentPage
@@ -211,6 +224,8 @@ public partial class VenueEditor : ObservableObject
             var saveButton = Btn("💾 Save this venue", nameof(SaveCommand))
                 .BindVisible(nameof(ShowOptionalEventFields));
 
+            var deleteButton = Btn("🗑 Delete this venue", nameof(DeleteCommand)).IsVisible(model.isDeletable);
+
             Content = new ScrollView
             {
                 Content = new StackLayout
@@ -218,7 +233,7 @@ public partial class VenueEditor : ObservableObject
                     Spacing = 20,
                     Padding = 20,
                     Children = {
-                        venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton
+                        venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton
                     }
                 }
             };

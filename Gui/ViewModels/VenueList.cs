@@ -64,6 +64,9 @@ public partial class VenueList : ObservableObject
                 Venues.Add(result.Venue);
                 await SaveVenues();
                 break;
+
+            case VenueEditor.Result.Actions.Deleted:
+                break;
         }
 
         await navigation.PopAsync();
@@ -84,23 +87,14 @@ public partial class VenueList : ObservableObject
                 await SaveVenues(); // since we passed the venue by reference, it's already updated
                 await LoadVenuesAsync(); // to refresh UI
                 break;
+
+            case VenueEditor.Result.Actions.Deleted:
+                Venues.Remove(result.Venue);
+                await SaveVenues();
+                break;
         }
 
         await navigation.PopAsync();
-    }
-
-    [RelayCommand]
-    private async Task DeleteVenueAsync(Venue venue)
-    {
-        bool isConfirmed = await Application.Current!.Windows[0].Page!.DisplayAlert("Confirm Deletion",
-            $"Are you sure you want to delete the venue {venue.Name}?",
-            "Yes", "No");
-
-        if (isConfirmed)
-        {
-            Venues.Remove(venue);
-            await SaveVenues();
-        }
     }
 
     private Task SaveVenues() => venueRepo.SaveAllAsync(Venues.ToHashSet());
@@ -118,8 +112,6 @@ public partial class VenueList : ObservableObject
                     var name = BndLbl(nameof(Venue.Name)).FontSize(16).Wrap();
                     var location = BndLbl(nameof(Venue.Location)).FontSize(12).TextColor(Colors.Gray).Wrap();
 
-                    var edit = Btn("✏️", nameof(EditVenueCommand), source: model);
-                    var delete = Btn("🗑", nameof(DeleteVenueCommand), source: model);
 
                     return new Border
                     {
@@ -127,9 +119,9 @@ public partial class VenueList : ObservableObject
                         Content = new StackLayout
                         {
                             Spacing = 5,
-                            Children = { name, location, edit, delete }
+                            Children = { name, location }
                         }
-                    };
+                    }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
             var addVenue = Btn("➕ Add Venue", nameof(AddVenueCommand));
