@@ -8,7 +8,7 @@ namespace FomoCal.Gui.ViewModels;
 public partial class VenueEditor : ObservableObject
 {
     private readonly Scraper scraper;
-    private readonly JsonFileRepository<Venue> venueRepo;
+    private readonly TaskCompletionSource<Result?> awaiter;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
 
     [ObservableProperty] private bool showEventSelectorStep;
@@ -47,12 +47,18 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
-    public VenueEditor(Venue venue, Scraper scraper, JsonFileRepository<Venue> venueRepo)
+    internal VenueEditor(Venue? venue, Scraper scraper, TaskCompletionSource<Result?> awaiter)
     {
-        this.venue = venue;
+        this.venue = venue ?? new Venue
+        {
+            Name = "",
+            ProgramUrl = "",
+            Event = new() { Selector = "", Name = new(), Date = new() }
+        };
+
         this.scraper = scraper;
-        this.venueRepo = venueRepo;
-        var evt = venue.Event;
+        this.awaiter = awaiter;
+        var evt = this.venue.Event;
         eventName = ScrapeJob("Name", evt.Name, nameof(Venue.EventScrapeJob.Name));
         eventDate = ScrapeJob("Date", evt.Date, nameof(Venue.EventScrapeJob.Date));
 
@@ -105,18 +111,23 @@ public partial class VenueEditor : ObservableObject
     }
 
     [RelayCommand]
-    private async Task Save()
+    private void Save()
     {
+        // reset empty optional scrape jobs
         foreach (var editor in scrapeJobEditors.Where(e => e.IsOptional))
         {
             var property = typeof(Venue.EventScrapeJob).GetProperty(editor.EventProperty)!;
             property.SetValue(venue.Event, editor.IsEmpty ? null : editor.ScrapeJob);
         }
 
-        var venues = await venueRepo.LoadAllAsync();
-        if (venues.Contains(venue)) venues.Remove(venue);
-        venues.Add(venue);
-        await venueRepo.SaveAllAsync(venues);
+        awaiter.SetResult(new Result() { Action = Result.Actions.Saved, Venue = venue });
+    }
+
+    internal record Result
+    {
+        public required Actions Action { get; set; }
+        public required Venue Venue { get; set; }
+        internal enum Actions { Saved }
     }
 
     public partial class Page : ContentPage
@@ -198,6 +209,13 @@ public partial class VenueEditor : ObservableObject
 
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
                => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute));
+        }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            var awaiter = ((VenueEditor)BindingContext).awaiter;
+            if (!awaiter.Task.IsCompleted) awaiter.SetResult(null); // to signal cancellation
         }
     }
 }
