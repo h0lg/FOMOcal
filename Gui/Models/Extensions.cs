@@ -17,3 +17,12 @@ internal static class StringExtensions
         return result.Trim(); // trim leading/trailing whitespace
     }
 }
+
+internal static class EnumerableExtensions
+{
+    internal static void UpdateWith<T>(this HashSet<T> set, IEnumerable<T> newItems)
+    {
+        set.RemoveWhere(newItems.Contains); // Remove old duplicates
+        set.UnionWith(newItems);
+    }
+}

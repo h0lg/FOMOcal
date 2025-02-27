@@ -9,5 +9,8 @@
         <Tab Title="Venues">
             <ShellContent ContentTemplate="{DataTemplate vm:VenueList+Page}" />
         </Tab>
+        <Tab Title="Events">
+            <ShellContent ContentTemplate="{DataTemplate vm:EventList+Page}" />
+        </Tab>
     </TabBar>
 </Shell>

@@ -6,19 +6,23 @@ namespace FomoCal.Gui;
 
 public partial class MainPage : ContentPage
 {
-    public MainPage(JsonFileRepository<Venue> venueRepo, Scraper scraper, JsonFileRepository<Event> eventRepo)
+    public MainPage(JsonFileRepository<Venue> venueRepo, Scraper scraper, EventList eventList)
     {
+        _ = eventList.LoadEvents();
+
         VenueList venueList = new(venueRepo, scraper, Navigation);
-        venueList.EventsScraped += async (venue, events) => await eventRepo.AddOrUpdateAsync(events);
+        venueList.EventsScraped += (venue, events) => eventList.RefreshWith(events);
 
         Content = new Grid
         {
-            ColumnDefinitions = Columns.Define(Auto),
+            ColumnSpacing = 5,
+            ColumnDefinitions = Columns.Define(Auto, Star),
             RowDefinitions = Rows.Define(Star), // Full height
 
             Children =
             {
-                new VenueList.View(venueList).Width(250)
+                new VenueList.View(venueList).Width(250),
+                new EventList.View(eventList).Column(1)
             }
         };
     }
