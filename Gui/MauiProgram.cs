@@ -33,6 +33,7 @@ public static class MauiProgram
 
         // Register ViewModels
         builder.Services.AddSingleton<VenueList>();
+        builder.Services.AddSingleton<EventList>();
         builder.Services.AddSingleton<VenueList.View>();
         builder.Services.AddSingleton<MainPage>();
 

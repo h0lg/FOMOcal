@@ -5,19 +5,13 @@ namespace FomoCal;
 
 public class JsonFileRepository<T>(JsonFileStore store, string fileName) where T : class
 {
-    public async Task<ISet<T>> LoadAllAsync() => await store.LoadAsync<HashSet<T>>(fileName) ?? [];
+    public async Task<HashSet<T>> LoadAllAsync() => await store.LoadAsync<HashSet<T>>(fileName) ?? [];
     public Task SaveCompleteAsync(ISet<T> items) => store.SaveAsync(fileName, items);
 
     public async Task AddOrUpdateAsync(IEnumerable<T> items)
     {
         var set = await LoadAllAsync();
-
-        foreach (var item in items)
-        {
-            set.Remove(item);
-            set.Add(item);
-        }
-
+        set.UpdateWith(items);
         await SaveCompleteAsync(set);
     }
 }

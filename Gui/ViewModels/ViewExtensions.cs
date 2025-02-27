@@ -22,6 +22,9 @@ internal static class ViewExtensions
         return vis;
     }
 
+    internal static T BindIsVisibleToValueOf<T>(this T vis, string textProperty) where T : VisualElement
+        => vis.Bind(VisualElement.IsVisibleProperty, textProperty, convert: static (string? value) => value.HasSignificantValue());
+
     internal static T OnTextChanged<T>(this T input, Action<TextChangedEventArgs> handle) where T : InputView
     {
         input.TextChanged += (object? sender, TextChangedEventArgs e) => handle(e);
