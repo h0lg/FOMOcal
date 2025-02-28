@@ -15,7 +15,7 @@ public partial class ScrapeJobEditor : ObservableObject
     public string EventProperty { get; }
 
     [ObservableProperty] private string?[]? previewResults;
-    [ObservableProperty] private string[]? errors;
+    [ObservableProperty] private bool hasErrors;
     [ObservableProperty] private bool hasFocus;
 
     #region ScrapeJob proxy properties
@@ -122,7 +122,7 @@ public partial class ScrapeJobEditor : ObservableObject
         };
     }
 
-    private void Validate() => IsValid = Errors == null && PreviewResults?.Length == getEventsForPreview()?.Length;
+    private void Validate() => IsValid = !HasErrors && PreviewResults?.Length == getEventsForPreview()?.Length;
 
     internal void UpdatePreview()
     {
@@ -134,8 +134,8 @@ public partial class ScrapeJobEditor : ObservableObject
 
             if (events == null || events.Length == 0)
             {
-                PreviewResults = null;
-                Errors = ["Event Selector matched no events for preview."];
+                PreviewResults = ["Event Selector matched no events for preview."];
+                HasErrors = true;
                 Validate();
                 return;
             }
@@ -158,22 +158,21 @@ public partial class ScrapeJobEditor : ObservableObject
 
             if (errors.Length > 0)
             {
-                PreviewResults = null;
-                Errors = errors.Select(ex => ex.Message).ToArray();
+                PreviewResults = errors.Select(ex => ex.Message).ToArray();
+                HasErrors = true;
                 Validate();
             }
             else
             {
                 PreviewResults = results.Select(r => r.value).ToArray();
-                Errors = null;
+                HasErrors = false;
                 Validate();
             }
         }
         catch (Exception ex)
         {
-            PreviewResults = null;
-            Errors = [ex.Message];
-            throw;
+            PreviewResults = [ex.Message];
+            HasErrors = true;
         }
     }
 
@@ -244,17 +243,22 @@ public partial class ScrapeJobEditor : ObservableObject
             }
 
             Children.Add(form);
-            Children.Add(Preview(itemsSource: nameof(PreviewResults), isVisible: nameof(HasFocus)));
-            Children.Add(StringList(nameof(Errors), Colors.Red));
+
+            Children.Add(PreviewOrErrorList(itemsSource: nameof(PreviewResults),
+                hasFocus: nameof(HasFocus), hasError: nameof(HasErrors), source: model));
+
             model.UpdatePreview();
         }
 
-        internal static VerticalStackLayout Preview(string itemsSource, string isVisible)
-            => StringList(itemsSource, Colors.Green).BindVisible(isVisible);
-
-        private static VerticalStackLayout StringList(string itemsSource, Color textColor)
-            => new VerticalStackLayout().Bind(BindableLayout.ItemsSourceProperty, itemsSource)
-                .ItemTemplate(() => new Label().TextColor(textColor).Bind(Label.TextProperty, path: "."));
+        internal static VerticalStackLayout PreviewOrErrorList(string itemsSource, string hasFocus, string hasError, object source)
+            => new VerticalStackLayout { Spacing = 10, Margin = new Thickness(0, verticalSize: 10) }
+                .Bind(BindableLayout.ItemsSourceProperty, itemsSource)
+                .Bind<VerticalStackLayout, bool, bool, bool>(IsVisibleProperty, binding1: new Binding(hasError), binding2: new Binding(hasFocus),
+                    convert: static values => values.Item1 || values.Item2) // display if either has error or focus
+                .ItemTemplate(() =>
+                    new Label()
+                        .Bind(Label.TextColorProperty, hasError, convert: static (bool err) => err ? Colors.IndianRed : Colors.ForestGreen, source: source)
+                        .Bind(Label.TextProperty, path: "."));
     }
 }
 

@@ -16,6 +16,7 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] private bool showRequiredEventFields;
     [ObservableProperty] private bool showOptionalEventFields;
     [ObservableProperty] private bool eventSelectorHasFocus;
+    [ObservableProperty] private bool eventSelectorHasError;
     [ObservableProperty] private string[]? previewedEventTexts;
 
     private AngleSharp.Dom.IDocument? programDocument;
@@ -103,9 +104,19 @@ public partial class VenueEditor : ObservableObject
 
         if (ShowRequiredEventFields && programDocument != null && previewedEvents == null)
         {
-            previewedEvents = programDocument.SelectEvents(venue).Take(5).ToArray();
-            PreviewedEventTexts = previewedEvents.Select(e => e.TextContent.NormalizeWhitespace()).ToArray();
-            scrapeJobEditors.ForEach(e => e.UpdatePreview());
+            try
+            {
+                previewedEvents = programDocument.SelectEvents(venue).Take(5).ToArray();
+                PreviewedEventTexts = previewedEvents.Select(e => e.TextContent.NormalizeWhitespace()).ToArray();
+                scrapeJobEditors.ForEach(e => e.UpdatePreview());
+                EventSelectorHasError = false;
+            }
+            catch (Exception ex)
+            {
+                previewedEvents = null;
+                PreviewedEventTexts = [ex.Message];
+                EventSelectorHasError = true;
+            }
         }
 
         revealingMore.Release();
@@ -148,15 +159,15 @@ public partial class VenueEditor : ObservableObject
             var venueFields = new StackLayout { Children = { urlEntry, nameEntry, location } };
 
             // Step 2: Event Selector
-            var selectorText = new Entry { Placeholder = "Event Selector" }
+            var selectorText = new Entry { Placeholder = "event container selector" }
                 .Bind(Entry.TextProperty, nameof(EventSelector))
                 .OnFocusChanged(value => model.EventSelectorHasFocus = value);
 
-            var previewedEventTexts = ScrapeJobEditor.View.Preview(
-                itemsSource: nameof(PreviewedEventTexts),
-                isVisible: nameof(EventSelectorHasFocus));
+            var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
+                itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorHasFocus),
+                hasError: nameof(EventSelectorHasError), source: model);
 
-            var eventContainer = new StackLayout { Children = { selectorText, previewedEventTexts } }
+            var eventContainer = new StackLayout { Children = { selectorText, previewOrErrors } }
                 .BindVisible(nameof(ShowEventContainer));
 
             // Step 3: Event Details (Name, Date)
