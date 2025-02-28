@@ -6,7 +6,11 @@ internal static class StringExtensions
 {
     internal static bool IsNullOrWhiteSpace(this string? str) => string.IsNullOrWhiteSpace(str);
     internal static bool IsSignificant(this string? str) => !string.IsNullOrWhiteSpace(str);
-    internal static string LineJoin(this IEnumerable<string?> strings) => string.Join(Environment.NewLine, strings);
+    internal static string Join(this IEnumerable<string?> strings, string separator) => string.Join(separator, strings);
+    internal static string LineJoin(this IEnumerable<string?> strings) => strings.Join(Environment.NewLine);
+
+    internal static string CsvEscape(this string? value)
+        => value.IsNullOrWhiteSpace() ? "" : $"\"{value!.Replace("\"", "\"\"")}\"";
 
     private static readonly Regex consecutiveWhitespace = new(@"\s+");
 

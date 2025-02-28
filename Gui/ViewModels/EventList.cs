@@ -16,6 +16,8 @@ public partial class EventList : ObservableObject
     [ObservableProperty] private bool canDeletePastEvents;
     [ObservableProperty] private string searchText = string.Empty;
     [ObservableProperty] private ObservableCollection<Event> filteredEvents = [];
+    [ObservableProperty] private IList<object> selectedEvents = [];
+    [ObservableProperty] private bool hasSelection;
 
     public EventList(EventRepository eventRepo)
     {
@@ -106,6 +108,34 @@ public partial class EventList : ObservableObject
         await eventRepo.SaveCompleteAsync(allEvents);
     }
 
+    [RelayCommand]
+    private void SelectAllEvents()
+    {
+        if (SelectedEvents.Count == FilteredEvents.Count)
+            SelectedEvents.Clear();
+        else
+        {
+            SelectedEvents.Clear();
+
+            foreach (var evt in FilteredEvents)
+                SelectedEvents.Add(evt);
+        }
+
+        OnPropertyChanged(nameof(SelectedEvents));
+    }
+
+    [RelayCommand]
+    private async Task ExportToIcsAsync()
+    {
+        if (SelectedEvents.Any()) await SelectedEvents.Cast<Event>().ExportToIcal();
+    }
+
+    [RelayCommand]
+    private async Task ExportToCsvAsync()
+    {
+        if (SelectedEvents.Any()) await SelectedEvents.Cast<Event>().ExportToCsv();
+    }
+
     // used on the MainPage for Desktop
     public partial class View : ContentView
     {
@@ -128,9 +158,21 @@ public partial class EventList : ObservableObject
             var searchBar = new SearchBar().Placeholder("Filter events")
                 .Bind(SearchBar.TextProperty, nameof(SearchText));
 
+            var commands = new HorizontalStackLayout
+            {
+                Spacing = 5,
+                Children =
+                {
+                    Btn("De/select all", nameof(SelectAllEventsCommand)),
+                    ExportButton("iCalendar", nameof(ExportToIcsCommand)),
+                    ExportButton("CSV", nameof(ExportToCsvCommand))
+                }
+            };
+
             var list = new CollectionView
             {
                 ItemsSource = model.FilteredEvents,
+                SelectionMode = SelectionMode.Multiple,
                 ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset, // Prevents flickering
                 ItemTemplate = new DataTemplate(() =>
                 {
@@ -207,17 +249,21 @@ public partial class EventList : ObservableObject
                     .Bind(OpacityProperty, nameof(Event.IsPast),
                         convert: static (bool isPast) => isPast ? 0.5 : 1.0);
                 })
-            };
+            }
+                .Bind(SelectableItemsView.SelectedItemsProperty, nameof(SelectedEvents))
+                .StyleSelected(typeof(Border), BackgroundColorProperty, Colors.Indigo);
+
+            list.SelectionChanged += (o, e) => model.HasSelection = e.CurrentSelection.Count > 0;
 
             Content = new Grid
             {
                 ColumnSpacing = 5,
                 RowSpacing = 5,
-                ColumnDefinitions = Columns.Define(Auto, Star),
+                ColumnDefinitions = Columns.Define(Auto, Star, Auto),
                 RowDefinitions = Rows.Define(Auto, Star),
                 Children = {
-                    pastEvents, searchBar.Column(1),
-                    list.Row(1).ColumnSpan(2)
+                    pastEvents, searchBar.Column(1), commands.Column(2),
+                    list.Row(1).ColumnSpan(3)
                 }
             };
         }
@@ -230,6 +276,9 @@ public partial class EventList : ObservableObject
 
         private static Label OptionalTextLabel(string property)
             => new Label().Bind(Label.TextProperty, property).BindIsVisibleToValueOf(property);
+
+        private static Button ExportButton(string format, string command)
+            => Btn("Export " + format, command).BindVisible(nameof(HasSelection));
 
         private static Button OpenUrlButton(string text, string urlProperty, object source)
             => new Button().Text(text).BindCommand(nameof(OpenUrlCommand), source: source, parameterPath: urlProperty)

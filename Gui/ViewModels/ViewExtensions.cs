@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Markup;
+using static Microsoft.Maui.Controls.VisualStateManager;
 
 namespace FomoCal.Gui.ViewModels;
 
@@ -45,5 +46,19 @@ internal static class ViewExtensions
     {
         label.LineBreakMode = LineBreakMode.WordWrap;
         return label;
+    }
+
+    // inspired by https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/selection?view=net-maui-9.0#change-selected-item-color
+    internal static T StyleSelected<T>(this T vis, Type targetType, BindableProperty property, object value) where T : VisualElement
+    {
+        Setter setter = new() { Property = property, Value = value };
+        VisualState stateSelected = new() { Name = CommonStates.Selected, Setters = { setter } };
+        VisualState stateNormal = new() { Name = CommonStates.Normal };
+        VisualStateGroup visualStateGroup = new() { Name = nameof(CommonStates), States = { stateSelected, stateNormal } };
+        VisualStateGroupList visualStateGroupList = [visualStateGroup];
+        Setter vsgSetter = new() { Property = VisualStateGroupsProperty, Value = visualStateGroupList };
+        Style style = new(targetType) { Setters = { vsgSetter } };
+        vis.Resources.Add(style);
+        return vis;
     }
 }
