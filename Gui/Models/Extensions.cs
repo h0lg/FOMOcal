@@ -12,17 +12,7 @@ internal static class StringExtensions
     {
         if (input.IsNullOrWhiteSpace()) return string.Empty;
 
-        // Normalize all line endings to '\n' and handle horizontal whitespace
-        string result = Regex.Replace(input!, @"\r\n?|\n", "\n");  // Convert all line breaks to '\n'
-
-        // Replace consecutive horizontal whitespace (spaces or tabs) with a single space
-        result = Regex.Replace(result, @"[ \t]+", " ");
-
-        // Replace all horizontal and vertical whitespace (spaces/tabs and newlines) with a single newline
-        result = Regex.Replace(result, @"([ \t]+)(\n)", "\n");
-
-        // Replace any consecutive newlines with a single newline
-        result = Regex.Replace(result, @"\n{2,}", "\n");
+        string result = Regex.Replace(input!, @"\s+", " ");  // Convert all line breaks to '\n'
 
         // Trim leading/trailing whitespace
         return result.Trim();
