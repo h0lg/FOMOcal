@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using System.Reflection;
+using CommunityToolkit.Maui.Markup;
 using FomoCal.Gui.ViewModels;
 using Microsoft.Extensions.Logging;
 
@@ -6,6 +7,11 @@ namespace FomoCal.Gui;
 
 public static class MauiProgram
 {
+    internal static string StoragePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), nameof(FomoCal));
+
+    private const string RepoOwner = "h0lg", RepoName = Name;
+    internal const string Name = "FOMOcal", RepoUrl = $"https://github.com/{RepoOwner}/{RepoName}";
+
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
@@ -20,11 +26,10 @@ public static class MauiProgram
             });
 
         // Set up the storage path
-        var storagePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), nameof(FomoCal));
-        Directory.CreateDirectory(storagePath); // Ensure directory exists
+        Directory.CreateDirectory(StoragePath); // Ensure directory exists
 
         // Register JsonFileStore (handles raw file read/write)
-        builder.Services.AddSingleton(_ => new JsonFileStore(storagePath));
+        builder.Services.AddSingleton(_ => new JsonFileStore(StoragePath));
         builder.Services.AddSingleton<Scraper>();
 
         // Register JsonRepository with fileName for each type
@@ -37,10 +42,30 @@ public static class MauiProgram
         builder.Services.AddSingleton<VenueList.View>();
         builder.Services.AddSingleton<MainPage>();
 
+#if WINDOWS
+        /*  hide tick / check mark shown on Windows for CollectionView with SelectionMode Multiple,
+            https://github.com/dotnet/maui/issues/16066#issuecomment-2058487452 */
+        Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping(
+            "DisableMultiselectCheckbox", (handler, view) => handler.PlatformView.IsMultiSelectCheckBoxEnabled = false);
+#endif
+
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
 
         return builder.Build();
+    }
+
+    internal static string GetAppVersion()
+    {
+        Assembly assembly = Assembly.GetExecutingAssembly();
+
+        // from AssemblyInformationalVersion in csproj, may contain git commit hash
+        return assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            // from AssemblyFileVersion in csproj
+            ?? assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version
+            // from Version in csproj
+            ?? assembly.GetName().Version?.ToString()
+            ?? "Unknown";
     }
 }
