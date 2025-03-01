@@ -1,4 +1,6 @@
-﻿namespace FomoCal;
+﻿using System.Text.Json.Serialization;
+
+namespace FomoCal;
 
 public class Event
 {
@@ -12,6 +14,7 @@ public class Event
     /// <summary>The day of the event.</summary>
     public required DateTime Date { get; set; }
 
+    [JsonIgnore] public bool IsPast => Date < DateTime.Today;
     public string? DoorsTime { get; set; }
     public string? StartTime { get; set; }
 
