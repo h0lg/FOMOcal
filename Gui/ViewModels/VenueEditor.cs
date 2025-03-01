@@ -211,7 +211,7 @@ public partial class VenueEditor : ObservableObject
                 RowDefinitions = Rows.Define(Auto, Auto, Auto, Auto),
                 Children = {
                     new Label().Text("How to dig a gig").FontSize(16).Bold().CenterVertical(),
-                    new Label().Text("The CSS selector to the HTML elements containing the details for one event each.")
+                    new Label().Text("The CSS selector to the HTML elements containing as many of the event details as possible - but only of a single event.")
                         .BindVisible(nameof(IsFocused), source: selectorText) // display if entry is focused
                         .TextColor(Colors.Yellow).Row(1).ColumnSpan(2),
                     new Label().Text("Event container").Bold().CenterVertical().Row(2), selectorText.Row(2).Column(1),

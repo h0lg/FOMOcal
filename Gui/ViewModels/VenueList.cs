@@ -148,10 +148,10 @@ public partial class VenueList : ObservableObject
                     var location = BndLbl(nameof(Venue.Location)).FontSize(12).TextColor(Colors.Gray).Wrap();
 
                     var lastRefreshed = new Label().FontSize(12).TextColor(Colors.Gray)
-                        .Bind(Label.TextProperty, nameof(Venue.LastRefreshed), stringFormat: "last {0:G}")
+                        .Bind(Label.TextProperty, nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:g}")
                         .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastRefreshed.HasValue);
 
-                    var refresh = new Button().Text("🔄").BindCommand(nameof(RefreshVenueCommand), source: model);
+                    var refresh = new Button().Text("⛏").BindCommand(nameof(RefreshVenueCommand), source: model);
 
                     return new Border
                     {
@@ -172,15 +172,16 @@ public partial class VenueList : ObservableObject
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
-            var addVenue = Btn("➕ Add Venue", nameof(AddVenueCommand));
-            var refreshAll = Btn("🔄 Refresh All", nameof(RefreshAllVenuesCommand));
+            var addVenue = Btn("➕ add venue", nameof(AddVenueCommand));
+            var refreshAll = Btn("⛏ dig all gigs", nameof(RefreshAllVenuesCommand));
 
             Content = new Grid
             {
-                RowSpacing = 10,
-                ColumnDefinitions = Columns.Define(Star),
-                RowDefinitions = Rows.Define(Star, Auto, Auto),
-                Children = { list, addVenue.Row(1), refreshAll.Row(2) }
+                RowSpacing = 5,
+                ColumnSpacing = 5,
+                ColumnDefinitions = Columns.Define(Auto, Auto),
+                RowDefinitions = Rows.Define(Star, Auto),
+                Children = { list.ColumnSpan(2), addVenue.Row(1), refreshAll.Row(1).Column(1) }
             };
         }
     }
