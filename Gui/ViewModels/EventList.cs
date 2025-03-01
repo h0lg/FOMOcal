@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
+using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
 
@@ -11,6 +12,8 @@ public partial class EventList : ObservableObject
     private readonly EventRepository eventRepo;
     private HashSet<Event>? allEvents;
 
+    [ObservableProperty] private bool showPastEvents;
+    [ObservableProperty] private bool canDeletePastEvents;
     [ObservableProperty] private string searchText = string.Empty;
     [ObservableProperty] private ObservableCollection<Event> filteredEvents = [];
 
@@ -20,7 +23,8 @@ public partial class EventList : ObservableObject
 
         PropertyChanged += (o, e) =>
         {
-            if (e.PropertyName == nameof(SearchText))
+            if (e.PropertyName == nameof(ShowPastEvents)
+                || e.PropertyName == nameof(SearchText))
                 ApplyFilter();
         };
     }
@@ -69,7 +73,8 @@ public partial class EventList : ObservableObject
 
     private void ApplyFilter()
     {
-        IEnumerable<Event> filtered = allEvents!;
+        CanDeletePastEvents = ShowPastEvents && allEvents!.Any(e => e.IsPast);
+        var filtered = ShowPastEvents ? allEvents! : allEvents!.Where(e => !e.IsPast);
 
         if (SearchText.IsSignificant())
         {
@@ -93,12 +98,32 @@ public partial class EventList : ObservableObject
     private static async Task OpenUrlAsync(string url)
         => await WebViewPage.OpenUrlAsync(url);
 
+    [RelayCommand]
+    private async Task CleanUpPastEvents()
+    {
+        allEvents!.RemoveWhere(e => e.IsPast);
+        ApplyFilter();
+        await eventRepo.SaveCompleteAsync(allEvents);
+    }
+
     // used on the MainPage for Desktop
     public partial class View : ContentView
     {
         public View(EventList model)
         {
             BindingContext = model;
+
+            var pastEvents = new HorizontalStackLayout
+            {
+                Spacing = 5,
+                Children = {
+                    Btn("🗑 Delete", nameof(CleanUpPastEventsCommand))
+                        .BindVisible(nameof(CanDeletePastEvents)),
+
+                    new Label().Text("Past events").Bold()
+                        .TapGesture(() => model.ShowPastEvents = !model.ShowPastEvents),
+                    new CheckBox().Bind(CheckBox.IsCheckedProperty, nameof(ShowPastEvents)) }
+            };
 
             var searchBar = new SearchBar().Placeholder("Filter events")
                 .Bind(SearchBar.TextProperty, nameof(SearchText));
@@ -178,7 +203,9 @@ public partial class EventList : ObservableObject
                                 location.Row(2).Column(1), tickets.Row(2).Column(2)
                             }
                         }
-                    };
+                    }
+                    .Bind(OpacityProperty, nameof(Event.IsPast),
+                        convert: static (bool isPast) => isPast ? 0.5 : 1.0);
                 })
             };
 
@@ -186,11 +213,11 @@ public partial class EventList : ObservableObject
             {
                 ColumnSpacing = 5,
                 RowSpacing = 5,
-                ColumnDefinitions = Columns.Define(Star),
+                ColumnDefinitions = Columns.Define(Auto, Star),
                 RowDefinitions = Rows.Define(Auto, Star),
                 Children = {
-                    searchBar,
-                    list.Row(1)
+                    pastEvents, searchBar.Column(1),
+                    list.Row(1).ColumnSpan(2)
                 }
             };
         }
