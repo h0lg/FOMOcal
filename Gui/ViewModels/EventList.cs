@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
 
@@ -147,14 +148,14 @@ public partial class EventList : ObservableObject
             {
                 Spacing = 5,
                 Children = {
-                    Button("🗑 Delete", nameof(CleanUpPastEventsCommand))
+                    Button("🗑", nameof(CleanUpPastEventsCommand))
                         .Bind(IsVisibleProperty, nameof(CanDeletePastEvents)),
 
-                    new Label().Text("Past events").Bold(),
+                    new Label().Text("🕰 Past gigs").CenterVertical().Bold(),
                     new CheckBox().Bind(CheckBox.IsCheckedProperty, nameof(ShowPastEvents)) }
             };
 
-            var searchBar = new SearchBar().Placeholder("Filter events")
+            var searchBar = new SearchBar().Placeholder("Filter gigs by pipe | separated | terms")
                 .Bind(SearchBar.TextProperty, nameof(SearchText));
 
             var commands = new HorizontalStackLayout
@@ -162,9 +163,10 @@ public partial class EventList : ObservableObject
                 Spacing = 5,
                 Children =
                 {
-                    Button("De/select all", nameof(SelectAllEventsCommand)),
-                    ExportButton("iCalendar", nameof(ExportToIcsCommand)),
-                    ExportButton("CSV", nameof(ExportToCsvCommand))
+                    Button("👆 de/select all", nameof(SelectAllEventsCommand)),
+                    new Label().Text("🥡 export selected as").CenterVertical().Bind(IsVisibleProperty, nameof(HasSelection)),
+                    ExportButton("📆 iCal", nameof(ExportToIcsCommand)),
+                    ExportButton("▦ CSV", nameof(ExportToCsvCommand))
                 }
             };
 
@@ -185,18 +187,18 @@ public partial class EventList : ObservableObject
                     {
                         Spacing = 5,
                         Children = {
-                            RequiredTextLabel(nameof(Event.Name)).Wrap(),
-                            OptionalTextLabel(nameof(Event.SubTitle)).Wrap(),
-                            OptionalTextLabel(nameof(Event.Genres)).Wrap() }
+                            RequiredTextLabel(nameof(Event.Name)).Wrap().Bold().FontSize(16),
+                            OptionalTextLabel(nameof(Event.SubTitle)).Bold().Wrap(),
+                            OptionalTextLabel(nameof(Event.Genres), "🎷 {0}").Wrap() }
                     };
 
                     var times = new VerticalStackLayout
                     {
                         Spacing = 5,
                         Children = {
-                            DateLabel(nameof(Event.Date)).Bold(),
-                            OptionalTextLabel(nameof(Event.DoorsTime)),
-                            OptionalTextLabel(nameof(Event.StartTime)) }
+                            FormattedLabel(nameof(Event.Date), "{0:d}").Bold(),
+                            OptionalTextLabel(nameof(Event.DoorsTime), "🚪 {0}"),
+                            OptionalTextLabel(nameof(Event.StartTime), "🎼 {0}") }
                     };
 
                     var details = new VerticalStackLayout
@@ -213,18 +215,18 @@ public partial class EventList : ObservableObject
                     {
                         Spacing = 5,
                         Children = {
-                            RequiredTextLabel(nameof(Event.Venue)),
-                            OptionalTextLabel(nameof(Event.Stage)),
-                            DateLabel(nameof(Event.Scraped)) }
+                            RequiredTextLabel(nameof(Event.Venue), "📍 {0}"),
+                            OptionalTextLabel(nameof(Event.Stage), "🎤 {0}"),
+                            FormattedLabel(nameof(Event.Scraped), "⛏ {0:g}") }
                     };
 
                     var tickets = new VerticalStackLayout
                     {
                         Spacing = 5,
                         Children = {
-                            OptionalTextLabel(nameof(Event.PresalePrice)),
-                            OptionalTextLabel(nameof(Event.DoorsPrice)),
-                            OpenUrlButton("Tickets", nameof(Event.TicketUrl), model) }
+                            OptionalTextLabel(nameof(Event.PresalePrice), "💳 {0}"),
+                            OptionalTextLabel(nameof(Event.DoorsPrice), "💵 {0}"),
+                            OpenUrlButton("🎫 Tickets", nameof(Event.TicketUrl), model) }
                     };
 
                     return new Border
@@ -260,26 +262,29 @@ public partial class EventList : ObservableObject
             {
                 ColumnSpacing = 5,
                 RowSpacing = 5,
-                ColumnDefinitions = Columns.Define(Auto, Star, Auto),
+                ColumnDefinitions = Columns.Define(Star),
                 RowDefinitions = Rows.Define(Auto, Star),
                 Children = {
-                    pastEvents, searchBar.Column(1), commands.Column(2),
-                    list.Row(1).ColumnSpan(3)
+                    new FlexLayout{
+                        Wrap = FlexWrap.Wrap,
+                        Children = { pastEvents, searchBar.Grow(1), commands }
+                    },
+                    list.Row(1)
                 }
             };
         }
 
-        private static Label RequiredTextLabel(string property)
-            => new Label().Bind(Label.TextProperty, property);
+        private static Label RequiredTextLabel(string property, string? stringFormat = null)
+            => new Label().Bind(Label.TextProperty, property, stringFormat: stringFormat);
 
-        private static Label DateLabel(string property)
-            => new Label().Bind(Label.TextProperty, property, stringFormat: "{0:d}");
+        private static Label FormattedLabel(string property, string stringFormat)
+            => new Label().Bind(Label.TextProperty, property, stringFormat: stringFormat);
 
-        private static Label OptionalTextLabel(string property)
-            => new Label().Bind(Label.TextProperty, property).BindIsVisibleToValueOf(property);
+        private static Label OptionalTextLabel(string property, string? stringFormat = null)
+            => new Label().Bind(Label.TextProperty, property, stringFormat: stringFormat).BindIsVisibleToValueOf(property);
 
-        private static Button ExportButton(string format, string command)
-            => Button("Export " + format, command).Bind(IsVisibleProperty, nameof(HasSelection));
+        private static Button ExportButton(string text, string command)
+            => Button(text, command).Bind(IsVisibleProperty, nameof(HasSelection));
 
         private static Button OpenUrlButton(string text, string urlProperty, object source)
             => new Button().Text(text).BindCommand(nameof(OpenUrlCommand), source: source, parameterPath: urlProperty)
