@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace FomoCal.Gui.ViewModels;
@@ -55,6 +56,10 @@ public partial class EventList : ObservableObject
         allEvents = await eventRepo.LoadAllAsync();
     }
 
+    [RelayCommand]
+    private static async Task OpenUrlAsync(string url)
+        => await WebViewPage.OpenUrlAsync(url);
+
     // used on the MainPage for Desktop
     public partial class View : ContentView
     {
@@ -97,7 +102,8 @@ public partial class EventList : ObservableObject
                         Spacing = 5,
                         Children =
                         {
-                            OptionalTextLabel(nameof(Event.Description)).Wrap()
+                            OptionalTextLabel(nameof(Event.Description)).Wrap(),
+                            OpenUrlButton("more", nameof(Event.Url), model).End()
                         }
                     };
 
@@ -115,7 +121,8 @@ public partial class EventList : ObservableObject
                         Spacing = 5,
                         Children = {
                             OptionalTextLabel(nameof(Event.PresalePrice)),
-                            OptionalTextLabel(nameof(Event.DoorsPrice)) }
+                            OptionalTextLabel(nameof(Event.DoorsPrice)),
+                            OpenUrlButton("Tickets", nameof(Event.TicketUrl), model) }
                     };
 
                     return new Border
@@ -148,6 +155,10 @@ public partial class EventList : ObservableObject
 
         private static Label OptionalTextLabel(string property)
             => new Label().Bind(Label.TextProperty, property).BindIsVisibleToValueOf(property);
+
+        private static Button OpenUrlButton(string text, string urlProperty, object source)
+            => new Button().Text(text).BindCommand(nameof(OpenUrlCommand), source: source, parameterPath: urlProperty)
+                .BindIsVisibleToValueOf(urlProperty);
     }
 
     // used in the AppShell for non-Desktop devices
