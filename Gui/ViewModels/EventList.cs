@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
@@ -10,9 +11,18 @@ public partial class EventList : ObservableObject
     private readonly EventRepository eventRepo;
     private HashSet<Event>? allEvents;
 
+    [ObservableProperty] private string searchText = string.Empty;
+    [ObservableProperty] private ObservableCollection<Event> filteredEvents = [];
+
     public EventList(EventRepository eventRepo)
     {
         this.eventRepo = eventRepo;
+
+        PropertyChanged += (o, e) =>
+        {
+            if (e.PropertyName == nameof(SearchText))
+                ApplyFilter();
+        };
     }
 
     // Called from the MainPage on VenueList.EventsScraped
@@ -54,6 +64,29 @@ public partial class EventList : ObservableObject
     internal async Task LoadEvents()
     {
         allEvents = await eventRepo.LoadAllAsync();
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        IEnumerable<Event> filtered = allEvents!;
+
+        if (SearchText.IsSignificant())
+        {
+            var terms = SearchText.Split("|", StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToArray();
+
+            filtered = filtered.Where(e => e.Name.ContainsAny(terms)
+                || e.SubTitle?.ContainsAny(terms) == true
+                || e.Genres?.ContainsAny(terms) == true
+                || e.Description?.ContainsAny(terms) == true
+                || e.Venue?.ContainsAny(terms) == true
+                || e.Stage?.ContainsAny(terms) == true);
+        }
+
+        FilteredEvents.Clear();
+
+        foreach (var evt in filtered.OrderBy(e => e.Date))
+            FilteredEvents.Add(evt);
     }
 
     [RelayCommand]
@@ -67,9 +100,12 @@ public partial class EventList : ObservableObject
         {
             BindingContext = model;
 
-            Content = new CollectionView
+            var searchBar = new SearchBar().Placeholder("Filter events")
+                .Bind(SearchBar.TextProperty, nameof(SearchText));
+
+            var list = new CollectionView
             {
-                ItemsSource = model.allEvents,
+                ItemsSource = model.FilteredEvents,
                 ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset, // Prevents flickering
                 ItemTemplate = new DataTemplate(() =>
                 {
@@ -144,6 +180,18 @@ public partial class EventList : ObservableObject
                         }
                     };
                 })
+            };
+
+            Content = new Grid
+            {
+                ColumnSpacing = 5,
+                RowSpacing = 5,
+                ColumnDefinitions = Columns.Define(Star),
+                RowDefinitions = Rows.Define(Auto, Star),
+                Children = {
+                    searchBar,
+                    list.Row(1)
+                }
             };
         }
 
