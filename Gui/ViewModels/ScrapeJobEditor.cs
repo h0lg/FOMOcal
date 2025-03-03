@@ -16,7 +16,6 @@ public partial class ScrapeJobEditor : ObservableObject
 
     [ObservableProperty] private string?[]? previewResults;
     [ObservableProperty] private bool hasErrors;
-    [ObservableProperty] private bool hasFocus;
 
     #region ScrapeJob proxy properties
     public string Selector
@@ -123,6 +122,30 @@ public partial class ScrapeJobEditor : ObservableObject
     }
 
     private void Validate() => IsValid = !HasErrors && PreviewResults?.Length == getEventsForPreview()?.Length;
+
+    private Guid? focusedId; // tracks the child that currently has focus
+    [ObservableProperty] private bool hasFocus;
+
+    internal async ValueTask SetFocusAsync(Guid id, bool focused)
+    {
+        if (focused)
+        {
+            HasFocus = true;
+            focusedId = id; // assign this visual the component's focus token
+            return;
+        }
+
+        /*  Only unfocus the component if after a short while no other child has taken focus.
+            This enables binding the IsVisibleProperty of empty child controls to the component focus
+            while still allowing to [Tab] into them by keeping them visible just long enough. */
+        await Task.Delay(10);
+
+        if (id == focusedId)
+        {
+            HasFocus = false;
+            focusedId = null;
+        }
+    }
 
     internal void UpdatePreview()
     {
@@ -265,17 +288,17 @@ public partial class ScrapeJobEditor : ObservableObject
 internal static class ScopeJobEditorExtensions
 {
     internal static T ForwardFocusTo<T>(this T vis, ScrapeJobEditor model) where T : VisualElement
-        => vis.OnFocusChanged(value => model.HasFocus = value);
+        => vis.OnFocusChanged(async (id, focused) => await model.SetFocusAsync(id, focused));
 
     internal static T DisplayWithSignificant<T>(this T vis, string textPropertyName) where T : VisualElement
-        => vis.Bind<T, bool, string, double>(VisualElement.OpacityProperty,
+        => vis.Bind<T, bool, string, bool>(VisualElement.IsVisibleProperty,
             binding1: new Binding(nameof(ScrapeJobEditor.HasFocus)),
             binding2: new Binding(textPropertyName),
-            convert: values => values.Item1 || values.Item2.IsSignificant() ? 1 : 0);
+            convert: values => values.Item1 || values.Item2.IsSignificant());
 
     internal static T DisplayWithChecked<T>(this T vis, string boolPropertyName) where T : VisualElement
-        => vis.Bind<T, bool, bool, double>(VisualElement.OpacityProperty,
+        => vis.Bind<T, bool, bool, bool>(VisualElement.IsVisibleProperty,
             binding1: new Binding(nameof(ScrapeJobEditor.HasFocus)),
             binding2: new Binding(boolPropertyName),
-            convert: values => values.Item1 || values.Item2 ? 1 : 0);
+            convert: values => values.Item1 || values.Item2);
 }

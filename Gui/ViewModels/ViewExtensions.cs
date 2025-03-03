@@ -16,10 +16,10 @@ internal static class Widgets
 
 internal static class ViewExtensions
 {
-    internal static T OnFocusChanged<T>(this T vis, Action<bool> setFocused) where T : VisualElement
+    internal static T OnFocusChanged<T>(this T vis, Action<Guid, bool> setFocused) where T : VisualElement
     {
-        vis.Focused += (_, _) => setFocused(true);
-        vis.Unfocused += (_, _) => setFocused(false);
+        vis.Focused += (_, _) => setFocused(vis.Id, true);
+        vis.Unfocused += (_, _) => setFocused(vis.Id, false);
         return vis;
     }
 
