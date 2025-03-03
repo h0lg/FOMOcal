@@ -145,7 +145,7 @@ public partial class VenueEditor : ObservableObject
             // Step 2: Event Selector
             var eventSelectorEntry = new Entry { Placeholder = "event container selector" }
                 .Bind(Entry.TextProperty, nameof(EventSelector))
-                .OnFocusChanged(value => model.EventSelectorHasFocus = value);
+                .OnFocusChanged((_, focused) => model.EventSelectorHasFocus = focused);
 
             var previewedEventTexts = ScrapeJobEditor.View.ScrapeJobPreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorHasFocus),
