@@ -125,6 +125,9 @@ public partial class VenueList : ObservableObject
         await SaveVenues();
     }
 
+    [RelayCommand]
+    private async Task ExportVenues() => await venueRepo.ShareFile("venues");
+
     private async Task RefreshEvents(Venue venue)
     {
         var events = await scraper.ScrapeVenueAsync(venue);
@@ -164,11 +167,15 @@ public partial class VenueList : ObservableObject
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
-            var addVenue = Btn("➕ add venue", nameof(AddVenueCommand));
+            var title = Lbl("🏛 Venues").Bold().FontSize(20).CenterVertical();
+            var exportVenues = Btn("🥡", nameof(ExportVenuesCommand));
+            var addVenue = Btn("➕", nameof(AddVenueCommand));
             var refreshAll = Btn("⛏ dig all gigs", nameof(RefreshAllVenuesCommand));
 
-            Content = Grd(cols: [Auto, Auto], rows: [Star, Auto], spacing: 5,
-                list.ColumnSpan(2), addVenue.Row(1), refreshAll.Row(1).Column(1));
+            Content = Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Star, Auto], spacing: 5,
+                title.ColumnSpan(3), exportVenues.Column(3),
+                list.Row(1).ColumnSpan(4),
+                addVenue.Row(2), refreshAll.Row(2).Column(2).ColumnSpan(2));
         }
     }
 

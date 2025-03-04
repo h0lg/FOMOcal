@@ -101,11 +101,15 @@ internal static class Export
         string filePath = GetExportFilePath(extension);
         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
         await File.WriteAllTextAsync(filePath, contents);
+        await ShareFile(fileTypeLabel, filePath, contentType);
+    }
 
+    internal static async Task ShareFile(string fileTypeLabel, string filePath, string contentType)
+    {
         // see https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/data/share#share-a-file
         await Share.Default.RequestAsync(new ShareFileRequest
         {
-            Title = "Share " + fileTypeLabel + " file",
+            Title = "Share " + fileTypeLabel + " export",
             File = new ShareFile(filePath, contentType)
         });
     }
