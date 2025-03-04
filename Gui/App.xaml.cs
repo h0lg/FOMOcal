@@ -14,8 +14,15 @@
         {
             bool isSmall = DeviceInfo.Idiom != DeviceIdiom.Desktop;
 
-            Page rootPage = isSmall ? new AppShell()
-                : new NavigationPage(services.GetRequiredService<MainPage>());
+            Page rootPage;
+
+            if (isSmall) rootPage = new AppShell();
+            else
+            {
+                var mainPage = services.GetRequiredService<MainPage>();
+                NavigationPage.SetHasNavigationBar(mainPage, false);
+                rootPage = new NavigationPage(mainPage);
+            }
 
             return new(rootPage) { Title = "😱📅 FOMOcal" };
         }
