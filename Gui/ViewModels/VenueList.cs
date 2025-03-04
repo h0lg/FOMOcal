@@ -18,6 +18,7 @@ public partial class VenueList : ObservableObject
     public ObservableCollection<Venue> Venues { get; } = [];
 
     internal event Action<Venue, List<Event>>? EventsScraped;
+    internal event Action<string, string>? VenueRenamed;
 
     public VenueList(JsonFileRepository<Venue> venueRepo, Scraper scraper, INavigation navigation)
     {
@@ -90,6 +91,10 @@ public partial class VenueList : ObservableObject
         {
             case VenueEditor.Result.Actions.Saved:
                 await SaveVenues(); // since we passed the venue by reference, it's already updated
+
+                if (result.OriginalVenueName != venue.Name)
+                    VenueRenamed?.Invoke(result.OriginalVenueName!, venue.Name); // notify subscribers
+
                 await LoadVenuesAsync(); // to refresh UI
                 break;
 
@@ -180,11 +185,12 @@ public partial class VenueList : ObservableObject
 
     public partial class Page : ContentPage
     {
-        public Page(JsonFileRepository<Venue> venueRepo, Scraper scraper, JsonFileRepository<Event> eventRepo)
+        public Page(JsonFileRepository<Venue> venueRepo, Scraper scraper, EventRepository eventRepo)
         {
             Title = "Venues";
             VenueList venueList = new(venueRepo, scraper, Navigation);
             venueList.EventsScraped += async (venue, events) => await eventRepo.AddOrUpdateAsync(events);
+            venueList.VenueRenamed += async (oldName, newName) => await eventRepo.RenameVenueAsync(oldName, newName);
             Content = new View(venueList);
         }
     }

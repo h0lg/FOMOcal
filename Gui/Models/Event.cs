@@ -30,3 +30,23 @@ public class Event
     public override int GetHashCode() => HashCode.Combine(Venue, Url ?? Name, Date.Date);
     public override string ToString() => $"{Date:d} {Name}"; // for easier debugging
 }
+
+internal static class EventExtensions
+{
+    internal static void RenameVenue(this IEnumerable<Event> events, string oldName, string newName)
+    {
+        foreach (var evt in events)
+            if (evt.Venue == oldName)
+                evt.Venue = newName;
+    }
+}
+
+public class EventRepository(JsonFileStore store, string fileName) : JsonFileRepository<Event>(store, fileName)
+{
+    internal async Task RenameVenueAsync(string oldName, string newName)
+    {
+        var set = await LoadAllAsync();
+        set.RenameVenue(oldName, newName);
+        await SaveCompleteAsync(set);
+    }
+}

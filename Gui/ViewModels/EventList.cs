@@ -6,10 +6,10 @@ namespace FomoCal.Gui.ViewModels;
 
 public partial class EventList : ObservableObject
 {
-    private readonly JsonFileRepository<Event> eventRepo;
+    private readonly EventRepository eventRepo;
     private HashSet<Event>? allEvents;
 
-    public EventList(JsonFileRepository<Event> eventRepo)
+    public EventList(EventRepository eventRepo)
     {
         this.eventRepo = eventRepo;
     }
@@ -23,6 +23,18 @@ public partial class EventList : ObservableObject
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             allEvents!.UpdateWith(newEvents);
+            ApplyFilter(); // re-apply filter
+            await eventRepo.SaveCompleteAsync(allEvents!);
+        });
+    }
+
+    internal void RenameVenue(string oldName, string newName)
+    {
+        // Ensure UI updates happen on the main thread
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            allEvents!.RenameVenue(oldName, newName);
+            ApplyFilter(); // re-apply filter
             await eventRepo.SaveCompleteAsync(allEvents!);
         });
     }
