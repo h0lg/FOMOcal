@@ -128,6 +128,36 @@ public partial class VenueList : ObservableObject
     [RelayCommand]
     private async Task ExportVenues() => await venueRepo.ShareFile("venues");
 
+    [RelayCommand]
+    private async Task ImportVenues()
+    {
+        var file = await FilePicker.Default.PickAsync(new PickOptions
+        {
+            PickerTitle = "Pick a venues config",
+            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>> { { DevicePlatform.WinUI, [".json"] } })
+        });
+
+        if (file != null)
+        {
+            HashSet<Venue>? imported;
+
+            try
+            {
+                imported = await JsonFileStore.DeserializeFrom<HashSet<Venue>>(file.FullPath);
+            }
+            catch (Exception ex)
+            {
+                await App.CurrentPage.DisplayAlert("Error importing venues", ex.Message, "Ok");
+                return;
+            }
+
+            if (imported?.Count < 1) return;
+            Venues.Import(imported!);
+            await SaveVenues();
+            RefreshList();
+        }
+    }
+
     private async Task RefreshEvents(Venue venue)
     {
         var events = await scraper.ScrapeVenueAsync(venue);
@@ -168,12 +198,13 @@ public partial class VenueList : ObservableObject
                 }));
 
             var title = Lbl("🏛 Venues").Bold().FontSize(20).CenterVertical();
+            var importVenues = Btn("📥", nameof(ImportVenuesCommand));
             var exportVenues = Btn("🥡", nameof(ExportVenuesCommand));
             var addVenue = Btn("➕", nameof(AddVenueCommand));
             var refreshAll = Btn("⛏ dig all gigs", nameof(RefreshAllVenuesCommand));
 
             Content = Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Star, Auto], spacing: 5,
-                title.ColumnSpan(3), exportVenues.Column(3),
+                title.ColumnSpan(2), importVenues.Column(2), exportVenues.Column(3),
                 list.Row(1).ColumnSpan(4),
                 addVenue.Row(2), refreshAll.Row(2).Column(2).ColumnSpan(2));
         }

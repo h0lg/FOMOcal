@@ -49,10 +49,15 @@ public class JsonFileStore(string storagePath)
 
         try
         {
-            string json = await File.ReadAllTextAsync(filePath);
-            return JsonSerializer.Deserialize<T>(json, jsonOptions);
+            return await DeserializeFrom<T>(filePath);
         }
         finally { locker.Release(); }
+    }
+
+    internal static async Task<T?> DeserializeFrom<T>(string filePath)
+    {
+        string json = await File.ReadAllTextAsync(filePath);
+        return JsonSerializer.Deserialize<T>(json, jsonOptions);
     }
 
     internal Task ShareFile(string fileLabel, string fileName)

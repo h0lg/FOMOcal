@@ -1,4 +1,6 @@
-﻿namespace FomoCal;
+﻿using System.Collections.ObjectModel;
+
+namespace FomoCal;
 
 public class Venue
 {
@@ -10,7 +12,7 @@ public class Venue
 
     public override bool Equals(object? obj) => obj is Venue other && Equals(other);
     public bool Equals(Venue? other) => other is not null && GetHashCode() == other.GetHashCode();
-    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(ProgramUrl);
+    public override int GetHashCode() => HashCode.Combine(Name, ProgramUrl);
 
     public class EventScrapeJob
     {
@@ -32,5 +34,67 @@ public class Venue
         public ScrapeJob? Url { get; set; }
         public ScrapeJob? ImageUrl { get; set; }
         public ScrapeJob? TicketUrl { get; set; }
+
+        public override bool Equals(object? obj) => obj is EventScrapeJob other && Equals(other);
+
+        public bool Equals(EventScrapeJob? other)
+        {
+            if (other is null) return false;
+
+            return Selector == other.Selector
+                && Name.Equals(other.Name)
+                && Date.Equals(other.Date)
+                && Equals(SubTitle, other.SubTitle)
+                && Equals(Description, other.Description)
+                && Equals(Genres, other.Genres)
+                && Equals(Stage, other.Stage)
+                && Equals(DoorsTime, other.DoorsTime)
+                && Equals(StartTime, other.StartTime)
+                && Equals(PresalePrice, other.PresalePrice)
+                && Equals(DoorsPrice, other.DoorsPrice)
+                && Equals(Url, other.Url)
+                && Equals(ImageUrl, other.ImageUrl)
+                && Equals(TicketUrl, other.TicketUrl);
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(Selector);
+            hash.Add(Name);
+            hash.Add(Date);
+            hash.Add(SubTitle);
+            hash.Add(Description);
+            hash.Add(Genres);
+            hash.Add(Stage);
+            hash.Add(DoorsTime);
+            hash.Add(StartTime);
+            hash.Add(PresalePrice);
+            hash.Add(DoorsPrice);
+            hash.Add(Url);
+            hash.Add(ImageUrl);
+            hash.Add(TicketUrl);
+            return hash.ToHashCode();
+        }
+    }
+}
+
+internal static class VenueExtensions
+{
+    internal static void Import(this Collection<Venue> existing, HashSet<Venue> imported)
+    {
+        foreach (var import in imported)
+        {
+            var local = existing.SingleOrDefault(v => v.ProgramUrl == import.ProgramUrl);
+
+            if (local != null)
+            {
+                if (import.Event.Equals(local.Event)) continue;
+                import.Name += $" (imported {DateTime.Now:g})";
+            }
+
+            import.LastRefreshed = null;
+            existing.Add(import);
+        }
     }
 }

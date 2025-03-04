@@ -4,6 +4,8 @@
     {
         private readonly IServiceProvider services;
 
+        internal static Page CurrentPage => Current!.Windows[0].Page!;
+
         public App(IServiceProvider services)
         {
             this.services = services;

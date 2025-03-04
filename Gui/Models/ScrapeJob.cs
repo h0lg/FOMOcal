@@ -48,6 +48,17 @@ public class ScrapeJob
         return match.Success ? match.Value : input;
     }
 
+    public override bool Equals(object? obj) => obj is ScrapeJob other && Equals(other);
+
+    public bool Equals(ScrapeJob? other) =>
+        other is not null &&
+        Selector == other.Selector &&
+        Attribute == other.Attribute &&
+        Match == other.Match &&
+        IgnoreNestedText == other.IgnoreNestedText;
+
+    public override int GetHashCode() => HashCode.Combine(Selector, IgnoreNestedText, Attribute, Match);
+
     public class Error : Exception
     {
         public Error() : base() { }

@@ -23,4 +23,7 @@ public class DateScrapeJob : ScrapeJob
     }
 
     public override string? GetValue(AngleSharp.Dom.IElement element) => GetDate(element)?.ToString("D");
+    public override bool Equals(object? obj) => obj is DateScrapeJob other && Equals(other);
+    public bool Equals(DateScrapeJob? other) => base.Equals(other) && Format == other!.Format && Culture == other.Culture;
+    public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Format, Culture);
 }
