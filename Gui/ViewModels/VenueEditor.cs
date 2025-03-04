@@ -9,6 +9,7 @@ namespace FomoCal.Gui.ViewModels;
 public partial class VenueEditor : ObservableObject
 {
     private readonly bool isDeletable;
+    private readonly string? originalVenueName;
     private readonly Scraper scraper;
     private readonly TaskCompletionSource<Result?> awaiter;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
@@ -52,6 +53,7 @@ public partial class VenueEditor : ObservableObject
     internal VenueEditor(Venue? venue, Scraper scraper, TaskCompletionSource<Result?> awaiter)
     {
         isDeletable = venue != null;
+        originalVenueName = venue?.Name;
 
         this.venue = venue ?? new Venue
         {
@@ -124,7 +126,7 @@ public partial class VenueEditor : ObservableObject
             property.SetValue(venue.Event, editor.IsEmpty ? null : editor.ScrapeJob);
         }
 
-        awaiter.SetResult(new Result() { Action = Result.Actions.Saved, Venue = venue });
+        awaiter.SetResult(new Result(venue, Result.Actions.Saved, originalVenueName));
     }
 
     [RelayCommand]
@@ -134,13 +136,22 @@ public partial class VenueEditor : ObservableObject
             $"Are you sure you want to delete the venue {venue.Name}?",
             "Yes", "No");
 
-        if (isConfirmed) awaiter.SetResult(new Result() { Action = Result.Actions.Deleted, Venue = venue });
+        if (isConfirmed) awaiter.SetResult(new Result(venue, Result.Actions.Deleted));
     }
 
     internal record Result
     {
-        public required Actions Action { get; set; }
-        public required Venue Venue { get; set; }
+        public Venue Venue { get; }
+        public Actions Action { get; }
+        public string? OriginalVenueName { get; }
+
+        internal Result(Venue venue, Actions action, string? originalVenueName = null)
+        {
+            Venue = venue;
+            Action = action;
+            OriginalVenueName = originalVenueName;
+        }
+
         internal enum Actions { Saved, Deleted }
     }
 
