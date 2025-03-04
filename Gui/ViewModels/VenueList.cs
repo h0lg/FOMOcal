@@ -131,6 +131,36 @@ public partial class VenueList : ObservableObject
     [RelayCommand]
     private async Task ExportVenues() => await venueRepo.ShareFile("venues");
 
+    [RelayCommand]
+    private async Task ImportVenues()
+    {
+        var file = await FilePicker.Default.PickAsync(new PickOptions
+        {
+            PickerTitle = "Pick a venues config",
+            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>> { { DevicePlatform.WinUI, [".json"] } })
+        });
+
+        if (file != null)
+        {
+            HashSet<Venue>? imported;
+
+            try
+            {
+                imported = await JsonFileStore.DeserializeFrom<HashSet<Venue>>(file.FullPath);
+            }
+            catch (Exception ex)
+            {
+                await Application.Current!.Windows[0].Page!.DisplayAlert("Error importing venues", ex.Message, "Ok");
+                return;
+            }
+
+            if (imported?.Count < 1) return;
+            Venues.Import(imported!);
+            await SaveVenues();
+            RefreshList();
+        }
+    }
+
     private async Task RefreshEvents(Venue venue)
     {
         var events = await scraper.ScrapeVenueAsync(venue);
@@ -182,6 +212,7 @@ public partial class VenueList : ObservableObject
                 }));
 
             var title = new Label().Text("🏛 Venues").Bold().FontSize(20).CenterVertical();
+            var importVenues = Button("📥", nameof(ImportVenuesCommand));
             var exportVenues = Button("🥡", nameof(ExportVenuesCommand));
             var addVenue = Button("➕", nameof(AddVenueCommand));
             var refreshAll = Button("⛏ dig all gigs", nameof(RefreshAllVenuesCommand));
@@ -193,7 +224,7 @@ public partial class VenueList : ObservableObject
                 ColumnDefinitions = Columns.Define(Auto, Star, Auto, Auto),
                 RowDefinitions = Rows.Define(Auto, Star, Auto),
                 Children = {
-                    title.ColumnSpan(3), exportVenues.Column(3),
+                    title.ColumnSpan(2), importVenues.Column(2), exportVenues.Column(3),
                     list.Row(1).ColumnSpan(4),
                     addVenue.Row(2), refreshAll.Row(2).Column(2).ColumnSpan(2) }
             };
