@@ -100,10 +100,14 @@ internal static class Export
         string filePath = GetExportFilePath(extension);
         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
         await File.WriteAllTextAsync(filePath, contents);
+        await ShareFile(fileType, filePath);
+    }
 
+    internal static async Task ShareFile(string fileType, string filePath)
+    {
         await Share.Default.RequestAsync(new ShareFileRequest
         {
-            Title = "Share " + fileType + " file",
+            Title = "Share " + fileType + " export",
             File = new ShareFile(filePath)
         });
     }

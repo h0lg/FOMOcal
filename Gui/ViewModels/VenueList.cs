@@ -128,6 +128,9 @@ public partial class VenueList : ObservableObject
         await SaveVenues();
     }
 
+    [RelayCommand]
+    private async Task ExportVenues() => await venueRepo.ShareFile("venues");
+
     private async Task RefreshEvents(Venue venue)
     {
         var events = await scraper.ScrapeVenueAsync(venue);
@@ -178,16 +181,21 @@ public partial class VenueList : ObservableObject
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
-            var addVenue = Button("➕ add venue", nameof(AddVenueCommand));
+            var title = new Label().Text("🏛 Venues").Bold().FontSize(20).CenterVertical();
+            var exportVenues = Button("🥡", nameof(ExportVenuesCommand));
+            var addVenue = Button("➕", nameof(AddVenueCommand));
             var refreshAll = Button("⛏ dig all gigs", nameof(RefreshAllVenuesCommand));
 
             Content = new Grid
             {
                 RowSpacing = 5,
                 ColumnSpacing = 5,
-                ColumnDefinitions = Columns.Define(Auto, Auto),
-                RowDefinitions = Rows.Define(Star, Auto),
-                Children = { list.ColumnSpan(2), addVenue.Row(1), refreshAll.Row(1).Column(1) }
+                ColumnDefinitions = Columns.Define(Auto, Star, Auto, Auto),
+                RowDefinitions = Rows.Define(Auto, Star, Auto),
+                Children = {
+                    title.ColumnSpan(3), exportVenues.Column(3),
+                    list.Row(1).ColumnSpan(4),
+                    addVenue.Row(2), refreshAll.Row(2).Column(2).ColumnSpan(2) }
             };
         }
     }

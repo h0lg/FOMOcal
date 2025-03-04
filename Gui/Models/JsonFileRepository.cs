@@ -7,6 +7,7 @@ public class JsonFileRepository<T>(JsonFileStore store, string fileName) where T
 {
     public async Task<HashSet<T>> LoadAllAsync() => await store.LoadAsync<HashSet<T>>(fileName) ?? [];
     public Task SaveCompleteAsync(ISet<T> items) => store.SaveAsync(fileName, items);
+    internal Task ShareFile(string label) => store.ShareFile(label, fileName);
 
     public async Task AddOrUpdateAsync(IEnumerable<T> items)
     {
@@ -52,6 +53,9 @@ public class JsonFileStore(string storagePath)
         }
         finally { locker.Release(); }
     }
+
+    internal Task ShareFile(string fileLabel, string fileName)
+        => Export.ShareFile(fileLabel, GetFilePath(fileName));
 }
 
 public class IgnoreEmptyStringConverter : JsonConverter<string>
