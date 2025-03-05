@@ -125,13 +125,15 @@ public partial class ScrapeJobEditor : ObservableObject
 
     private Guid? focusedId; // tracks the child that currently has focus
     [ObservableProperty] private bool hasFocus;
+    [ObservableProperty] private string? help;
 
-    internal async ValueTask SetFocusAsync(Guid id, bool focused)
+    internal async ValueTask SetFocusAsync(VisualElement visual, bool focused)
     {
         if (focused)
         {
             HasFocus = true;
-            focusedId = id; // assign this visual the component's focus token
+            Help = ToolTipProperties.GetText(visual)?.ToString();
+            focusedId = visual.Id; // assign this visual the component's focus token
             return;
         }
 
@@ -140,10 +142,11 @@ public partial class ScrapeJobEditor : ObservableObject
             while still allowing to [Tab] into them by keeping them visible just long enough. */
         await Task.Delay(10);
 
-        if (id == focusedId)
+        if (visual.Id == focusedId)
         {
             HasFocus = false;
             focusedId = null;
+            Help = null;
         }
     }
 
@@ -206,30 +209,45 @@ public partial class ScrapeJobEditor : ObservableObject
             BindingContext = model;
             Spacing = 8;
 
+            var helper = new Label()
+                .Bind(Label.TextProperty, nameof(Help)).TextColor(Colors.Yellow)
+                .BindIsVisibleToValueOf(nameof(Help));
+
+            var form = new HorizontalStackLayout { Spacing = 8 };
+
             List<IView> children = [
                 new Label().Text(model.label).Bold(),
                 Check(nameof(DisplayInputs))
                     .ForwardFocusTo(model)
                     .BindVisible(nameof(IsEmpty)),
 
-                new Label().Text("Selector").DisplayWithSignificant(nameof(Selector)),
+                new Label().Text("selector").DisplayWithSignificant(nameof(Selector)),
                 new Entry().Bind(Entry.TextProperty, nameof(Selector))
                     .DisplayWithSignificant(nameof(Selector))
+                    .ToolTip("A CSS selector to the element containing the text of the event detail." +
+                        " See https://www.w3schools.com/cssref/css_selectors.php and https://www.w3schools.com/cssref/css_ref_pseudo_classes.php")
                     .ForwardFocusTo(model),
 
-                new Label().Text("Ignore nested text").DisplayWithChecked(nameof(IgnoreNestedText)),
+                new Label().Text("ignore nested text").DisplayWithChecked(nameof(IgnoreNestedText)),
                 Check(nameof(IgnoreNestedText))
                     .DisplayWithChecked(nameof(IgnoreNestedText))
+                    .ToolTip("Whether to ignore the text of nested elements and only extract direct text nodes from the HTML." +
+                        " Does not apply if an attribute is set.")
                     .ForwardFocusTo(model),
 
-                new Label().Text("Attribute").DisplayWithSignificant(nameof(Attribute)),
+                new Label().Text("attribute").DisplayWithSignificant(nameof(Attribute)),
                 new Entry().Bind(Entry.TextProperty, nameof(Attribute))
                     .DisplayWithSignificant(nameof(Attribute))
+                    .ToolTip("The name of the attribute of the selected element to extract the text from.")
                     .ForwardFocusTo(model),
 
-                new Label().Text("Match (Regex)").DisplayWithSignificant(nameof(Match)),
+                new Label().Text("match").DisplayWithSignificant(nameof(Match)),
                 new Entry().Bind(Entry.TextProperty, nameof(Match))
                     .DisplayWithSignificant(nameof(Match))
+                    .ToolTip("A pattern (Regular Expression https://en.wikipedia.org/wiki/Regular_expression in .NET flavour) that matches the part of text to extract." +
+                        " You may want to do this to extract text that is not cleanly selectable." +
+                        " https://regex101.com/ is great to debug your RegEx, learn and find existing patterns." +
+                        " If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.")
                     .ForwardFocusTo(model)
             ];
 
@@ -239,25 +257,27 @@ public partial class ScrapeJobEditor : ObservableObject
                  * We currently only have one DateScrapeJob and it is required i.e. initialized. */
 
                 children.AddRange(
-                    new Label().Text("Date Format"),
+                    new Label().Text("date format"),
                     new Entry().Text(dateScrapeJob.Format)
                         .Bind(Entry.TextProperty,
                             getter: (ScrapeJobEditor _) => dateScrapeJob.Format,
                             setter: (ScrapeJobEditor _, string value) => dateScrapeJob.Format = value)
                         .OnTextChanged(_ => model.UpdatePreview())
+                        .ToolTip("The .NET date format used to parse the date." +
+                            " See https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")
                         .ForwardFocusTo(model),
 
-                    new Label().Text("Culture"),
+                    new Label().Text("culture"),
                     new Entry().Text(dateScrapeJob.Culture)
                         .Bind(Entry.TextProperty,
                             getter: (ScrapeJobEditor _) => dateScrapeJob.Culture,
                             setter: (ScrapeJobEditor _, string value) => dateScrapeJob.Culture = value)
                         .OnTextChanged(_ => model.UpdatePreview())
+                        .ToolTip("The language/country code used to parse the date in ISO 639 (en) or ISO 3166 format (en-US)." +
+                            " See https://en.wikipedia.org/wiki/Language_code")
                         .ForwardFocusTo(model)
                 );
             }
-
-            var form = new HorizontalStackLayout { Spacing = 8 };
 
             foreach (var child in children)
             {
@@ -265,6 +285,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 form.Children.Add(child);
             }
 
+            Children.Add(helper);
             Children.Add(form);
 
             Children.Add(PreviewOrErrorList(itemsSource: nameof(PreviewResults),
@@ -288,7 +309,7 @@ public partial class ScrapeJobEditor : ObservableObject
 internal static class ScopeJobEditorExtensions
 {
     internal static T ForwardFocusTo<T>(this T vis, ScrapeJobEditor model) where T : VisualElement
-        => vis.OnFocusChanged(async (id, focused) => await model.SetFocusAsync(id, focused));
+        => vis.OnFocusChanged(async (vis, focused) => await model.SetFocusAsync(vis, focused));
 
     internal static T DisplayWithSignificant<T>(this T vis, string textPropertyName) where T : VisualElement
         => vis.Bind<T, bool, string, bool>(VisualElement.IsVisibleProperty,

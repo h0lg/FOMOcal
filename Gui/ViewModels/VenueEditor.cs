@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
@@ -166,15 +167,16 @@ public partial class VenueEditor : ObservableObject
         public Page(VenueEditor model)
         {
             BindingContext = model;
+            Title = model.isDeletable ? "Edit venue" : "Add a venue";
 
             // Step 1: Venue Name and Program URL
-            var urlEntry = new Entry { Placeholder = "Program URL" }
+            var urlEntry = new Entry { Placeholder = "Program page URL" }
                 .Bind(Entry.TextProperty, nameof(ProgramUrl));
 
-            var nameEntry = new Entry { Placeholder = "Venue Name" }
+            var nameEntry = new Entry { Placeholder = "Venue name" }
                 .Bind(Entry.TextProperty, nameof(VenueName));
 
-            var location = new Entry { Placeholder = "Location" }
+            var location = new Entry { Placeholder = "Location, contacts or other helpful info" }
                 .Bind(Entry.TextProperty,
                     getter: static (VenueEditor vm) => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
@@ -190,15 +192,29 @@ public partial class VenueEditor : ObservableObject
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorHasFocus),
                 hasError: nameof(EventSelectorHasError), source: model);
 
-            var eventContainer = new StackLayout { Children = { selectorText, previewOrErrors } }
+            var eventContainer = new Grid
+            {
+                ColumnSpacing = 5,
+                RowSpacing = 5,
+                ColumnDefinitions = Columns.Define(Auto, Star),
+                RowDefinitions = Rows.Define(Auto, Auto, Auto, Auto),
+                Children = {
+                    new Label().Text("How to dig a gig").FontSize(16).Bold().CenterVertical(),
+                    new Label().Text("The CSS selector to the HTML elements containing the details for one event each.")
+                        .BindVisible(nameof(IsFocused), source: selectorText) // display if entry is focused
+                        .TextColor(Colors.Yellow).Row(1).ColumnSpan(2),
+                    new Label().Text("Event container").Bold().CenterVertical().Row(2), selectorText.Row(2).Column(1),
+                    previewOrErrors.Row(3).ColumnSpan(2) }
+            }
                 .BindVisible(nameof(ShowEventContainer));
 
             // Step 3: Event Details (Name, Date)
-            ScrapeJobEditor.View eventName = new(model.eventName);
-            ScrapeJobEditor.View eventDate = new(model.eventDate);
-
-            var requiredEventFields = new StackLayout { Children = { eventName, eventDate } }
-                .BindVisible(nameof(ShowRequiredEventFields));
+            var requiredEventFields = new StackLayout
+            {
+                Children = {
+                    new ScrapeJobEditor.View(model.eventName),
+                    new ScrapeJobEditor.View(model.eventDate) }
+            }.BindVisible(nameof(ShowRequiredEventFields));
 
             // Step 4: Additional Event Details
             var evt = model.venue.Event;
