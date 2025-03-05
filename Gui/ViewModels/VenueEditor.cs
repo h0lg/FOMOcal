@@ -136,7 +136,7 @@ public partial class VenueEditor : ObservableObject
             $"Are you sure you want to delete the venue {venue.Name}?",
             "Yes", "No");
 
-        if (isConfirmed) awaiter.SetResult(new Result(venue, Result.Actions.Deleted));
+        if (isConfirmed) awaiter.SetResult(new Result(venue, Result.Actions.Deleted, originalVenueName));
     }
 
     internal record Result
@@ -145,7 +145,7 @@ public partial class VenueEditor : ObservableObject
         public Actions Action { get; }
         public string? OriginalVenueName { get; }
 
-        internal Result(Venue venue, Actions action, string? originalVenueName = null)
+        internal Result(Venue venue, Actions action, string? originalVenueName)
         {
             Venue = venue;
             Action = action;

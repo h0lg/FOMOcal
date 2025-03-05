@@ -39,6 +39,17 @@ public partial class EventList : ObservableObject
         });
     }
 
+    internal void DeleteForVenue(string venue)
+    {
+        // Ensure UI updates happen on the main thread
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            allEvents!.RemoveOfVenue(venue);
+            ApplyFilter(); // re-apply filter
+            await eventRepo.SaveCompleteAsync(allEvents!);
+        });
+    }
+
     internal async Task LoadEvents()
     {
         allEvents = await eventRepo.LoadAllAsync();

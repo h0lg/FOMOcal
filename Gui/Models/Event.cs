@@ -38,6 +38,9 @@ internal static class EventExtensions
             if (evt.Venue == oldName)
                 evt.Venue = newName;
     }
+
+    internal static void RemoveOfVenue(this HashSet<Event> allEvents, string oldName)
+        => allEvents.RemoveWhere(e => e.Venue == oldName);
 }
 
 public class EventRepository(JsonFileStore store, string fileName) : JsonFileRepository<Event>(store, fileName)
@@ -46,6 +49,13 @@ public class EventRepository(JsonFileStore store, string fileName) : JsonFileRep
     {
         var set = await LoadAllAsync();
         set.RenameVenue(oldName, newName);
+        await SaveCompleteAsync(set);
+    }
+
+    internal async Task DeleteVenueAsync(string venue)
+    {
+        var set = await LoadAllAsync();
+        set.RemoveOfVenue(venue);
         await SaveCompleteAsync(set);
     }
 }

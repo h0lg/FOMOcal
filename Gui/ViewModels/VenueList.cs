@@ -19,6 +19,7 @@ public partial class VenueList : ObservableObject
 
     internal event Action<Venue, List<Event>>? EventsScraped;
     internal event Action<string, string>? VenueRenamed;
+    internal event Action<string>? VenueDeleted;
 
     public VenueList(JsonFileRepository<Venue> venueRepo, Scraper scraper, INavigation navigation)
     {
@@ -103,6 +104,7 @@ public partial class VenueList : ObservableObject
 
             case VenueEditor.Result.Actions.Deleted:
                 Venues.Remove(result.Venue);
+                VenueDeleted?.Invoke(result.OriginalVenueName!); // notify subscribers
                 await SaveVenues();
                 break;
         }
@@ -197,6 +199,7 @@ public partial class VenueList : ObservableObject
             VenueList venueList = new(venueRepo, scraper, Navigation);
             venueList.EventsScraped += async (venue, events) => await eventRepo.AddOrUpdateAsync(events);
             venueList.VenueRenamed += async (oldName, newName) => await eventRepo.RenameVenueAsync(oldName, newName);
+            venueList.VenueDeleted += async (venueName) => await eventRepo.DeleteVenueAsync(venueName);
             Content = new View(venueList);
         }
     }
