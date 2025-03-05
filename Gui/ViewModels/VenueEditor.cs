@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
@@ -12,9 +13,9 @@ public partial class VenueEditor : ObservableObject
     private readonly TaskCompletionSource<Result?> awaiter;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
 
-    [ObservableProperty] private bool showEventSelectorStep;
-    [ObservableProperty] private bool showRequiredEventDetailsStep;
-    [ObservableProperty] private bool showAdditionalEventDetailsStep;
+    [ObservableProperty] private bool showEventContainer;
+    [ObservableProperty] private bool showRequiredEventFields;
+    [ObservableProperty] private bool showOptionalEventFields;
     [ObservableProperty] private bool eventSelectorHasFocus;
     [ObservableProperty] private bool eventSelectorHasError;
     [ObservableProperty] private string[]? previewedEventTexts;
@@ -91,11 +92,11 @@ public partial class VenueEditor : ObservableObject
             hasName = true;
         }
 
-        ShowEventSelectorStep = hasName && hasProgramUrl;
-        ShowRequiredEventDetailsStep = ShowEventSelectorStep && EventSelector.HasSignificantValue();
-        ShowAdditionalEventDetailsStep = ShowRequiredEventDetailsStep && eventName.IsValid && eventDate.IsValid;
+        ShowEventContainer = hasName && hasProgramUrl;
+        ShowRequiredEventFields = ShowEventContainer && EventSelector.HasSignificantValue();
+        ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValid && eventDate.IsValid;
 
-        if (ShowRequiredEventDetailsStep && programDocument != null && previewedEvents == null)
+        if (ShowRequiredEventFields && programDocument != null && previewedEvents == null)
         {
             try
             {
@@ -148,23 +149,24 @@ public partial class VenueEditor : ObservableObject
         public Page(VenueEditor model)
         {
             BindingContext = model;
+            Title = model.isDeletable ? "Edit venue" : "Add a venue";
 
             // Step 1: Venue Name and Program URL
-            var urlEntry = new Entry { Placeholder = "Program URL" }
+            var urlEntry = new Entry { Placeholder = "Program page URL" }
                 .Bind(Entry.TextProperty,
                     getter: static (VenueEditor vm) => vm.venue.ProgramUrl,
                     setter: static (VenueEditor vm, string value) => vm.venue.ProgramUrl = value)
                 .OnTextChanged(_ => model.RevealMore());
 
-            var nameEntry = new Entry { Placeholder = "Venue Name" }
+            var nameEntry = new Entry { Placeholder = "Venue name" }
                 .Bind(Entry.TextProperty, nameof(VenueName));
 
-            var location = new Entry { Placeholder = "Location" }
+            var location = new Entry { Placeholder = "Location, contacts or other helpful info" }
                 .Bind(Entry.TextProperty,
                     getter: static (VenueEditor vm) => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
-            var step1 = new StackLayout { Children = { urlEntry, nameEntry, location } };
+            var venueFields = new StackLayout { Children = { urlEntry, nameEntry, location } };
 
             // Step 2: Event Selector
             var eventSelectorEntry = new Entry { Placeholder = "event container selector" }
@@ -175,20 +177,35 @@ public partial class VenueEditor : ObservableObject
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorHasFocus),
                 hasError: nameof(EventSelectorHasError), source: model);
 
-            var step2 = new StackLayout { Children = { eventSelectorEntry, previewedEventTexts } }
-                .Bind(IsVisibleProperty, getter: static (VenueEditor vm) => vm.ShowEventSelectorStep);
+            var eventContainer = new Grid
+            {
+                ColumnSpacing = 5,
+                RowSpacing = 5,
+                ColumnDefinitions = Columns.Define(Auto, Star),
+                RowDefinitions = Rows.Define(Auto, Auto, Auto, Auto),
+                Children = {
+                    new Label().Text("How to dig a gig").FontSize(16).Bold().CenterVertical(),
+                    new Label().Text("The CSS selector to the HTML elements containing the details for one event each.")
+                        .Bind(IsVisibleProperty, nameof(IsFocused), source: eventSelectorEntry) // display if entry is focused
+                        .TextColor(Colors.Yellow).Row(1).ColumnSpan(2),
+                    new Label().Text("Event container").Bold().CenterVertical().Row(2), eventSelectorEntry.Row(2).Column(1),
+                    previewedEventTexts.Row(3).ColumnSpan(2) }
+            }
+                .Bind(IsVisibleProperty, getter: static (VenueEditor vm) => vm.ShowEventContainer);
 
             // Step 3: Event Details (Name, Date)
-            ScrapeJobEditor.View eventName = new(model.eventName);
-            ScrapeJobEditor.View eventDate = new(model.eventDate);
-
-            var step3 = new StackLayout { Children = { eventName, eventDate } }
-                .Bind(IsVisibleProperty, getter: static (VenueEditor vm) => vm.ShowRequiredEventDetailsStep);
+            var requiredEventFields = new StackLayout
+            {
+                Children = {
+                    new ScrapeJobEditor.View(model.eventName),
+                    new ScrapeJobEditor.View(model.eventDate) }
+            }
+                .Bind(IsVisibleProperty, getter: static (VenueEditor vm) => vm.ShowRequiredEventFields);
 
             // Step 4: Additional Event Details
             var evt = model.venue.Event;
 
-            var step4 = new StackLayout
+            var optionalEventFields = new StackLayout
             {
                 Children = {
                     OptionalScrapeJob("Subtitle", evt.SubTitle, nameof(Venue.EventScrapeJob.SubTitle)),
@@ -203,10 +220,10 @@ public partial class VenueEditor : ObservableObject
                     OptionalScrapeJob("Image", evt.ImageUrl, nameof(Venue.EventScrapeJob.ImageUrl), defaultAttribute: "src"),
                     OptionalScrapeJob("Tickets", evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href")
                 }
-            }.Bind(IsVisibleProperty, nameof(ShowAdditionalEventDetailsStep));
+            }.Bind(IsVisibleProperty, nameof(ShowOptionalEventFields));
 
             var saveButton = Button("💾 Save this venue", nameof(SaveCommand))
-                .Bind(IsVisibleProperty, nameof(ShowAdditionalEventDetailsStep));
+                .Bind(IsVisibleProperty, nameof(ShowOptionalEventFields));
 
             var deleteButton = Button("🗑 Delete this venue", nameof(DeleteCommand))
                 .IsVisible(model.isDeletable);
@@ -218,7 +235,7 @@ public partial class VenueEditor : ObservableObject
                     Spacing = 20,
                     Padding = 20,
                     Children = {
-                        step1, step2, step3, step4, saveButton, deleteButton
+                        venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton
                     }
                 }
             };

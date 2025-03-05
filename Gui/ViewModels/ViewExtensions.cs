@@ -9,10 +9,16 @@ internal static class Widgets
 
 internal static class ViewExtensions
 {
-    internal static T OnFocusChanged<T>(this T vis, Action<Guid, bool> setFocused) where T : VisualElement
+    internal static T OnFocusChanged<T>(this T vis, Action<VisualElement, bool> setFocused) where T : VisualElement
     {
-        vis.Focused += (_, _) => setFocused(vis.Id, true);
-        vis.Unfocused += (_, _) => setFocused(vis.Id, false);
+        vis.Focused += (_, _) => setFocused(vis, true);
+        vis.Unfocused += (_, _) => setFocused(vis, false);
+        return vis;
+    }
+
+    internal static T ToolTip<T>(this T vis, string text) where T : BindableObject
+    {
+        ToolTipProperties.SetText(vis, text);
         return vis;
     }
 
