@@ -21,13 +21,13 @@
     <Nullable>enable</Nullable>
 
     <!-- Display name -->
-    <ApplicationTitle>Gui</ApplicationTitle>
+    <ApplicationTitle>FOMOcal</ApplicationTitle>
 
     <!-- App Identifier -->
-    <ApplicationId>com.companyname.gui</ApplicationId>
+    <ApplicationId>h0lg.FOMOcal.gui</ApplicationId>
 
     <!-- Versions -->
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
 
     <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
@@ -39,7 +39,14 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-    <AssemblyName>FomoCal</AssemblyName>
+    <AssemblyName>FOMOcal</AssemblyName>
+    <Product>FOMOcal</Product>
+    <AssemblyTitle>Find, sync and share events on the web pages of local venues.</AssemblyTitle>
+    <Description>Find, sync and share events on the web pages of local venues.</Description>
+    <Authors>Holger Schmidt</Authors>
+    <Copyright>Holger Schmidt 2025</Copyright>
+    <PackageProjectUrl>https://github.com/h0lg/FOMOcal</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/h0lg/FOMOcal</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
