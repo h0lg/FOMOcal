@@ -12,7 +12,8 @@ public partial class MainPage : ContentPage
 
         VenueList venueList = new(venueRepo, scraper, Navigation);
         venueList.EventsScraped += (venue, events) => eventList.RefreshWith(events);
-        venueList.VenueRenamed += (oldName, newName) => eventList.RenameVenue(oldName, newName);
+        venueList.VenueRenamed += eventList.RenameVenue;
+        venueList.VenueDeleted += eventList.DeleteForVenue;
 
         Content = new Grid
         {
