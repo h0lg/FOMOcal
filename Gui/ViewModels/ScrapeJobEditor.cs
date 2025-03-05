@@ -1,12 +1,13 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PuppeteerSharp;
 
 namespace FomoCal.Gui.ViewModels;
 
 public partial class ScrapeJobEditor : ObservableObject
 {
     private readonly string label;
-    private readonly Func<AngleSharp.Dom.IElement[]?> getEventsForPreview;
+    private readonly Func<IElementHandle[]?> getEventsForPreview;
     private readonly string? defaultAttribute;
     internal readonly bool IsOptional;
 
@@ -33,7 +34,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 OnPropertyChanged(nameof(Selector));
                 OnPropertyChanged(nameof(IsEmpty));
                 OnPropertyChanged(nameof(DisplayInputs));
-                UpdatePreview();
+                UpdatePreviewAsync();
             }
         }
     }
@@ -47,7 +48,7 @@ public partial class ScrapeJobEditor : ObservableObject
             {
                 ScrapeJob.Attribute = value;
                 OnPropertyChanged(nameof(Attribute));
-                UpdatePreview();
+                UpdatePreviewAsync();
             }
         }
     }
@@ -61,7 +62,7 @@ public partial class ScrapeJobEditor : ObservableObject
             {
                 ScrapeJob.Match = value;
                 OnPropertyChanged(nameof(Match));
-                UpdatePreview();
+                UpdatePreviewAsync();
             }
         }
     }
@@ -75,7 +76,7 @@ public partial class ScrapeJobEditor : ObservableObject
             {
                 ScrapeJob.IgnoreNestedText = value;
                 OnPropertyChanged(nameof(IgnoreNestedText));
-                UpdatePreview();
+                UpdatePreviewAsync();
             }
         }
     }
@@ -112,7 +113,7 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
-    public ScrapeJobEditor(string label, ScrapeJob? scrapeJob, Func<AngleSharp.Dom.IElement[]?> getEventsForPreview,
+    public ScrapeJobEditor(string label, ScrapeJob? scrapeJob, Func<IElementHandle[]?> getEventsForPreview,
         string eventProperty, bool isOptional, string? defaultAttribute = null)
     {
         this.label = label;
@@ -152,7 +153,7 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
-    internal void UpdatePreview()
+    internal async Task UpdatePreviewAsync()
     {
         if (ScrapeJob == null) return;
 
@@ -168,12 +169,13 @@ public partial class ScrapeJobEditor : ObservableObject
                 return;
             }
 
-            var results = events.Select<AngleSharp.Dom.IElement, (string? value, Exception? error)>(e =>
+            var resultGetters = events.Select<IElementHandle, Task<(string? value, Exception? error)>>(async e =>
             {
                 try
                 {
                     // use defaultAttribute as an indicator to scrape a URL
-                    var value = defaultAttribute == null ? ScrapeJob!.GetValue(e) : ScrapeJob!.GetUrl(e);
+                    var getValue = defaultAttribute == null ? ScrapeJob!.GetValueAsync(e) : ScrapeJob!.GetUrlAsync(e);
+                    string? value = await getValue;
                     return (value, null);
                 }
                 catch (Exception ex)
@@ -182,7 +184,8 @@ public partial class ScrapeJobEditor : ObservableObject
                 }
             }).ToArray();
 
-            Exception[] errors = results.Where(r => r.error != null).Select(r => r.error!).Distinct().ToArray();
+            await Task.WhenAll(resultGetters);
+            Exception[] errors = resultGetters.Select(t => t.Result).Where(r => r.error != null).Select(r => r.error!).Distinct().ToArray();
 
             if (errors.Length > 0)
             {
@@ -192,7 +195,7 @@ public partial class ScrapeJobEditor : ObservableObject
             }
             else
             {
-                PreviewResults = results.Select(r => r.value).ToArray();
+                PreviewResults = resultGetters.Select(r => r.Result.value).ToArray();
                 HasErrors = false;
                 Validate();
             }
@@ -265,7 +268,7 @@ public partial class ScrapeJobEditor : ObservableObject
                         .Bind(Entry.TextProperty,
                             getter: (ScrapeJobEditor _) => dateScrapeJob.Format,
                             setter: (ScrapeJobEditor _, string value) => dateScrapeJob.Format = value)
-                        .OnTextChanged(_ => model.UpdatePreview())
+                        .OnTextChanged(_ => model.UpdatePreviewAsync())
                         .ToolTip("The .NET date format used to parse the date." +
                             " See https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")
                         .ForwardFocusTo(model),
@@ -275,7 +278,7 @@ public partial class ScrapeJobEditor : ObservableObject
                         .Bind(Entry.TextProperty,
                             getter: (ScrapeJobEditor _) => dateScrapeJob.Culture,
                             setter: (ScrapeJobEditor _, string value) => dateScrapeJob.Culture = value)
-                        .OnTextChanged(_ => model.UpdatePreview())
+                        .OnTextChanged(_ => model.UpdatePreviewAsync())
                         .ToolTip("The language/country code used to parse the date in ISO 639 (en) or ISO 3166 format (en-US)." +
                             " See https://en.wikipedia.org/wiki/Language_code")
                         .ForwardFocusTo(model)
@@ -293,7 +296,7 @@ public partial class ScrapeJobEditor : ObservableObject
             Children.Add(ScrapeJobPreviewOrErrorList(itemsSource: nameof(PreviewResults),
                 hasFocus: nameof(HasFocus), hasError: nameof(HasErrors), source: model));
 
-            model.UpdatePreview();
+            model.UpdatePreviewAsync();
         }
 
         internal static VerticalStackLayout ScrapeJobPreviewOrErrorList(string itemsSource, string hasFocus, string hasError, object source)

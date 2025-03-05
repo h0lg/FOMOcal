@@ -1,4 +1,4 @@
-﻿using AngleSharp.Dom;
+﻿using PuppeteerSharp;
 
 namespace FomoCal;
 
@@ -9,21 +9,26 @@ public class ScrapeJob
     public string? Match { get; set; }
     public bool IgnoreNestedText { get; set; }
 
-    public virtual string? GetValue(AngleSharp.Dom.IElement element)
+    public virtual async Task<string?> GetValueAsync(IElementHandle element)
     {
         if (Selector.IsNullOrWhiteSpace()) return null;
 
         try
         {
-            var node = element.QuerySelector(Selector);
+            var node = await element.QuerySelectorAsync(Selector);
             if (node == null) return null;
 
-            var value = Attribute.HasSignificantValue() ? node.GetAttribute(Attribute!)
-                : IgnoreNestedText ? node.ChildNodes
-                    .Where(n => n.NodeType == NodeType.Text)
-                    .Select(n => n.TextContent.Trim())
-                    .LineJoin()
-                : node.TextContent.Trim();
+            var getValue = Attribute.HasSignificantValue() ? node.EvaluateFunctionAsync<string>($"el => el.getAttribute('{Attribute!}')")
+                : IgnoreNestedText ? node.EvaluateFunctionAsync<string>(@"el => 
+    Array.from(el.childNodes)
+        .filter(node => node.nodeType === Node.TEXT_NODE)
+        .map(node => node.textContent.trim())
+        .filter(text => text.length > 0)
+        .join(' ')
+")
+                : node.GetTextContentAsync();
+
+            var value = await getValue;
 
             if (value.IsNullOrWhiteSpace()) return null;
             value = value.NormalizeWhitespace();
@@ -37,12 +42,16 @@ public class ScrapeJob
 
     /// <summary>Returns an absolute URL for relative or root-relative paths
     /// scraped from <paramref name="element"/>, like from href or src attributes.</summary>
-    internal string? GetUrl(AngleSharp.Dom.IElement element)
+    internal async Task<string?> GetUrlAsync(IElementHandle element)
     {
-        string? maybeRelativeUri = GetValue(element);
+        string? maybeRelativeUri = await GetValueAsync(element);
 
-        return maybeRelativeUri == null ? null
-            : new Uri(new Uri(element.BaseUri), maybeRelativeUri).ToString();
+        if (maybeRelativeUri == null) return null;
+        else
+        {
+            var baseUri = await element.EvaluateFunctionAsync<string>("el => el.baseURI");
+            return new Uri(new Uri(baseUri), maybeRelativeUri).ToString();
+        }
     }
 
     protected static string ApplyRegex(string input, string pattern)

@@ -14,6 +14,7 @@ public partial class VenueList : ObservableObject
     private readonly INavigation navigation;
 
     [ObservableProperty] private bool isLoading;
+    [ObservableProperty] private bool isScraperReady;
 
     public ObservableCollection<Venue> Venues { get; } = [];
 
@@ -26,6 +27,18 @@ public partial class VenueList : ObservableObject
         this.venueRepo = venueRepo;
         this.scraper = scraper;
         this.navigation = navigation;
+        isScraperReady = scraper.IsReady;
+
+        if (!isScraperReady) scraper.Ready += (o, e) =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                IsScraperReady = scraper.IsReady;
+                IAsyncRelayCommand[] dependentCommands = [AddVenueCommand, EditVenueCommand, RefreshVenueCommand, RefreshAllVenuesCommand];
+                foreach (var cmd in dependentCommands) cmd.NotifyCanExecuteChanged();
+            });
+        };
+
         _ = LoadVenuesAsync(); // Fire & forget (no need to await in constructor)
     }
 
@@ -59,7 +72,7 @@ public partial class VenueList : ObservableObject
             }
         });
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsScraperReady))]
     private async Task AddVenue()
     {
         TaskCompletionSource<VenueEditor.Result?> adding = new();
@@ -82,7 +95,7 @@ public partial class VenueList : ObservableObject
         await navigation.PopAsync();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsScraperReady))]
     private async Task EditVenue(Venue venue)
     {
         TaskCompletionSource<VenueEditor.Result?> editing = new();
@@ -112,7 +125,7 @@ public partial class VenueList : ObservableObject
         await navigation.PopAsync();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsScraperReady))]
     private async Task RefreshVenue(Venue venue)
     {
         await RefreshEvents(venue);
@@ -120,7 +133,7 @@ public partial class VenueList : ObservableObject
         await SaveVenues();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsScraperReady))]
     private async Task RefreshAllVenues()
     {
         await Task.WhenAll(Venues.Select(RefreshEvents));
@@ -217,16 +230,20 @@ public partial class VenueList : ObservableObject
             var addVenue = Button("➕", nameof(AddVenueCommand));
             var refreshAll = Button("⛏ dig all gigs", nameof(RefreshAllVenuesCommand));
 
+            var initializingScraper = new Label().Text("⏳ setting up the dig...").CenterHorizontal().Margin(5)
+                .Bind(IsVisibleProperty, nameof(IsScraperReady), convert: static (bool ready) => !ready);
+
             Content = new Grid
             {
-                RowSpacing = 5,
                 ColumnSpacing = 5,
+                RowSpacing = 5,
                 ColumnDefinitions = Columns.Define(Auto, Star, Auto, Auto),
-                RowDefinitions = Rows.Define(Auto, Star, Auto),
+                RowDefinitions = Rows.Define(Auto, Star, Auto, Auto),
                 Children = {
                     title.ColumnSpan(2), importVenues.Column(2), exportVenues.Column(3),
                     list.Row(1).ColumnSpan(4),
-                    addVenue.Row(2), refreshAll.Row(2).Column(2).ColumnSpan(2) }
+                    addVenue.Row(2), refreshAll.Row(2).Column(2).ColumnSpan(2),
+                    initializingScraper.Row(3).ColumnSpan(4) }
             };
         }
     }

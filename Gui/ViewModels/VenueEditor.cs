@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PuppeteerSharp;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
 
@@ -21,8 +22,8 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] private bool eventSelectorHasError;
     [ObservableProperty] private string[]? previewedEventTexts;
 
-    private AngleSharp.Dom.IDocument? programDocument;
-    private AngleSharp.Dom.IElement[]? previewedEvents;
+    private IPage? programPage;
+    private IElementHandle[]? previewedEvents;
 
     private Venue venue;
     private ScrapeJobEditor eventName, eventDate;
@@ -85,26 +86,33 @@ public partial class VenueEditor : ObservableObject
         bool hasProgramUrl = venue.ProgramUrl.HasSignificantValue();
         bool hasName = VenueName.HasSignificantValue();
 
-        if (hasProgramUrl && programDocument == null)
-            programDocument = await scraper.GetDocument(venue);
+        if (hasProgramUrl && programPage == null)
+            programPage = await scraper.GetProgramPageAsync(venue);
 
-        if (programDocument != null && !hasName && programDocument.Title.HasSignificantValue())
+        if (programPage != null)
         {
-            VenueName = programDocument.Title!;
-            hasName = true;
+            string title = await programPage!.GetTitleAsync();
+
+            if (!hasName && title.HasSignificantValue())
+            {
+                VenueName = title;
+                hasName = true;
+            }
         }
 
         ShowEventContainer = hasName && hasProgramUrl;
         ShowRequiredEventFields = ShowEventContainer && EventSelector.HasSignificantValue();
         ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValid && eventDate.IsValid;
 
-        if (ShowRequiredEventFields && programDocument != null && previewedEvents == null)
+        if (ShowRequiredEventFields && programPage != null && previewedEvents == null)
         {
             try
             {
-                previewedEvents = programDocument.SelectEvents(venue).Take(5).ToArray();
-                PreviewedEventTexts = previewedEvents.Select(e => e.TextContent.NormalizeWhitespace()).ToArray();
-                scrapeJobEditors.ForEach(e => e.UpdatePreview());
+                previewedEvents = (await programPage.SelectEventsAsync(venue)).Take(5).ToArray();
+                Task<string>[] previewing = previewedEvents.Select(async e => (await e.GetTextContentAsync()).NormalizeWhitespace()).ToArray();
+                await Task.WhenAll(previewing);
+                PreviewedEventTexts = previewing.Select(t => t.Result).ToArray();
+                scrapeJobEditors.ForEach(async e => await e.UpdatePreviewAsync());
                 EventSelectorHasError = false;
             }
             catch (Exception ex)
