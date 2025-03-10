@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
@@ -21,6 +22,7 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] private bool eventSelectorHasFocus;
     [ObservableProperty] private bool eventSelectorHasError;
     [ObservableProperty] private string[]? previewedEventTexts;
+    public ObservableCollection<AutomatedEventPageView> AutomatedPageLoaders { get; } = [];
 
     private AngleSharp.Dom.IDocument? programDocument;
     private AngleSharp.Dom.IElement[]? previewedEvents;
@@ -60,6 +62,21 @@ public partial class VenueEditor : ObservableObject
             if (value == venue.Event.Selector) return;
             venue.Event.Selector = value;
             previewedEvents = null;
+            if (WaitForJsRendering) programDocument = null; // because then loaded HTML depends on venue.Event.Selector
+            OnPropertyChanged();
+            RevealMore();
+        }
+    }
+
+    public bool WaitForJsRendering
+    {
+        get => venue.Event.WaitForJsRendering;
+        set
+        {
+            if (value == venue.Event.WaitForJsRendering) return;
+            venue.Event.WaitForJsRendering = value;
+            previewedEvents = null;
+            programDocument = null;
             OnPropertyChanged();
             RevealMore();
         }
@@ -102,7 +119,7 @@ public partial class VenueEditor : ObservableObject
         bool hasName = VenueName.IsSignificant();
 
         if (hasProgramUrl && programDocument == null)
-            programDocument = await scraper.GetDocumentAsync(venue);
+            programDocument = await scraper.GetDocumentAsync(venue, AutomatedPageLoaders);
 
         if (programDocument != null && !hasName && programDocument.Title.IsSignificant())
         {
@@ -195,17 +212,28 @@ public partial class VenueEditor : ObservableObject
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector")
                 .OnFocusChanged((_, focused) => model.EventSelectorHasFocus = focused);
 
+            var waitForJsRendering = Check(nameof(WaitForJsRendering))
+                .OnFocusChanged((_, focused) => model.EventSelectorHasFocus = focused);
+
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorHasFocus),
                 hasError: nameof(EventSelectorHasError), source: model);
 
-            var eventContainer = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto], spacing: 5,
+            var eventContainer = Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("How to dig a gig").FontSize(16).Bold().CenterVertical(),
                 Lbl("The CSS selector to the HTML elements containing as many of the event details as possible - but only of a single event.")
                     .BindVisible(nameof(IsFocused), source: selectorText) // display if entry is focused
-                    .TextColor(Colors.Yellow).Row(1).ColumnSpan(2),
+                    .TextColor(Colors.Yellow).Row(1).ColumnSpan(4),
+                Lbl("You may want to try this option if your event selector doesn't match anything without it." +
+                    " It will load the page and wait for an element matching your selector to become available," +
+                    " return when it does and time out if it doesn't after 10s. This works around pages that lazy-load events." +
+                    " Some web servers only return an empty template of a page on the first request to improve the response time," +
+                    " then fetch more data asynchronously and render it into the placeholders using a script running in your browser.")
+                    .BindVisible(nameof(IsFocused), source: waitForJsRendering) // display if checkbox is focused
+                    .TextColor(Colors.Yellow).Row(1).ColumnSpan(4),
                 Lbl("Event container").Bold().CenterVertical().Row(2), selectorText.Row(2).Column(1),
-                previewOrErrors.Row(3).ColumnSpan(2))
+                Lbl("wait for JS rendering").CenterVertical().Row(2).Column(2), waitForJsRendering.Row(2).Column(3),
+                previewOrErrors.Row(3).ColumnSpan(4))
                 .BindVisible(nameof(ShowEventContainer));
 
             // Step 3: Event Details (Name, Date)
@@ -240,7 +268,8 @@ public partial class VenueEditor : ObservableObject
             Content = new ScrollView
             {
                 Content = VStack(20,
-                    venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton)
+                    venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton,
+                    AutomatedEventPageView.RenderAll(nameof(AutomatedPageLoaders)))
                     .Padding(20)
             };
 

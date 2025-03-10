@@ -16,6 +16,7 @@ public partial class VenueList : ObservableObject
     [ObservableProperty] private bool isLoading;
 
     public ObservableCollection<Venue> Venues { get; } = [];
+    public ObservableCollection<AutomatedEventPageView> AutomatedPageLoaders { get; } = [];
 
     internal event Action<Venue, List<Event>>? EventsScraped;
     internal event Action<string, string>? VenueRenamed;
@@ -160,7 +161,7 @@ public partial class VenueList : ObservableObject
 
     private async Task RefreshEvents(Venue venue)
     {
-        var events = await scraper.ScrapeVenueAsync(venue);
+        var events = await scraper.ScrapeVenueAsync(venue, AutomatedPageLoaders);
         venue.LastRefreshed = DateTime.Now;
         EventsScraped?.Invoke(venue, events); // notify subscribers
     }
@@ -206,6 +207,7 @@ public partial class VenueList : ObservableObject
             Content = Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Star, Auto], spacing: 5,
                 title.ColumnSpan(2), importVenues.Column(2), exportVenues.Column(3),
                 list.Row(1).ColumnSpan(4),
+                AutomatedEventPageView.RenderAll(nameof(AutomatedPageLoaders)).Row(2).ColumnSpan(4),
                 addVenue.Row(2), refreshAll.Row(2).Column(2).ColumnSpan(2));
         }
     }

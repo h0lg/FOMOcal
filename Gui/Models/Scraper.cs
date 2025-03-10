@@ -1,4 +1,6 @@
-﻿using AngleSharp;
+﻿using System.Collections.ObjectModel;
+using AngleSharp;
+using FomoCal.Gui.ViewModels;
 using DomDoc = AngleSharp.Dom.IDocument;
 
 namespace FomoCal;
@@ -13,13 +15,19 @@ public sealed class Scraper : IDisposable
         context = BrowsingContext.New(config);
     }
 
-    public async Task<List<Event>> ScrapeVenueAsync(Venue venue)
+    /// <summary>Scrapes <see cref="Event"/>s from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/>
+    /// via <see cref="GetDocumentAsync(Venue, ObservableCollection{AutomatedEventPageView})"/>
+    /// using <paramref name="automatedPageLoaders"/>.
+    /// For this to work, <paramref name="automatedPageLoaders"/> needs to be bound to an <see cref="ItemsView"/>
+    /// that is attached to the current page, e.g. using <see cref="AutomatedEventPageView.RenderAll(string)"/>.</summary>
+    public async Task<List<Event>> ScrapeVenueAsync(Venue venue,
+        ObservableCollection<AutomatedEventPageView> automatedPageLoaders)
     {
         var events = new List<Event>();
 
         try
         {
-            var document = await GetDocumentAsync(venue);
+            var document = await GetDocumentAsync(venue, automatedPageLoaders);
 
             foreach (var eventElement in document.SelectEvents(venue))
             {
@@ -57,8 +65,32 @@ public sealed class Scraper : IDisposable
         return events;
     }
 
-    internal async Task<DomDoc> GetDocumentAsync(Venue venue)
-        => await context.OpenAsync(venue.ProgramUrl);
+    /// <summary>Loads the <see cref="DomDoc"/> from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/> for scraping.
+    /// If scraping is configured to <see cref="Venue.EventScrapeJob.WaitForJsRendering"/>,
+    /// a new <see cref="AutomatedEventPageView"/> is added to <paramref name="automatedPageLoaders"/>.
+    /// That view loads the page and waits until the <see cref="Venue.EventScrapeJob.Selector"/> matches anything,
+    /// which is when it is removed again.
+    /// For this to work, <paramref name="automatedPageLoaders"/> needs to be bound to an <see cref="ItemsView"/>
+    /// that is attached to the current page, e.g. using <see cref="AutomatedEventPageView.RenderAll(string)"/>.</summary>
+    internal async Task<DomDoc> GetDocumentAsync(Venue venue,
+        ObservableCollection<AutomatedEventPageView> automatedPageLoaders)
+    {
+        if (!venue.Event.WaitForJsRendering)
+            return await context.OpenAsync(venue.ProgramUrl);
+
+        TaskCompletionSource<string?> eventHtmlLoading = new();
+        AutomatedEventPageView loader = new(venue, eventHtmlLoading);
+        automatedPageLoaders.Add(loader);
+        await eventHtmlLoading.Task;
+
+        if (eventHtmlLoading.Task.Result.IsSignificant())
+        {
+            DomDoc document = await context.OpenAsync(req => req.Content(eventHtmlLoading.Task.Result));
+            automatedPageLoaders.Remove(loader);
+            return document;
+        }
+        else throw new Exception($"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.");
+    }
 
     public void Dispose() => context.Dispose();
 }

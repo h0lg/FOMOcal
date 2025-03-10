@@ -17,6 +17,7 @@ public class Venue
     public class EventScrapeJob
     {
         public required string Selector { get; set; }
+        public bool WaitForJsRendering { get; set; }
         public required ScrapeJob Name { get; set; }
         public required DateScrapeJob Date { get; set; }
 
