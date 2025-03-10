@@ -18,6 +18,17 @@ public partial class ScrapeJobEditor : ObservableObject
     [ObservableProperty] private bool hasErrors;
 
     #region ScrapeJob proxy properties
+    public string? Closest
+    {
+        get => ScrapeJob?.Closest;
+        set
+        {
+            if (ScrapeJob == null || ScrapeJob.Closest == value) return;
+            ScrapeJob.Closest = value;
+            OnPropertyChanged();
+        }
+    }
+
     public string Selector
     {
         get => ScrapeJob?.Selector ?? "";
@@ -113,7 +124,8 @@ public partial class ScrapeJobEditor : ObservableObject
         IsOptional = isOptional;
         EventProperty = eventProperty;
 
-        string[] scrapeJobProperties = [nameof(Selector), nameof(IgnoreNestedText), nameof(Attribute), nameof(Match)];
+        string[] scrapeJobProperties = [nameof(Closest), nameof(Selector), nameof(IgnoreNestedText),
+            nameof(Attribute), nameof(Match)];
 
         PropertyChanged += (o, e) =>
         {
@@ -213,12 +225,20 @@ public partial class ScrapeJobEditor : ObservableObject
                 .BindIsVisibleToValueOf(nameof(Help));
 
             var form = new HorizontalStackLayout { Spacing = 5 };
+            const string closest = nameof(Closest);
 
             List<IView> children = [
                 Lbl(model.label).Bold(),
                 Check(nameof(DisplayInputs))
                     .ForwardFocusTo(model)
                     .BindVisible(nameof(IsEmpty)),
+
+                Lbl("closest").DisplayWithSignificant(closest),
+                Entr(closest)
+                    .DisplayWithSignificant(closest)
+                    .ToolTip("An optional CSS selector to an ancestor of the event container to select the event detail from" +
+                        " - for when the event detail is outside of the event container.")
+                    .ForwardFocusTo(model),
 
                 Lbl("selector").DisplayWithSignificant(nameof(Selector)),
                 Entr(nameof(Selector))

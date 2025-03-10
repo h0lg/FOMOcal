@@ -4,6 +4,7 @@ namespace FomoCal;
 
 public class ScrapeJob
 {
+    public string? Closest { get; set; }
     public string Selector { get; set; } = string.Empty;
     public bool IgnoreNestedText { get; set; }
     public string? Attribute { get; set; }
@@ -15,7 +16,8 @@ public class ScrapeJob
 
         try
         {
-            var node = element.QuerySelector(Selector);
+            AngleSharp.Dom.IElement? node = Closest.IsSignificant() ? element.Closest(Closest!) : element;
+            node = node?.QuerySelector(Selector);
             if (node == null) return null;
 
             var value = Attribute.IsSignificant() ? node.GetAttribute(Attribute!)
@@ -24,11 +26,11 @@ public class ScrapeJob
 
             if (value.IsNullOrWhiteSpace()) return null;
             value = value.NormalizeWhitespace();
-            return Match != null ? ApplyRegex(value!, Match) : value;
+            return Match.IsSignificant() ? ApplyRegex(value!, Match!) : value;
         }
         catch (Exception ex)
         {
-            throw new Error($"Failed while extracting value from selector '{Selector}' Attribute '{Attribute}' Match '{Match}'", ex);
+            throw new Error($"Failed while extracting value from closest '{Closest}' selector '{Selector}' Attribute '{Attribute}' Match '{Match}'", ex);
         }
     }
 
@@ -42,10 +44,10 @@ public class ScrapeJob
             : new Uri(new Uri(element.BaseUri), maybeRelativeUri).ToString();
     }
 
-    protected static string ApplyRegex(string input, string pattern)
+    protected static string? ApplyRegex(string input, string pattern)
     {
         var match = System.Text.RegularExpressions.Regex.Match(input, pattern);
-        return match.Success ? match.Value : input;
+        return match.Success ? match.Value : null;
     }
 
     public override bool Equals(object? obj) => obj is ScrapeJob other && Equals(other);
@@ -54,10 +56,11 @@ public class ScrapeJob
         other is not null &&
         Selector == other.Selector &&
         Attribute == other.Attribute &&
+        Closest == other.Closest &&
         Match == other.Match &&
         IgnoreNestedText == other.IgnoreNestedText;
 
-    public override int GetHashCode() => HashCode.Combine(Selector, IgnoreNestedText, Attribute, Match);
+    public override int GetHashCode() => HashCode.Combine(Selector, Closest, IgnoreNestedText, Attribute, Match);
 
     public class Error : Exception
     {
