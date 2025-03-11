@@ -26,8 +26,8 @@ public partial class AutomatedEventPageView : WebView
     internal event Action<string?>? HtmlWithEventsLoaded;
 
     /// <summary>An event that notifies the subscriber about a DOM node
-    /// having been picked and returning its CSS selector.</summary>
-    internal event Action<string>? PickedSelector;
+    /// having been picked and returning its CSS and XPath selectors.</summary>
+    internal event Action<string, string>? PickedCssAndXpath;
 
     /// <summary>A pre-formatted error message including <see cref="venue"/> details
     /// - for when <see cref="HtmlWithEventsLoaded"/> returns null.</summary>
@@ -47,7 +47,7 @@ public partial class AutomatedEventPageView : WebView
         => EvaluateJavaScriptAsync($"{picking}enable({enablePicking.ToString().ToLower()});");
 
     /// <summary>Tells the JS picker the context in which to pick the clicked element
-    /// when building the selector to return via <see cref="PickedSelector"/>.
+    /// when building CSS and XPath selectors to return via <see cref="PickedCssAndXpath"/>.
     /// If <paramref name="descendant"/> is true, it returns the selector
     /// of the picked element descendant relative to its closest ancestor (or self) matching <paramref name="selector"/>.
     /// Otherwise, it returns the selector for the closest common ancestor of the picked element and the <paramref name="selector"/>.</summary>
@@ -95,7 +95,7 @@ public partial class AutomatedEventPageView : WebView
         else if (args.Url.StartsWith(elementPicked))
         {
             var query = HttpUtility.ParseQueryString(args.Url.Split('?')[1]);
-            PickedSelector?.Invoke(query["selector"]!);
+            PickedCssAndXpath?.Invoke(query["css"]!, query["xpath"]!);
         }
     }
 
@@ -112,10 +112,10 @@ public partial class AutomatedEventPageView : WebView
         }
         else script += NavigateTo($"'{eventsLoaded}?true'"); // if view is used to load URL without waiting, call back immediately
 
-        if (PickedSelector != null)
+        if (PickedCssAndXpath != null)
         {
             script += await pickingScript.Value; // load script with API
-            script += $"{picking}init(selector => {{ {NavigateTo($"`{elementPicked}?selector=${{selector}}`")} }});";
+            script += $"{picking}init((css, xpath) => {{ {NavigateTo($"`{elementPicked}?css=${{css}}&xpath=${{xpath}}`")} }});";
         }
 
         await EvaluateJavaScriptAsync(script);

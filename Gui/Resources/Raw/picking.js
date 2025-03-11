@@ -142,6 +142,29 @@
         return elementName + selector;
     }
 
+    function createXPath(element) {
+        if (!element || element.nodeType !== Node.ELEMENT_NODE) return null;
+
+        const conditions = [],
+            classes = getClasses(element);
+
+        if (selectorDetail.ids && element.id) conditions.push(`@id='${element.id}'`);
+        if (classes.length) conditions.push(`contains(@class, '${classes.join("') and contains(@class, '")}')`);
+
+        if (selectorDetail.otherAttributes)
+            conditions.push(...getOtherAttributes(element).map(attr => '@' + getAttributeDetail(attr)));
+
+        if (selectorDetail.position) {
+            let position = getPosition(element);
+            if (position > 1) conditions.push(`position()=${position}`);
+        }
+
+        const elementName = selectorDetail.tagName ? element.tagName.toLowerCase() : '*',
+            joinedConditions = conditions.length ? `[${conditions.join(' and ')}]` : '';
+
+        return `${elementName}${joinedConditions}`;
+    }
+
     function getCssSelector(anchor, element) {
         let path = [];
 
@@ -153,26 +176,39 @@
         return path.join(' > ');
     }
 
+    function getXPath(anchor, element) {
+        let path = [];
+
+        while (element !== anchor && element !== document.documentElement) {
+            path.unshift(createXPath(element));
+            element = element.parentNode;
+        }
+
+        return '//' + path.join('/');
+    }
+
     function pick(target) {
         if (!target) return;
-        let css;
+        let css, xpath;
 
         if (pickDescendant) {
             const root = target.closest(anchor);
             console.info('picking descendant relative to', anchor);
-            if (root === null) notifyPicked('');
+            if (root === null) notifyPicked('', '');
             css = getCssSelector(root, target);
+            xpath = getXPath(root, target);
         } else {
             const root = getClosestCommonAncestor(target, anchor);
-            if (root === null) notifyPicked('');
+            if (root === null) notifyPicked('', '');
             css = createCssSelector(root);
+            xpath = createXPath(root);
             target = root;
         }
 
-        console.info('picked', css);
+        console.info('picked', css, xpath);
         document.querySelectorAll(picked).forEach(el => el.classList.remove(pickedClass));
         target.classList.add(pickedClass);
-        notifyPicked(css);
+        notifyPicked(css, xpath);
     }
 
     // exported API, register globally to enable calling it after

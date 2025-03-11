@@ -9,9 +9,10 @@ namespace FomoCal.Gui.ViewModels;
 
 partial class VenueEditor
 {
-    [ObservableProperty] private string? pickedSelector;
+    [ObservableProperty] private string? pickedCssSelector;
+    [ObservableProperty] private string? pickedXpath;
     [ObservableProperty] private bool enablePicking = true;
-    [ObservableProperty] private bool showPickedSelector;
+    [ObservableProperty] private bool showPickedSelectors;
 
     partial class Page
     {
@@ -39,7 +40,11 @@ partial class VenueEditor
                 model.RevealMore();
             };
 
-            pageView.PickedSelector += selector => model.PickedSelector = selector;
+            pageView.PickedCssAndXpath += (css, xpath) =>
+            {
+                model.PickedCssSelector = css;
+                model.PickedXpath = xpath;
+            };
 
             model.PropertyChanged += (o, e) =>
             {
@@ -49,7 +54,7 @@ partial class VenueEditor
                     pageView.EnablePicking(model.EnablePicking);
             };
 
-            const string pickedSelector = nameof(PickedSelector);
+            const string pickedCss = nameof(PickedCssSelector);
 
             var header = HWrap(5,
                 Swtch(nameof(EnablePicking)).Wrapper
@@ -58,13 +63,12 @@ partial class VenueEditor
                         " - or play with those eye-opening 🍪 cookie reminders sponsored by" +
                         " the EU if you're lucky enough to be browsing from there."),
                 Lbl("Tap an element on the page to pick it.").TapGesture(TogglePicking),
-                Btn("⿴ Pick the outer element").BindIsVisibleToValueOf(pickedSelector).TapGesture(PickParent),
-                Lbl("until you're happy with your pick.").BindIsVisibleToValueOf(pickedSelector),
-                Btn("🥢 Toggle selectors").BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector));
+                Btn("⿴ Pick the outer element").BindIsVisibleToValueOf(pickedCss).TapGesture(PickParent),
+                Lbl("until you're happy with your pick.").BindIsVisibleToValueOf(pickedCss),
+                Btn("🥢 Toggle selectors").BindIsVisibleToValueOf(pickedCss).TapGesture(TogglePickedSelector));
 
-            var selectors = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto], spacing: 5,
+            var selectors = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("Select parts of either selector you'd like to use.").ColumnSpan(2),
-                SelectorDisplay(pickedSelector).Row(1).ColumnSpan(2),
                 HWrap(5,
                     Lbl("Selector detail").Bold(),
                     SelectorOption("tag name", nameof(SelectorOptions.TagName)),
@@ -75,10 +79,12 @@ partial class VenueEditor
                     Lbl("other attibutes").Bold(),
                     SelectorOption("names", nameof(SelectorOptions.OtherAttributes)),
                     SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues)),
-                    SelectorOption("position", nameof(SelectorOptions.Position))).Row(2).ColumnSpan(2),
-                Lbl("Select parts of the selector text you like to use and append them to your query to try them out.").Row(3),
-                Btn("➕").TapGesture(AppendSelectedQuery).Row(3).Column(1))
-                .BindVisible(nameof(ShowPickedSelector));
+                    SelectorOption("position", nameof(SelectorOptions.Position))).Row(1).ColumnSpan(2),
+                Lbl("CSS").Bold().CenterVertical().Row(2), SelectorDisplay(pickedCss).Row(2).Column(1),
+                Lbl("XPath").Bold().CenterVertical().Row(3), SelectorDisplay(nameof(PickedXpath)).Row(3).Column(2),
+                Btn("➕").TapGesture(AppendSelectedQuery).Row(4),
+                Lbl("Append the selected text to your query to try it out.").Row(4).Column(2))
+                .BindVisible(nameof(ShowPickedSelectors));
 
             return new()
             {
@@ -107,7 +113,7 @@ partial class VenueEditor
 
         private void TogglePicking() => model.EnablePicking = !model.EnablePicking;
         private async void PickParent() => await pageView!.PickParent();
-        private void TogglePickedSelector() => model.ShowPickedSelector = !model.ShowPickedSelector;
+        private void TogglePickedSelector() => model.ShowPickedSelectors = !model.ShowPickedSelectors;
         private void AppendSelectedQuery() => model.visualSelectorHost!.Text += " " + selectedQuery;
 
         private async Task ShowVisualSelectorForAsync(Entry entry, string selector, bool descendant)

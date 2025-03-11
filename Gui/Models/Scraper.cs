@@ -11,7 +11,7 @@ public sealed class Scraper : IDisposable
 
     public Scraper()
     {
-        var config = Configuration.Default.WithDefaultLoader();
+        var config = Configuration.Default.WithDefaultLoader().WithXPath();
         context = BrowsingContext.New(config);
     }
 
