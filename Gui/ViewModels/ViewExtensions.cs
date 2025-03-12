@@ -18,11 +18,11 @@ internal static class Widgets
     internal static Label BndLbl(string path = ".", string? stringFormat = null)
         => new Label().Bind(Label.TextProperty, path, stringFormat: stringFormat);
 
-    internal static Entry Entr(string path, string? placeholder = null)
-        => new Entry { Placeholder = placeholder }.Bind(Entry.TextProperty, path);
+    internal static Entry Entr(string path, string? placeholder = null, string? styleId = null)
+        => new Entry { Placeholder = placeholder, StyleId = styleId }.Bind(Entry.TextProperty, path);
 
-    internal static CheckBox Check(string isCheckedPropertyPath)
-        => new CheckBox().Margins(right: -20).Bind(CheckBox.IsCheckedProperty, isCheckedPropertyPath);
+    internal static CheckBox Check(string isCheckedPropertyPath, string? styleId = null)
+        => new CheckBox { StyleId = styleId }.Margins(right: -20).Bind(CheckBox.IsCheckedProperty, isCheckedPropertyPath);
 
     internal static Grid Grd(GridLength[] cols, GridLength[] rows, double spacing = 0, params IView[] children)
     {

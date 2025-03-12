@@ -87,7 +87,7 @@ public sealed class Scraper : IDisposable
         {
             if (html.IsSignificant())
             {
-                var doc = await context.OpenAsync(req => req.Content(html!));
+                var doc = await CreateDocumentAsync(html!);
                 eventHtmlLoading.TrySetResult(doc);
             }
             else eventHtmlLoading.SetException(new Exception(loader.EventLoadingTimedOut));
@@ -95,6 +95,8 @@ public sealed class Scraper : IDisposable
 
         return eventHtmlLoading.Task;
     }
+
+    internal async Task<DomDoc> CreateDocumentAsync(string html) => await context.OpenAsync(req => req.Content(html));
 
     public void Dispose() => context.Dispose();
 }

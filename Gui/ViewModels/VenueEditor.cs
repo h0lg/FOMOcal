@@ -76,7 +76,6 @@ public partial class VenueEditor : ObservableObject
             previewedEvents = null;
             programDocument = null;
             OnPropertyChanged();
-            RevealMore();
         }
     }
 
@@ -115,9 +114,6 @@ public partial class VenueEditor : ObservableObject
         await revealingMore.WaitAsync();
         bool hasProgramUrl = venue.ProgramUrl.IsSignificant();
         bool hasName = VenueName.IsSignificant();
-
-        if (hasProgramUrl && programDocument == null)
-            programDocument = await scraper.GetDocumentAsync(venue);
 
         if (programDocument != null && !hasName && programDocument.Title.IsSignificant())
         {
@@ -190,8 +186,11 @@ public partial class VenueEditor : ObservableObject
 
     public partial class Page : ContentPage
     {
+        private readonly VenueEditor model;
+
         public Page(VenueEditor model)
         {
+            this.model = model;
             BindingContext = model;
             Title = model.isDeletable ? "Edit " + model.originalVenueName : "Add a venue";
 
@@ -207,11 +206,17 @@ public partial class VenueEditor : ObservableObject
             var venueFields = VStack(0, urlEntry, nameEntry, location);
 
             // Step 2: Event Selector
-            var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector")
-                .OnFocusChanged((_, focused) => model.EventSelectorHasFocus = focused);
+            Action<VisualElement, bool> setEventSelectorFocused = (vis, focused) =>
+            {
+                model.EventSelectorHasFocus = focused;
+                ToggleVisualSelector(focused, vis.StyleId);
+            };
 
-            var waitForJsRendering = Check(nameof(WaitForJsRendering))
-                .OnFocusChanged((_, focused) => model.EventSelectorHasFocus = focused);
+            var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector", styleId: nameof(EventSelector))
+                .OnFocusChanged(setEventSelectorFocused);
+
+            var waitForJsRendering = Check(nameof(WaitForJsRendering), styleId: nameof(WaitForJsRendering))
+                .OnFocusChanged(setEventSelectorFocused);
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorHasFocus),
@@ -263,12 +268,15 @@ public partial class VenueEditor : ObservableObject
 
             var deleteButton = Btn("🗑 Delete this venue", nameof(DeleteCommand)).IsVisible(model.isDeletable);
 
-            Content = new ScrollView
+            var form = new ScrollView
             {
                 Content = VStack(20,
                     venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton)
                     .Padding(20)
             };
+
+            visualSelector = CreateVisualSelector(model);
+            Content = Grd(cols: [Star], rows: [Star, Auto], spacing: 0, form, visualSelector.Row(1));
 
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
                => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute));
@@ -277,8 +285,7 @@ public partial class VenueEditor : ObservableObject
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
-            var awaiter = ((VenueEditor)BindingContext).awaiter;
-            if (!awaiter.Task.IsCompleted) awaiter.SetResult(null); // to signal cancellation
+            if (!model.awaiter.Task.IsCompleted) model.awaiter.SetResult(null); // to signal cancellation
         }
     }
 }

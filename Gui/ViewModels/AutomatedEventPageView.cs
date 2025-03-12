@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Web;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FomoCal.Gui.ViewModels;
@@ -8,7 +9,8 @@ public partial class AutomatedEventPageView : WebView
 {
     const string interopMessagePrefix = "https://fomocal.",
         eventsLoaded = interopMessagePrefix + "events.loaded",
-        scriptApi = "FOMOcal.", waitForSelector = scriptApi + "waitForSelector.";
+        elementPicked = interopMessagePrefix + "element.picked",
+        scriptApi = "FOMOcal.", picking = scriptApi + "picking.", waitForSelector = scriptApi + "waitForSelector.";
 
     private readonly Venue venue;
 
@@ -23,6 +25,10 @@ public partial class AutomatedEventPageView : WebView
     /// <see cref="Venue.EventScrapeJob.WaitForJsRendering"/> and that times out.</summary>
     internal event Action<string?>? HtmlWithEventsLoaded;
 
+    /// <summary>An event that notifies the subscriber about a DOM node
+    /// having been picked and returning its CSS selector.</summary>
+    internal event Action<string>? PickedSelector;
+
     /// <summary>A pre-formatted error message including <see cref="venue"/> details
     /// - for when <see cref="HtmlWithEventsLoaded"/> returns null.</summary>
     internal string EventLoadingTimedOut => $"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.";
@@ -34,6 +40,9 @@ public partial class AutomatedEventPageView : WebView
         Navigating += OnNavigatingAsync;
         Navigated += OnNavigatedAsync;
     }
+
+    internal Task EnablePicking(bool enablePicking)
+        => EvaluateJavaScriptAsync($"{picking}enable({enablePicking.ToString().ToLower()});");
 
     private static readonly JsonSerializerOptions jsonOptionSerializerOptions
         = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -67,6 +76,11 @@ public partial class AutomatedEventPageView : WebView
                 HtmlWithEventsLoaded?.Invoke(html); // notify awaiter
             }
         }
+        else if (args.Url.StartsWith(elementPicked))
+        {
+            var query = HttpUtility.ParseQueryString(args.Url.Split('?')[1]);
+            PickedSelector?.Invoke(query["selector"]!);
+        }
     }
 
     private async void OnNavigatedAsync(object? sender, WebNavigatedEventArgs args)
@@ -82,6 +96,12 @@ public partial class AutomatedEventPageView : WebView
         }
         else script += NavigateTo($"'{eventsLoaded}?true'"); // if view is used to load URL without waiting, call back immediately
 
+        if (PickedSelector != null)
+        {
+            script += await pickingScript.Value; // load script with API
+            script += $"{picking}init(selector => {{ {NavigateTo($"`{elementPicked}?selector=${{selector}}`")} }});";
+        }
+
         await EvaluateJavaScriptAsync(script);
     }
 
@@ -96,6 +116,7 @@ public partial class AutomatedEventPageView : WebView
     /*  Used to cache the loaded and pre-processed script while allowing for a
      *  thread-safe asynchronous lazy initialization that only ever happens once. */
     private static readonly Lazy<Task<string>> waitForSelectorScript = new(() => LoadAndInlineScriptAsync("waitForSelector.js"));
+    private static readonly Lazy<Task<string>> pickingScript = new(() => LoadAndInlineScriptAsync("picking.js"));
 
     private static async Task<string> LoadAndInlineScriptAsync(string fileName)
     {
