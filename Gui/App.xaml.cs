@@ -28,5 +28,17 @@
 
             return new(rootPage) { Title = "😱📅 FOMOcal" };
         }
+
+        internal static Page GetCurrentContentPage()
+        {
+            var page = CurrentPage;
+
+            return page switch
+            {
+                NavigationPage nav => nav.CurrentPage,
+                Shell shell => shell.CurrentPage,
+                _ => page
+            };
+        }
     }
 }

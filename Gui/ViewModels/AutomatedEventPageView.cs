@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using CommunityToolkit.Maui.Markup;
 
 namespace FomoCal.Gui.ViewModels;
 
@@ -61,15 +60,4 @@ public partial class AutomatedEventPageView : WebView
             }
         };
     }
-
-    internal static CollectionView RenderAll(string pathToObservableElementItemsSource)
-        => new CollectionView
-        {
-            ItemTemplate = new DataTemplate(() =>
-            {
-                var contentPresenter = new ContentView();
-                contentPresenter.Bind(ContentView.ContentProperty, ".");
-                return contentPresenter;
-            })
-        }.Bind(ItemsView.ItemsSourceProperty, pathToObservableElementItemsSource);
 }

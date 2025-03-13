@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Markup;
+﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
@@ -22,7 +21,6 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] private bool eventSelectorHasFocus;
     [ObservableProperty] private bool eventSelectorHasError;
     [ObservableProperty] private string[]? previewedEventTexts;
-    public ObservableCollection<AutomatedEventPageView> AutomatedPageLoaders { get; } = [];
 
     private AngleSharp.Dom.IDocument? programDocument;
     private AngleSharp.Dom.IElement[]? previewedEvents;
@@ -119,7 +117,7 @@ public partial class VenueEditor : ObservableObject
         bool hasName = VenueName.IsSignificant();
 
         if (hasProgramUrl && programDocument == null)
-            programDocument = await scraper.GetDocumentAsync(venue, AutomatedPageLoaders);
+            programDocument = await scraper.GetDocumentAsync(venue);
 
         if (programDocument != null && !hasName && programDocument.Title.IsSignificant())
         {
@@ -268,8 +266,7 @@ public partial class VenueEditor : ObservableObject
             Content = new ScrollView
             {
                 Content = VStack(20,
-                    venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton,
-                    AutomatedEventPageView.RenderAll(nameof(AutomatedPageLoaders)))
+                    venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton)
                     .Padding(20)
             };
 

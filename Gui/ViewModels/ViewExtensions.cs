@@ -117,4 +117,13 @@ internal static class ViewExtensions
         label.LineBreakMode = LineBreakMode.WordWrap;
         return label;
     }
+
+    internal static VisualElement? FindTopLayout(this Element element)
+    {
+        if (element is Layout layout) return layout;
+        if (element is ContentPage page) return FindTopLayout(page.Content);
+        if (element is ContentView contentView) return FindTopLayout(contentView.Content);
+        if (element is ScrollView scrollView) return FindTopLayout(scrollView.Content);
+        return null;
+    }
 }
