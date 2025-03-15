@@ -156,7 +156,7 @@ public partial class EventList : ObservableObject
                 .Bind(SearchBar.TextProperty, nameof(SearchText));
 
             var commands = HStack(5,
-                Btn("👆 de/select all", nameof(SelectAllEventsCommand)),
+                Btn("✨ de/select all", nameof(SelectAllEventsCommand)),
                 Lbl("🥡 export selected as").BindVisible(nameof(HasSelection)),
                 ExportButton("📆 iCal", nameof(ExportToIcsCommand)),
                 ExportButton("▦ CSV", nameof(ExportToCsvCommand)));
@@ -177,7 +177,7 @@ public partial class EventList : ObservableObject
                     var header = VStack(5,
                         BndLbl(nameof(Event.Name)).Wrap().Bold().FontSize(16),
                         OptionalTextLabel(nameof(Event.SubTitle)).Bold().Wrap(),
-                        OptionalTextLabel(nameof(Event.Genres), "🎷 {0}").Wrap());
+                        OptionalTextLabel(nameof(Event.Genres), "🎶 {0}").Wrap());
 
                     var times = VStack(5,
                         BndLbl(nameof(Event.Date), stringFormat: "📆 {0:ddd d MMM yy}").Bold(),
@@ -186,17 +186,17 @@ public partial class EventList : ObservableObject
 
                     var details = VStack(5,
                         OptionalTextLabel(nameof(Event.Description)).Wrap(),
-                        OpenUrlButton("more", nameof(Event.Url), model).End());
+                        OpenUrlButton("📰 more 📡", nameof(Event.Url), model).End());
 
                     var location = HStack(5,
-                        BndLbl(nameof(Event.Venue), stringFormat: "📍 {0}"),
-                        OptionalTextLabel(nameof(Event.Stage), "🎤 {0}"),
+                        BndLbl(nameof(Event.Venue), stringFormat: "🏟 {0}"),
+                        OptionalTextLabel(nameof(Event.Stage), "🏛 {0}"),
                         BndLbl(nameof(Event.Scraped), stringFormat: "⛏ {0:g}"));
 
                     var tickets = VStack(5,
                         OptionalTextLabel(nameof(Event.PresalePrice), "💳 {0}"),
                         OptionalTextLabel(nameof(Event.DoorsPrice), "💵 {0}"),
-                        OpenUrlButton("🎫 Tickets", nameof(Event.TicketUrl), model));
+                        OpenUrlButton("🎫 Tickets 📡", nameof(Event.TicketUrl), model));
 
                     return new Border
                     {

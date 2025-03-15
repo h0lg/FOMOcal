@@ -208,7 +208,7 @@ public partial class VenueList : ObservableObject
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
-            var title = Lbl("🏛 Venues").Bold().FontSize(20).CenterVertical();
+            var title = Lbl("🏟 Venues").Bold().FontSize(20).CenterVertical();
             var importVenues = Btn("📥", nameof(ImportVenuesCommand));
             var exportVenues = Btn("🥡", nameof(ExportVenuesCommand));
             var addVenue = Btn("➕", nameof(AddVenueCommand));
