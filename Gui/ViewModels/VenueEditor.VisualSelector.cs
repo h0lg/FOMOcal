@@ -15,6 +15,7 @@ partial class VenueEditor
     {
         private readonly Grid visualSelector;
         private AutomatedEventPageView? pageView;
+        private string? selectedQuery;
 
         private Grid CreateVisualSelector()
         {
@@ -59,9 +60,11 @@ partial class VenueEditor
                 Btn("🥢 Toggle selectors").BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector),
                 Btn("🗙").TapGesture(HideVisualSelector));
 
-            var selectors = Grd(cols: [Auto, Star], rows: [Auto, Auto], spacing: 5,
-                Lbl("Select parts of either selector and copy them to your venue scraping config to try them out.").ColumnSpan(2),
-                SelectorDisplay(pickedSelector).Row(1).ColumnSpan(2))
+            var selectors = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto], spacing: 5,
+                Lbl("Select parts of either selector you'd like to use.").ColumnSpan(2),
+                SelectorDisplay(pickedSelector).Row(1).ColumnSpan(2),
+                Btn("➕").TapGesture(AppendSelectedQuery).Row(2),
+                Lbl("Append the selected text to your query to try it out.").Row(2).Column(2))
                 .BindVisible(nameof(ShowPickedSelector));
 
             var visualSelector = Grd(cols: [Star], rows: [Auto, Auto, Star], spacing: 5,
@@ -76,12 +79,18 @@ partial class VenueEditor
             void SyncHeightWithPage() => visualSelector.HeightRequest = Height - 100;
         }
 
-        private Editor SelectorDisplay(string propertyPath) =>
-            new Editor { IsReadOnly = true }.Bind(Editor.TextProperty, propertyPath);
+        private Editor SelectorDisplay(string propertyPath)
+        {
+            var editor = new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }.Bind(Editor.TextProperty, propertyPath);
+            // save selected part of selector query for AppendSelectedQuery
+            editor.Unfocused += (o, e) => selectedQuery = editor.Text.Substring(editor.CursorPosition, editor.SelectionLength);
+            return editor;
+        }
 
         private void TogglePicking() => model.EnablePicking = !model.EnablePicking;
         private async void PickParent() => await pageView!.PickParent();
         private void TogglePickedSelector() => model.ShowPickedSelector = !model.ShowPickedSelector;
+        private void AppendSelectedQuery() => model.visualSelectorHost!.Text += " " + selectedQuery;
 
         private async Task ShowVisualSelectorForAsync(Entry entry)
         {
