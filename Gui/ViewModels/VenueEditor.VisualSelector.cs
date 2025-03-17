@@ -89,6 +89,7 @@ partial class VenueEditor
             entry.Focus(); // to keep its help open
             visualSelector.IsVisible = true;
             await visualSelector.TranslateTo(0, 0, 300, Easing.CubicInOut);
+            await form.ScrollToAsync(entry, ScrollToPosition.End, true); // scroll entry to end so that Help above is visible
         }
 
         private void HideVisualSelector()

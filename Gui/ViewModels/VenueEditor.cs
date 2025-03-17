@@ -192,6 +192,7 @@ public partial class VenueEditor : ObservableObject
     public partial class Page : ContentPage
     {
         private readonly VenueEditor model;
+        private readonly ScrollView form;
 
         public Page(VenueEditor model)
         {
@@ -282,7 +283,7 @@ public partial class VenueEditor : ObservableObject
 
             var deleteButton = Btn("🗑 Delete this venue", nameof(DeleteCommand)).IsVisible(model.isDeletable);
 
-            var form = new ScrollView
+            form = new ScrollView
             {
                 Content = VStack(20,
                     venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton)
