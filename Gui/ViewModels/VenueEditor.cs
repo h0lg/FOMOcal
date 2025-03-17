@@ -206,17 +206,13 @@ public partial class VenueEditor : ObservableObject
             var venueFields = VStack(0, urlEntry, nameEntry, location);
 
             // Step 2: Event Selector
-            Action<VisualElement, bool> setEventSelectorFocused = (vis, focused) =>
-            {
-                model.EventSelectorHasFocus = focused;
-                ToggleVisualSelector(focused, vis.StyleId);
-            };
+            Action<VisualElement, bool> setEventSelectorFocused = (vis, focused) => model.EventSelectorHasFocus = focused;
 
-            var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector", styleId: nameof(EventSelector))
+            var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector")
                 .OnFocusChanged(setEventSelectorFocused);
 
-            var waitForJsRendering = Check(nameof(WaitForJsRendering), styleId: nameof(WaitForJsRendering))
-                .OnFocusChanged(setEventSelectorFocused);
+            var containerSelector = SelectorEntry(selectorText);
+            var waitForJsRendering = Check(nameof(WaitForJsRendering)).OnFocusChanged(setEventSelectorFocused);
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorHasFocus),
@@ -234,15 +230,15 @@ public partial class VenueEditor : ObservableObject
                     " then fetch more data asynchronously and render it into the placeholders using a script running in your browser.")
                     .BindVisible(nameof(IsFocused), source: waitForJsRendering) // display if checkbox is focused
                     .TextColor(Colors.Yellow).Row(1).ColumnSpan(4),
-                Lbl("Event container").Bold().CenterVertical().Row(2), selectorText.Row(2).Column(1),
+                Lbl("Event container").Bold().CenterVertical().Row(2), containerSelector.Row(2).Column(1),
                 Lbl("wait for JS rendering").CenterVertical().Row(2).Column(2), waitForJsRendering.Row(2).Column(3),
                 previewOrErrors.Row(3).ColumnSpan(4))
                 .BindVisible(nameof(ShowEventContainer));
 
             // Step 3: Event Details (Name, Date)
             var requiredEventFields = VStack(0,
-                new ScrapeJobEditor.View(model.eventName),
-                new ScrapeJobEditor.View(model.eventDate))
+                new ScrapeJobEditor.View(model.eventName, SelectorEntry),
+                new ScrapeJobEditor.View(model.eventDate, SelectorEntry))
                 .BindVisible(nameof(ShowRequiredEventFields));
 
             // Step 4: Additional Event Details
@@ -279,7 +275,15 @@ public partial class VenueEditor : ObservableObject
             Content = Grd(cols: [Star], rows: [Star, Auto], spacing: 0, form, visualSelector.Row(1));
 
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
-               => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute));
+               => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute), SelectorEntry);
+        }
+
+        private HorizontalStackLayout SelectorEntry(Entry entry)
+        {
+            Label lbl = Lbl("🖽").ToolTip("🥢 pluck from the page").FontSize(20).CenterVertical()
+                .TapGesture(async () => await ShowVisualSelectorForAsync(entry));
+
+            return HStack(0, entry, lbl.Margins(left: -5));
         }
 
         protected override void OnDisappearing()

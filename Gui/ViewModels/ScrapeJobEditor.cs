@@ -216,7 +216,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
     public partial class View : VerticalStackLayout
     {
-        public View(ScrapeJobEditor model)
+        public View(ScrapeJobEditor model, Func<Entry, HorizontalStackLayout> createVisualSelectorEntry)
         {
             BindingContext = model;
             Spacing = 5;
@@ -234,18 +234,20 @@ public partial class ScrapeJobEditor : ObservableObject
                     .BindVisible(nameof(IsEmpty)),
 
                 Lbl("closest").DisplayWithSignificant(closest),
-                Entr(closest)
-                    .DisplayWithSignificant(closest)
-                    .ToolTip("An optional CSS selector to an ancestor of the event container to select the event detail from" +
-                        " - for when the event detail is outside of the event container.")
-                    .ForwardFocusTo(model),
+                createVisualSelectorEntry(
+                    Entr(closest)
+                        .ToolTip("An optional CSS selector to an ancestor of the event container to select the event detail from" +
+                            " - for when the event detail is outside of the event container.")
+                        .ForwardFocusTo(model))
+                    .DisplayWithSignificant(closest),
 
                 Lbl("selector").DisplayWithSignificant(nameof(Selector)),
-                Entr(nameof(Selector))
-                    .DisplayWithSignificant(nameof(Selector))
-                    .ToolTip("A CSS selector to the element containing the text of the event detail." +
-                        " See https://www.w3schools.com/cssref/css_selectors.php and https://www.w3schools.com/cssref/css_ref_pseudo_classes.php")
-                    .ForwardFocusTo(model),
+                createVisualSelectorEntry(
+                    Entr(nameof(Selector))
+                        .ToolTip("A CSS selector to the element containing the text of the event detail." +
+                            " See https://www.w3schools.com/cssref/css_selectors.php and https://www.w3schools.com/cssref/css_ref_pseudo_classes.php")
+                        .ForwardFocusTo(model))
+                    .DisplayWithSignificant(nameof(Selector)),
 
                 Lbl("ignore nested text").DisplayWithChecked(nameof(IgnoreNestedText)),
                 Check(nameof(IgnoreNestedText))

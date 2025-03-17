@@ -13,27 +13,12 @@ partial class VenueEditor
 
     partial class Page
     {
-        private readonly System.Timers.Timer closeTimer = new(500); // Close delay in ms
         private readonly Grid visualSelector;
-        private bool isHelperVisible;
+        private Entry? visualSelectorHost;
         private AutomatedEventPageView? pageView;
 
         private Grid CreateVisualSelector(VenueEditor model)
         {
-            closeTimer.Elapsed += (s, e) => HideHelper();
-
-            System.ComponentModel.PropertyChangedEventHandler editorPropertyChanged = (o, e) =>
-            {
-                if (e.PropertyName == nameof(ScrapeJobEditor.HasFocus))
-                {
-                    var editor = (ScrapeJobEditor)o!;
-                    ToggleVisualSelector(editor.HasFocus, editor.EventProperty);
-                }
-            };
-
-            foreach (var editor in model.scrapeJobEditors)
-                editor.PropertyChanged += editorPropertyChanged;
-
             pageView = new(model.venue);
 
             pageView.HtmlWithEventsLoaded += async html =>
@@ -50,11 +35,7 @@ partial class VenueEditor
                 model.RevealMore();
             };
 
-            pageView.PickedSelector += selector =>
-            {
-                model.PickedSelector = selector;
-                closeTimer.Stop();
-            };
+            pageView.PickedSelector += selector => model.PickedSelector = selector;
 
             model.PropertyChanged += (o, e) =>
             {
@@ -76,7 +57,8 @@ partial class VenueEditor
                 Lbl("Tap an element on the page to pick it.").TapGesture(TogglePicking),
                 Btn("⿴ Pick the outer element").BindIsVisibleToValueOf(pickedSelector).TapGesture(PickParent),
                 Lbl("until you're happy with your pick.").BindIsVisibleToValueOf(pickedSelector),
-                Btn("🥢 Toggle selectors").TapGesture(TogglePickedSelector));
+                Btn("🥢 Toggle selectors").BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector),
+                Btn("🗙").TapGesture(HideVisualSelector));
 
             var selectors = Grd(cols: [Auto, Star], rows: [Auto, Auto], spacing: 5,
                 Lbl("Select parts of either selector and copy them to your venue scraping config to try them out.").ColumnSpan(2),
@@ -90,46 +72,36 @@ partial class VenueEditor
             SizeChanged += (o, e) => SyncHeightWithPage();
             SyncHeightWithPage(); // to init HeightRequest to init TranslationY for smooth first opening
             visualSelector.TranslationY = visualSelector.HeightRequest;
-
-            // Keep the helper open if interacted with, seems to cause closing
-            return visualSelector.TapGesture(() => ToggleVisualSelector(true, nameof(visualSelector)));
+            return visualSelector;
 
             void SyncHeightWithPage() => visualSelector.HeightRequest = Height - 100;
         }
 
         private Editor SelectorDisplay(string propertyPath) =>
-            new Editor { IsReadOnly = true }.Bind(Editor.TextProperty, propertyPath)
-                .OnFocusChanged((_, focused) => ToggleVisualSelector(focused, propertyPath));
+            new Editor { IsReadOnly = true }.Bind(Editor.TextProperty, propertyPath);
 
         private void TogglePicking() => model.EnablePicking = !model.EnablePicking;
         private async void PickParent() => await pageView!.PickParent();
         private void TogglePickedSelector() => model.ShowPickedSelector = !model.ShowPickedSelector;
 
-        private void ToggleVisualSelector(bool focused, string what)
+        private async Task ShowVisualSelectorForAsync(Entry entry)
         {
-            if (focused)
-            {
-                closeTimer.Stop();
-                if (isHelperVisible) return;
-                isHelperVisible = true;
-                visualSelector.IsVisible = true;
-                visualSelector.TranslateTo(0, 0, 300, Easing.CubicInOut);
-            }
-            else closeTimer.Start();
+            if (visualSelectorHost != null) return;
+            visualSelectorHost = entry;
+            visualSelector.IsVisible = true;
+            await visualSelector.TranslateTo(0, 0, 300, Easing.CubicInOut);
         }
 
-        private void HideHelper()
+        private void HideVisualSelector()
         {
-            if (!isHelperVisible) return;
+            if (visualSelectorHost == null) return;
 
             MainThread.BeginInvokeOnMainThread(async () =>
             {
                 await visualSelector.TranslateTo(0, visualSelector.HeightRequest, 300, Easing.CubicInOut);
                 visualSelector.IsVisible = false;
-                isHelperVisible = false;
+                visualSelectorHost = null;
             });
-
-            closeTimer.Stop();
         }
     }
 }
