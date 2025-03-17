@@ -147,42 +147,28 @@ public partial class VenueList : ObservableObject
                     var name = BndLbl(nameof(Venue.Name)).FontSize(16).Wrap();
                     var location = BndLbl(nameof(Venue.Location)).FontSize(12).TextColor(Colors.Gray).Wrap();
 
-                    var lastRefreshed = new Label().FontSize(12).TextColor(Colors.Gray)
-                        .Bind(Label.TextProperty, nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:g}")
+                    var lastRefreshed = BndLbl(nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:g}")
+                        .FontSize(12).TextColor(Colors.Gray)
                         .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastRefreshed.HasValue);
 
-                    var refresh = new Button().Text("⛏").BindCommand(nameof(RefreshVenueCommand), source: model);
+                    var refresh = Btn("⛏", nameof(RefreshVenueCommand), source: model);
 
                     return new Border
                     {
                         Padding = 10,
-                        Content = new Grid
-                        {
-                            RowSpacing = 5,
-                            ColumnSpacing = 5,
-                            ColumnDefinitions = Columns.Define(Star, Auto),
-                            RowDefinitions = Rows.Define(Auto, Auto, Auto),
-                            Children = {
-                                name.ColumnSpan(2),
-                                location.Row(1),
-                                refresh.Row(1).Column(1).RowSpan(2).Bottom(),
-                                lastRefreshed.Row(2).End()
-                            }
-                        }
+                        Content = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
+                            name.ColumnSpan(2),
+                            location.Row(1),
+                            refresh.Row(1).Column(1).RowSpan(2).Bottom(),
+                            lastRefreshed.Row(2).End())
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
             var addVenue = Btn("➕ add venue", nameof(AddVenueCommand));
             var refreshAll = Btn("⛏ dig all gigs", nameof(RefreshAllVenuesCommand));
 
-            Content = new Grid
-            {
-                RowSpacing = 5,
-                ColumnSpacing = 5,
-                ColumnDefinitions = Columns.Define(Auto, Auto),
-                RowDefinitions = Rows.Define(Star, Auto),
-                Children = { list.ColumnSpan(2), addVenue.Row(1), refreshAll.Row(1).Column(1) }
-            };
+            Content = Grd(cols: [Auto, Auto], rows: [Star, Auto], spacing: 5,
+                list.ColumnSpan(2), addVenue.Row(1), refreshAll.Row(1).Column(1));
         }
     }
 

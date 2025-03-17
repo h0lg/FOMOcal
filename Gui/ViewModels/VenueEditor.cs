@@ -181,71 +181,55 @@ public partial class VenueEditor : ObservableObject
             Title = model.isDeletable ? "Edit " + model.originalVenueName : "Add a venue";
 
             // Step 1: Venue Name and Program URL
-            var urlEntry = new Entry { Placeholder = "Program page URL" }
-                .Bind(Entry.TextProperty, nameof(ProgramUrl));
-
-            var nameEntry = new Entry { Placeholder = "Venue name" }
-                .Bind(Entry.TextProperty, nameof(VenueName));
+            var urlEntry = Entr(nameof(ProgramUrl), placeholder: "Program page URL");
+            var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
 
             var location = new Entry { Placeholder = "Location, contacts or other helpful info" }
                 .Bind(Entry.TextProperty,
                     getter: static (VenueEditor vm) => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
-            var venueFields = new StackLayout { Children = { urlEntry, nameEntry, location } };
+            var venueFields = VStack(0, urlEntry, nameEntry, location);
 
             // Step 2: Event Selector
-            var selectorText = new Entry { Placeholder = "event container selector" }
-                .Bind(Entry.TextProperty, nameof(EventSelector))
+            var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector")
                 .OnFocusChanged((_, focused) => model.EventSelectorHasFocus = focused);
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorHasFocus),
                 hasError: nameof(EventSelectorHasError), source: model);
 
-            var eventContainer = new Grid
-            {
-                ColumnSpacing = 5,
-                RowSpacing = 5,
-                ColumnDefinitions = Columns.Define(Auto, Star),
-                RowDefinitions = Rows.Define(Auto, Auto, Auto, Auto),
-                Children = {
-                    new Label().Text("How to dig a gig").FontSize(16).Bold().CenterVertical(),
-                    new Label().Text("The CSS selector to the HTML elements containing as many of the event details as possible - but only of a single event.")
-                        .BindVisible(nameof(IsFocused), source: selectorText) // display if entry is focused
-                        .TextColor(Colors.Yellow).Row(1).ColumnSpan(2),
-                    new Label().Text("Event container").Bold().CenterVertical().Row(2), selectorText.Row(2).Column(1),
-                    previewOrErrors.Row(3).ColumnSpan(2) }
-            }
+            var eventContainer = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto], spacing: 5,
+                Lbl("How to dig a gig").FontSize(16).Bold().CenterVertical(),
+                Lbl("The CSS selector to the HTML elements containing as many of the event details as possible - but only of a single event.")
+                    .BindVisible(nameof(IsFocused), source: selectorText) // display if entry is focused
+                    .TextColor(Colors.Yellow).Row(1).ColumnSpan(2),
+                Lbl("Event container").Bold().CenterVertical().Row(2), selectorText.Row(2).Column(1),
+                previewOrErrors.Row(3).ColumnSpan(2))
                 .BindVisible(nameof(ShowEventContainer));
 
             // Step 3: Event Details (Name, Date)
-            var requiredEventFields = new StackLayout
-            {
-                Children = {
-                    new ScrapeJobEditor.View(model.eventName),
-                    new ScrapeJobEditor.View(model.eventDate) }
-            }.BindVisible(nameof(ShowRequiredEventFields));
+            var requiredEventFields = VStack(0,
+                new ScrapeJobEditor.View(model.eventName),
+                new ScrapeJobEditor.View(model.eventDate))
+                .BindVisible(nameof(ShowRequiredEventFields));
 
             // Step 4: Additional Event Details
             var evt = model.venue.Event;
 
-            var optionalEventFields = new StackLayout
-            {
-                Children = {
-                    OptionalScrapeJob("Subtitle", evt.SubTitle, nameof(Venue.EventScrapeJob.SubTitle)),
-                    OptionalScrapeJob("Description", evt.Description, nameof(Venue.EventScrapeJob.Description)),
-                    OptionalScrapeJob("Genres", evt.Genres, nameof(Venue.EventScrapeJob.Genres)),
-                    OptionalScrapeJob("Stage", evt.Stage, nameof(Venue.EventScrapeJob.Stage)),
-                    OptionalScrapeJob("Doors", evt.DoorsTime, nameof(Venue.EventScrapeJob.DoorsTime)),
-                    OptionalScrapeJob("Start", evt.StartTime, nameof(Venue.EventScrapeJob.StartTime)),
-                    OptionalScrapeJob("Pre-sale price", evt.PresalePrice, nameof(Venue.EventScrapeJob.PresalePrice)),
-                    OptionalScrapeJob("Door price", evt.DoorsPrice, nameof(Venue.EventScrapeJob.DoorsPrice)),
-                    OptionalScrapeJob("Event page", evt.Url, nameof(Venue.EventScrapeJob.Url), defaultAttribute: "href"),
-                    OptionalScrapeJob("Image", evt.ImageUrl, nameof(Venue.EventScrapeJob.ImageUrl), defaultAttribute: "src"),
-                    OptionalScrapeJob("Tickets", evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href")
-                }
-            }.BindVisible(nameof(ShowOptionalEventFields));
+            var optionalEventFields = VStack(0,
+                OptionalScrapeJob("Subtitle", evt.SubTitle, nameof(Venue.EventScrapeJob.SubTitle)),
+                OptionalScrapeJob("Description", evt.Description, nameof(Venue.EventScrapeJob.Description)),
+                OptionalScrapeJob("Genres", evt.Genres, nameof(Venue.EventScrapeJob.Genres)),
+                OptionalScrapeJob("Stage", evt.Stage, nameof(Venue.EventScrapeJob.Stage)),
+                OptionalScrapeJob("Doors", evt.DoorsTime, nameof(Venue.EventScrapeJob.DoorsTime)),
+                OptionalScrapeJob("Start", evt.StartTime, nameof(Venue.EventScrapeJob.StartTime)),
+                OptionalScrapeJob("Pre-sale price", evt.PresalePrice, nameof(Venue.EventScrapeJob.PresalePrice)),
+                OptionalScrapeJob("Door price", evt.DoorsPrice, nameof(Venue.EventScrapeJob.DoorsPrice)),
+                OptionalScrapeJob("Event page", evt.Url, nameof(Venue.EventScrapeJob.Url), defaultAttribute: "href"),
+                OptionalScrapeJob("Image", evt.ImageUrl, nameof(Venue.EventScrapeJob.ImageUrl), defaultAttribute: "src"),
+                OptionalScrapeJob("Tickets", evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href"))
+                .BindVisible(nameof(ShowOptionalEventFields));
 
             // form controls
             var saveButton = Btn("💾 Save this venue", nameof(SaveCommand))
@@ -255,14 +239,9 @@ public partial class VenueEditor : ObservableObject
 
             Content = new ScrollView
             {
-                Content = new StackLayout
-                {
-                    Spacing = 20,
-                    Padding = 20,
-                    Children = {
-                        venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton
-                    }
-                }
+                Content = VStack(20,
+                    venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton)
+                    .Padding(20)
             };
 
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)

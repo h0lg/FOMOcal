@@ -207,42 +207,41 @@ public partial class ScrapeJobEditor : ObservableObject
         public View(ScrapeJobEditor model)
         {
             BindingContext = model;
-            Spacing = 8;
+            Spacing = 5;
 
-            var helper = new Label()
-                .Bind(Label.TextProperty, nameof(Help)).TextColor(Colors.Yellow)
+            var helper = BndLbl(nameof(Help)).TextColor(Colors.Yellow)
                 .BindIsVisibleToValueOf(nameof(Help));
 
-            var form = new HorizontalStackLayout { Spacing = 8 };
+            var form = new HorizontalStackLayout { Spacing = 5 };
 
             List<IView> children = [
-                new Label().Text(model.label).Bold(),
+                Lbl(model.label).Bold(),
                 Check(nameof(DisplayInputs))
                     .ForwardFocusTo(model)
                     .BindVisible(nameof(IsEmpty)),
 
-                new Label().Text("selector").DisplayWithSignificant(nameof(Selector)),
-                new Entry().Bind(Entry.TextProperty, nameof(Selector))
+                Lbl("selector").DisplayWithSignificant(nameof(Selector)),
+                Entr(nameof(Selector))
                     .DisplayWithSignificant(nameof(Selector))
                     .ToolTip("A CSS selector to the element containing the text of the event detail." +
                         " See https://www.w3schools.com/cssref/css_selectors.php and https://www.w3schools.com/cssref/css_ref_pseudo_classes.php")
                     .ForwardFocusTo(model),
 
-                new Label().Text("ignore nested text").DisplayWithChecked(nameof(IgnoreNestedText)),
+                Lbl("ignore nested text").DisplayWithChecked(nameof(IgnoreNestedText)),
                 Check(nameof(IgnoreNestedText))
                     .DisplayWithChecked(nameof(IgnoreNestedText))
                     .ToolTip("Whether to ignore the text of nested elements and only extract direct text nodes from the HTML." +
                         " Does not apply if an attribute is set.")
                     .ForwardFocusTo(model),
 
-                new Label().Text("attribute").DisplayWithSignificant(nameof(Attribute)),
-                new Entry().Bind(Entry.TextProperty, nameof(Attribute))
+                Lbl("attribute").DisplayWithSignificant(nameof(Attribute)),
+                Entr(nameof(Attribute))
                     .DisplayWithSignificant(nameof(Attribute))
                     .ToolTip("The name of the attribute of the selected element to extract the text from.")
                     .ForwardFocusTo(model),
 
-                new Label().Text("match").DisplayWithSignificant(nameof(Match)),
-                new Entry().Bind(Entry.TextProperty, nameof(Match))
+                Lbl("match").DisplayWithSignificant(nameof(Match)),
+                Entr(nameof(Match))
                     .DisplayWithSignificant(nameof(Match))
                     .ToolTip("A pattern (Regular Expression https://en.wikipedia.org/wiki/Regular_expression in .NET flavour) that matches the part of text to extract." +
                         " You may want to do this to extract text that is not cleanly selectable." +
@@ -257,7 +256,7 @@ public partial class ScrapeJobEditor : ObservableObject
                  * We currently only have one DateScrapeJob and it is required i.e. initialized. */
 
                 children.AddRange(
-                    new Label().Text("date format"),
+                    Lbl("date format"),
                     new Entry().Text(dateScrapeJob.Format)
                         .Bind(Entry.TextProperty,
                             getter: (ScrapeJobEditor _) => dateScrapeJob.Format,
@@ -267,7 +266,7 @@ public partial class ScrapeJobEditor : ObservableObject
                             " See https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")
                         .ForwardFocusTo(model),
 
-                    new Label().Text("culture"),
+                    Lbl("culture"),
                     new Entry().Text(dateScrapeJob.Culture)
                         .Bind(Entry.TextProperty,
                             getter: (ScrapeJobEditor _) => dateScrapeJob.Culture,
@@ -299,10 +298,8 @@ public partial class ScrapeJobEditor : ObservableObject
                 .Bind(BindableLayout.ItemsSourceProperty, itemsSource)
                 .Bind<VerticalStackLayout, bool, bool, bool>(IsVisibleProperty, binding1: new Binding(hasError), binding2: new Binding(hasFocus),
                     convert: static values => values.Item1 || values.Item2) // display if either has error or focus
-                .ItemTemplate(() =>
-                    new Label()
-                        .Bind(Label.TextColorProperty, hasError, convert: static (bool err) => err ? Colors.IndianRed : Colors.ForestGreen, source: source)
-                        .Bind(Label.TextProperty, path: "."));
+                .ItemTemplate(() => BndLbl().Bind(Label.TextColorProperty, hasError,
+                    convert: static (bool err) => err ? Colors.IndianRed : Colors.ForestGreen, source: source));
     }
 }
 

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using FomoCal.Gui.ViewModels;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
+using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui;
 
@@ -15,17 +16,8 @@ public partial class MainPage : ContentPage
         venueList.VenueRenamed += eventList.RenameVenue;
         venueList.VenueDeleted += eventList.DeleteForVenue;
 
-        Content = new Grid
-        {
-            ColumnSpacing = 5,
-            ColumnDefinitions = Columns.Define(Auto, Star),
-            RowDefinitions = Rows.Define(Star), // Full height
-
-            Children =
-            {
-                new VenueList.View(venueList).Width(250),
-                new EventList.View(eventList).Column(1)
-            }
-        };
+        Content = Grd(cols: [Auto, Star], rows: [Star], spacing: 5,
+            new VenueList.View(venueList).Width(250),
+            new EventList.View(eventList).Column(1));
     }
 }
