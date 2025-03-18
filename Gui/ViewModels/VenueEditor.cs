@@ -226,7 +226,7 @@ public partial class VenueEditor : ObservableObject
                         model.EventSelectorHasFocus = focused;
                 });
 
-            var containerSelector = SelectorEntry(selectorText, () => "body");
+            var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
             var waitForJsRendering = Check(nameof(WaitForJsRendering)).OnFocusChanged(setEventSelectorRelatedFocused);
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
@@ -297,16 +297,27 @@ public partial class VenueEditor : ObservableObject
                => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute), RelativeSelectorEntry);
         }
 
-        private HorizontalStackLayout SelectorEntry(Entry entry, Func<string> pickRelativeTo)
+        private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)
         {
             Label lbl = Lbl("🖽").ToolTip("🥢 pluck from the page").FontSize(20).CenterVertical()
-                .TapGesture(async () => await ShowVisualSelectorForAsync(entry, pickRelativeTo.Invoke()));
+                .TapGesture(async () =>
+                {
+                    (string selector, bool pickDescendant) = pickRelativeTo.Invoke();
+                    await ShowVisualSelectorForAsync(entry, selector, pickDescendant);
+                });
 
             return HStack(0, entry, lbl.Margins(left: -5));
         }
 
-        private HorizontalStackLayout RelativeSelectorEntry(Entry entry)
-            => SelectorEntry(entry, () => model.EventSelector);
+        private HorizontalStackLayout RelativeSelectorEntry(Entry entry, Func<string?>? maybeGetDescendantOfClosest)
+            => SelectorEntry(entry, pickRelativeTo: () =>
+            {
+                /*  if maybeGetDescendantOfClosest is set, we're selecting the descendant
+                 *  and prefer selecting from the Closest expression over the EventSelector */
+                bool picksDescendant = maybeGetDescendantOfClosest != null;
+                string selector = picksDescendant ? maybeGetDescendantOfClosest!() ?? model.EventSelector : model.EventSelector;
+                return (selector, picksDescendant);
+            });
 
         protected override void OnDisappearing()
         {

@@ -225,7 +225,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
     public partial class View : VerticalStackLayout
     {
-        public View(ScrapeJobEditor model, Func<Entry, HorizontalStackLayout> createVisualSelectorEntry)
+        public View(ScrapeJobEditor model, Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry)
         {
             BindingContext = model;
             Spacing = 5;
@@ -245,9 +245,11 @@ public partial class ScrapeJobEditor : ObservableObject
                 Lbl("closest").DisplayWithSignificant(closest),
                 createVisualSelectorEntry(
                     Entr(closest)
-                        .ToolTip("An optional CSS selector to an ancestor of the event container to select the event detail from" +
-                            " - for when the event detail is outside of the event container.")
-                        .ForwardFocusTo(model))
+                        .ToolTip("An optional CSS selector to a common ancestor of the event container an the event detail" +
+                            " - for when the event detail has to be selected from outside of the event container," +
+                            " like a group that only displays the date once for multiple events on the same day.")
+                        .ForwardFocusTo(model),
+                    null) // for picking common ancestor
                     .DisplayWithSignificant(closest),
 
                 Lbl("selector").DisplayWithSignificant(nameof(Selector)),
@@ -255,7 +257,8 @@ public partial class ScrapeJobEditor : ObservableObject
                     Entr(nameof(Selector))
                         .ToolTip("A CSS selector to the element containing the text of the event detail." +
                             " See https://www.w3schools.com/cssref/css_selectors.php and https://www.w3schools.com/cssref/css_ref_pseudo_classes.php")
-                        .ForwardFocusTo(model))
+                        .ForwardFocusTo(model),
+                    () => model.Closest) // for picking descendant, preferrably from Closest
                     .DisplayWithSignificant(nameof(Selector)),
 
                 Lbl("ignore nested text").DisplayWithChecked(nameof(IgnoreNestedText)),

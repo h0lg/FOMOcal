@@ -46,8 +46,13 @@ public partial class AutomatedEventPageView : WebView
     internal Task EnablePicking(bool enablePicking)
         => EvaluateJavaScriptAsync($"{picking}enable({enablePicking.ToString().ToLower()});");
 
-    internal Task PickRelativeTo(string selector)
-        => EvaluateJavaScriptAsync($"{picking}relativeTo('{selector}');");
+    /// <summary>Tells the JS picker the context in which to pick the clicked element
+    /// when building the selector to return via <see cref="PickedSelector"/>.
+    /// If <paramref name="descendant"/> is true, it returns the selector
+    /// of the picked element descendant relative to its closest ancestor (or self) matching <paramref name="selector"/>.
+    /// Otherwise, it returns the selector for the closest common ancestor of the picked element and the <paramref name="selector"/>.</summary>
+    internal Task PickRelativeTo(string selector, bool descendant)
+        => EvaluateJavaScriptAsync($"{picking}relativeTo('{selector}', {descendant.ToString().ToLower()});");
 
     private static readonly JsonSerializerOptions jsonOptionSerializerOptions
         = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };

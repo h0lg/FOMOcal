@@ -3,6 +3,7 @@
         picked = '.' + pickedClass;
 
     let anchor = document.body,
+        pickDescendant = true,
         notifyPicked;
 
     function intercept(event) {
@@ -20,10 +21,16 @@
         action.call(undefined, 'click', intercept, true);
     }
 
-    function getCssSelector(root, element) {
-        let path = [];
+    function getClosestCommonAncestor(element, selector) {
+        while (element) {
+            if (element.querySelector(selector)) return element;
+            element = element.parentElement;
+        }
 
-        while (element !== root && element !== document.documentElement) {
+        return null;
+    }
+
+    function createCssSelector(element) {
             let selector = element.tagName.toLowerCase();
             if (element.id) selector += `#${element.id}`;
 
@@ -34,7 +41,14 @@
                 selector += `:nth-child(${siblingIndex})`;
             }
 
-            path.unshift(selector);
+        return selector;
+    }
+
+    function getCssSelector(anchor, element) {
+        let path = [];
+
+        while (element !== anchor && element !== document.documentElement) {
+            path.unshift(createCssSelector(element));
             element = element.parentNode;
         }
 
@@ -42,9 +56,20 @@
     }
 
     function pick(target) {
+        let css;
+
+        if (pickDescendant) {
         const root = target.closest(anchor);
-        if (root === null) notifyPicked('', '');
-        const css = getCssSelector(root, target);
+            console.info('picking descendant relative to', anchor);
+            if (root === null) notifyPicked('');
+            css = getCssSelector(root, target);
+        } else {
+            const root = getClosestCommonAncestor(target, anchor);
+            if (root === null) notifyPicked('');
+            css = createCssSelector(root);
+            target = root;
+        }
+
         console.info('picked', css);
         document.querySelectorAll(picked).forEach(el => el.classList.remove(pickedClass));
         target.classList.add(pickedClass);
@@ -70,7 +95,13 @@
         },
 
         enable,
-        relativeTo: anchorSelector => { anchor = anchorSelector; },
+
+        relativeTo: (anchorSelector, descendant) => {
+            console.info('picking relative to', anchorSelector, 'descendant', descendant);
+            anchor = anchorSelector;
+            pickDescendant = descendant;
+        },
+
         parent: () => { pick(document.querySelector(picked).parentNode); }
     };
 })();
