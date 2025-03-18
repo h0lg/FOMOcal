@@ -92,11 +92,12 @@ partial class VenueEditor
         private void TogglePickedSelector() => model.ShowPickedSelector = !model.ShowPickedSelector;
         private void AppendSelectedQuery() => model.visualSelectorHost!.Text += " " + selectedQuery;
 
-        private async Task ShowVisualSelectorForAsync(Entry entry)
+        private async Task ShowVisualSelectorForAsync(Entry entry, string selector)
         {
             model.visualSelectorHost = entry;
             entry.Focus(); // to keep its help open
             visualSelector.IsVisible = true;
+            await pageView!.PickRelativeTo(selector);
             await visualSelector.TranslateTo(0, 0, 300, Easing.CubicInOut);
             await form.ScrollToAsync(entry, ScrollToPosition.End, true); // scroll entry to end so that Help above is visible
         }

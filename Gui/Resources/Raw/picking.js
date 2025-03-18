@@ -2,7 +2,7 @@
     const pickedClass = 'FOMOcal-picked',
         picked = '.' + pickedClass;
 
-    let root = document.body,
+    let anchor = document.body,
         notifyPicked;
 
     function intercept(event) {
@@ -20,8 +20,7 @@
         action.call(undefined, 'click', intercept, true);
     }
 
-    function getCssSelector(element) {
-        if (!root.contains(element)) return null;
+    function getCssSelector(root, element) {
         let path = [];
 
         while (element !== root && element !== document.documentElement) {
@@ -43,7 +42,9 @@
     }
 
     function pick(target) {
-        const css = getCssSelector(target);
+        const root = target.closest(anchor);
+        if (root === null) notifyPicked('', '');
+        const css = getCssSelector(root, target);
         console.info('picked', css);
         document.querySelectorAll(picked).forEach(el => el.classList.remove(pickedClass));
         target.classList.add(pickedClass);
@@ -69,6 +70,7 @@
         },
 
         enable,
+        relativeTo: anchorSelector => { anchor = anchorSelector; },
         parent: () => { pick(document.querySelector(picked).parentNode); }
     };
 })();

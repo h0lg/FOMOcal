@@ -226,7 +226,7 @@ public partial class VenueEditor : ObservableObject
                         model.EventSelectorHasFocus = focused;
                 });
 
-            var containerSelector = SelectorEntry(selectorText);
+            var containerSelector = SelectorEntry(selectorText, () => "body");
             var waitForJsRendering = Check(nameof(WaitForJsRendering)).OnFocusChanged(setEventSelectorRelatedFocused);
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
@@ -256,8 +256,8 @@ public partial class VenueEditor : ObservableObject
 
             // Step 3: Event Details (Name, Date)
             var requiredEventFields = VStack(0,
-                new ScrapeJobEditor.View(model.eventName, SelectorEntry),
-                new ScrapeJobEditor.View(model.eventDate, SelectorEntry))
+                new ScrapeJobEditor.View(model.eventName, RelativeSelectorEntry),
+                new ScrapeJobEditor.View(model.eventDate, RelativeSelectorEntry))
                 .BindVisible(nameof(ShowRequiredEventFields));
 
             // Step 4: Additional Event Details
@@ -294,16 +294,19 @@ public partial class VenueEditor : ObservableObject
             Content = Grd(cols: [Star], rows: [Star, Auto], spacing: 0, form, visualSelector.Row(1));
 
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
-               => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute), SelectorEntry);
+               => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute), RelativeSelectorEntry);
         }
 
-        private HorizontalStackLayout SelectorEntry(Entry entry)
+        private HorizontalStackLayout SelectorEntry(Entry entry, Func<string> pickRelativeTo)
         {
             Label lbl = Lbl("🖽").ToolTip("🥢 pluck from the page").FontSize(20).CenterVertical()
-                .TapGesture(async () => await ShowVisualSelectorForAsync(entry));
+                .TapGesture(async () => await ShowVisualSelectorForAsync(entry, pickRelativeTo.Invoke()));
 
             return HStack(0, entry, lbl.Margins(left: -5));
         }
+
+        private HorizontalStackLayout RelativeSelectorEntry(Entry entry)
+            => SelectorEntry(entry, () => model.EventSelector);
 
         protected override void OnDisappearing()
         {

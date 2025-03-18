@@ -46,6 +46,9 @@ public partial class AutomatedEventPageView : WebView
     internal Task EnablePicking(bool enablePicking)
         => EvaluateJavaScriptAsync($"{picking}enable({enablePicking.ToString().ToLower()});");
 
+    internal Task PickRelativeTo(string selector)
+        => EvaluateJavaScriptAsync($"{picking}relativeTo('{selector}');");
+
     private static readonly JsonSerializerOptions jsonOptionSerializerOptions
         = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
