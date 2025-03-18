@@ -14,11 +14,13 @@ public partial class VenueEditor : ObservableObject
     private readonly TaskCompletionSource<Result?> awaiter;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
     private readonly SemaphoreSlim revealingMore = new(1, 1);
+    private Entry? visualSelectorHost;
 
     [ObservableProperty] private bool showEventContainer;
     [ObservableProperty] private bool showRequiredEventFields;
     [ObservableProperty] private bool showOptionalEventFields;
     [ObservableProperty] private bool eventSelectorHasFocus;
+    [ObservableProperty] private bool eventSelectorRelatedHasFocus; // for when related controls have focus
     [ObservableProperty] private bool eventSelectorHasError;
     [ObservableProperty] private string[]? previewedEventTexts;
 
@@ -104,7 +106,10 @@ public partial class VenueEditor : ObservableObject
     private ScrapeJobEditor ScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty,
         bool isOptional = false, string? defaultAttribute = null)
     {
-        ScrapeJobEditor editor = new(label, scrapeJob, () => previewedEvents, eventProperty, isOptional, defaultAttribute);
+        ScrapeJobEditor editor = new(label, scrapeJob,
+            () => previewedEvents, () => visualSelectorHost,
+            eventProperty, isOptional, defaultAttribute);
+
         scrapeJobEditors.Add(editor);
         return editor;
     }
@@ -206,22 +211,35 @@ public partial class VenueEditor : ObservableObject
             var venueFields = VStack(0, urlEntry, nameEntry, location);
 
             // Step 2: Event Selector
-            Action<VisualElement, bool> setEventSelectorFocused = (vis, focused) => model.EventSelectorHasFocus = focused;
+            Action<VisualElement, bool> setEventSelectorRelatedFocused = (vis, focused) => model.EventSelectorRelatedHasFocus = focused;
 
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector")
-                .OnFocusChanged(setEventSelectorFocused);
+                .OnFocusChanged((vis, focused) =>
+                {
+                    setEventSelectorRelatedFocused(vis, focused);
+
+                    /*  Only propagate the loss of focus to the property
+                        if entry has not currently opened the visualSelector
+                        to keep the help visible while working there */
+                    if (focused || model.visualSelectorHost != vis)
+                        model.EventSelectorHasFocus = focused;
+                });
 
             var containerSelector = SelectorEntry(selectorText);
-            var waitForJsRendering = Check(nameof(WaitForJsRendering)).OnFocusChanged(setEventSelectorFocused);
+            var waitForJsRendering = Check(nameof(WaitForJsRendering)).OnFocusChanged(setEventSelectorRelatedFocused);
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
-                itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorHasFocus),
+                itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
                 hasError: nameof(EventSelectorHasError), source: model);
 
             var eventContainer = Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("How to dig a gig").FontSize(16).Bold().CenterVertical(),
-                Lbl("The CSS selector to the HTML elements containing as many of the event details as possible - but only of a single event.")
-                    .BindVisible(nameof(IsFocused), source: selectorText) // display if entry is focused
+                Lbl("The CSS selector to the event containers - of which there are probably multiple on the page," +
+                    " each containing as many of the event details as possible - but only of a single event." +
+                    " If you see that the event page groups multiple events on the same day into a group, try it out on those" +
+                    " and choose a container that contains only one of their details." +
+                    " You'll be able to select the date or other excluded event details from outside the container later.")
+                    .BindVisible(nameof(EventSelectorHasFocus)) // display if entry is focused
                     .TextColor(Colors.Yellow).Row(1).ColumnSpan(4),
                 Lbl("You may want to try this option if your event selector doesn't match anything without it." +
                     " It will load the page and wait for an element matching your selector to become available," +
@@ -271,7 +289,7 @@ public partial class VenueEditor : ObservableObject
                     .Padding(20)
             };
 
-            visualSelector = CreateVisualSelector(model);
+            visualSelector = CreateVisualSelector();
             Content = Grd(cols: [Star], rows: [Star, Auto], spacing: 0, form, visualSelector.Row(1));
 
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)

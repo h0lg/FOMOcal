@@ -8,6 +8,7 @@ public partial class ScrapeJobEditor : ObservableObject
 {
     private readonly string label;
     private readonly Func<AngleSharp.Dom.IElement[]?> getEventsForPreview;
+    private readonly Func<VisualElement?> getVisualSelectorHost;
     private readonly string? defaultAttribute;
     internal readonly bool IsOptional;
 
@@ -114,11 +115,13 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
-    internal ScrapeJobEditor(string label, ScrapeJob? scrapeJob, Func<AngleSharp.Dom.IElement[]?> getEventsForPreview,
+    internal ScrapeJobEditor(string label, ScrapeJob? scrapeJob,
+        Func<AngleSharp.Dom.IElement[]?> getEventsForPreview, Func<VisualElement?> getVisualSelectorHost,
         string eventProperty, bool isOptional, string? defaultAttribute = null)
     {
         this.label = label;
         this.getEventsForPreview = getEventsForPreview;
+        this.getVisualSelectorHost = getVisualSelectorHost;
         this.defaultAttribute = defaultAttribute;
         ScrapeJob = scrapeJob;
         IsOptional = isOptional;
@@ -154,7 +157,13 @@ public partial class ScrapeJobEditor : ObservableObject
             while still allowing to [Tab] into them by keeping them visible just long enough. */
         await Task.Delay(10);
 
-        if (visual.Id == focusedId)
+        /*  Only propagate the loss of focus to the component if
+            a) it concerns the element currently holding the focus token and
+            b) has not currently opened the visualSelector
+
+            a) supports the mechanism described with above Delay
+            b) allows the help to stay visible while working in the visualSelector */
+        if (visual.Id == focusedId && visual != getVisualSelectorHost())
         {
             HasFocus = false;
             focusedId = null;

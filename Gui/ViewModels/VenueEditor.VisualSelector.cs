@@ -14,10 +14,9 @@ partial class VenueEditor
     partial class Page
     {
         private readonly Grid visualSelector;
-        private Entry? visualSelectorHost;
         private AutomatedEventPageView? pageView;
 
-        private Grid CreateVisualSelector(VenueEditor model)
+        private Grid CreateVisualSelector()
         {
             pageView = new(model.venue);
 
@@ -86,21 +85,23 @@ partial class VenueEditor
 
         private async Task ShowVisualSelectorForAsync(Entry entry)
         {
-            if (visualSelectorHost != null) return;
-            visualSelectorHost = entry;
+            model.visualSelectorHost = entry;
+            entry.Focus(); // to keep its help open
             visualSelector.IsVisible = true;
             await visualSelector.TranslateTo(0, 0, 300, Easing.CubicInOut);
         }
 
         private void HideVisualSelector()
         {
-            if (visualSelectorHost == null) return;
+            if (model.visualSelectorHost == null) return;
 
             MainThread.BeginInvokeOnMainThread(async () =>
             {
                 await visualSelector.TranslateTo(0, visualSelector.HeightRequest, 300, Easing.CubicInOut);
                 visualSelector.IsVisible = false;
-                visualSelectorHost = null;
+                Entry entry = model.visualSelectorHost; // keep a reference to it before resetting
+                model.visualSelectorHost = null; // reset before re-focusing entry because its handler may check model.visualSelectorHost
+                entry.Focus(); // re-focus the entry to keep its help and preview or errors open
             });
         }
     }
