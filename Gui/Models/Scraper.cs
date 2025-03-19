@@ -70,19 +70,30 @@ public sealed class Scraper : IDisposable
         if (!venue.Event.WaitForJsRendering)
             return await context.OpenAsync(venue.ProgramUrl);
 
-        TaskCompletionSource<string?> eventHtmlLoading = new();
-        AutomatedEventPageView loader = new(venue, eventHtmlLoading);
+        AutomatedEventPageView loader = new(venue);
+        loader.IsVisible = false;
         var layout = App.GetCurrentContentPage().FindTopLayout() as Layout;
         layout!.Add(loader); // to start its lifecycle
-        await eventHtmlLoading.Task;
+        DomDoc document = await GetDocument(loader);
+        layout.Remove(loader);
+        return document;
+    }
 
-        if (eventHtmlLoading.Task.Result.IsSignificant())
+    private Task<DomDoc> GetDocument(AutomatedEventPageView loader)
+    {
+        TaskCompletionSource<DomDoc> eventHtmlLoading = new();
+
+        loader.HtmlWithEventsLoaded += async html =>
         {
-            DomDoc document = await context.OpenAsync(req => req.Content(eventHtmlLoading.Task.Result));
-            layout.Remove(loader);
-            return document;
-        }
-        else throw new Exception($"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.");
+            if (html.IsSignificant())
+            {
+                var doc = await context.OpenAsync(req => req.Content(html!));
+                eventHtmlLoading.TrySetResult(doc);
+            }
+            else eventHtmlLoading.SetException(new Exception(loader.EventLoadingTimedOut));
+        };
+
+        return eventHtmlLoading.Task;
     }
 
     public void Dispose() => context.Dispose();
