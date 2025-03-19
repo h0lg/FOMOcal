@@ -60,16 +60,27 @@ public partial class AutomatedEventPageView : WebView
     private async void OnNavigatedAsync(object? sender, WebNavigatedEventArgs args)
     {
         if (args.Result != WebNavigationResult.Success) return;
-
-        // load script declaring function
-        await using Stream fileStream = await FileSystem.Current.OpenAppPackageFileAsync("waitForSelector.js");
-        using StreamReader reader = new(fileStream);
-        var script = await reader.ReadToEndAsync();
+        string script = await inlinedScript.Value; // load script with API
 
         // append function call. check every 100ms for 100 times 10sec
         script += $"waitForSelector('{venue.Event.Selector}', {100}, loaded => {{ location = '{eventsLoaded}?' + loaded; }}, 100);";
 
-        // normalize script to inline it; multi-line scripts seem to not be supported
-        await EvaluateJavaScriptAsync(script.NormalizeWhitespace());
+        await EvaluateJavaScriptAsync(script);
+    }
+
+    /*  Used to cache the loaded and pre-processed script while allowing for a
+     *  thread-safe asynchronous lazy initialization that only ever happens once. */
+    private static readonly Lazy<Task<string>> inlinedScript = new(LoadAndInlineScriptAsync);
+
+    private static async Task<string> LoadAndInlineScriptAsync()
+    {
+        // see https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/storage/file-system-helpers#bundled-files
+        await using Stream fileStream = await FileSystem.Current.OpenAppPackageFileAsync("waitForSelector.js");
+        using StreamReader reader = new(fileStream);
+        string script = await reader.ReadToEndAsync();
+
+        return script.RemoveJsComments() // so that inline comments don't comment out code during normalization
+            .NormalizeWhitespace() // to inline it; multi-line scripts seem to not be supported
+            .Replace("\\", "\\\\"); // to escape the JS for EvaluateJavaScriptAsync
     }
 }

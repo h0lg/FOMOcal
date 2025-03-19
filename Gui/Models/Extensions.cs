@@ -26,6 +26,23 @@ internal static class StringExtensions
     internal static bool ContainsAny(this string text, IEnumerable<string> terms,
         StringComparison stringComparison = StringComparison.InvariantCultureIgnoreCase)
         => terms.Any(t => text.Contains(t, stringComparison));
+
+    internal static string RemoveJsComments(this string code)
+    {
+        var pattern = @"
+            (""(?:\\.|[^""\\])*"") |   # Double-quoted string
+            ('(?:\\.|[^'\\])*')    |   # Single-quoted string
+            (`(?:\\.|[^`\\])*`)    |   # Template literal (backticks)
+            (/[*](?s:.*?)?[*]/)    |   # Block comment
+            (//.*)                     # Line comment
+        ";
+
+        return Regex.Replace(code, pattern, m =>
+        {
+            // Keep strings and template literals, remove comments
+            return m.Groups[1].Success || m.Groups[2].Success || m.Groups[3].Success ? m.Value : string.Empty;
+        }, RegexOptions.IgnorePatternWhitespace);
+    }
 }
 
 internal static class EnumerableExtensions

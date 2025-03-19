@@ -4,13 +4,13 @@ function waitForSelector(selector, intervalDelayMs, callBack, maxTries) {
     const startWaiting = () => {
         const intervalID = setInterval(() => {
             if (tries >= maxTries) {
-                clearInterval(intervalID); /* stop trying */
+                clearInterval(intervalID); // stop trying
                 callBack(false);
             }
 
             tries++;
-            if (document.querySelectorAll(selector).length < 1) return; /* not available, wait and try again */
-            clearInterval(intervalID); /* no need to continue trying */
+            if (document.querySelectorAll(selector).length < 1) return; // not available, wait and try again
+            clearInterval(intervalID); // no need to continue trying
             callBack(true);
         }, intervalDelayMs);
     };
