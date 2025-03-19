@@ -41,6 +41,8 @@ public partial class AutomatedEventPageView : WebView
         Navigated += OnNavigatedAsync;
     }
 
+    internal Task PickParent() => EvaluateJavaScriptAsync($"{picking}parent();");
+
     internal Task EnablePicking(bool enablePicking)
         => EvaluateJavaScriptAsync($"{picking}enable({enablePicking.ToString().ToLower()});");
 

@@ -68,7 +68,8 @@
             enable(true);
         },
 
-        enable
+        enable,
+        parent: () => { pick(document.querySelector(picked).parentNode); }
     };
 })();
 
