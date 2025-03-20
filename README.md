@@ -1,4 +1,7 @@
-# 😱📅 FOMOcal - discover & share local events
+# FOMOcal - discover & share local events
+
+<img src="./Gui/Resources/AppIcon/appicon.svg" align="right" height="50"
+    title="😱📅" />
 
 Tired of missing great shows? **FOMOcal** helps you stay on top of your local music scene by creating tailored event calendars based on venue listings.
 

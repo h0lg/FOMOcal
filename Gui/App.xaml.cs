@@ -32,7 +32,7 @@
                 rootPage = new NavigationPage(mainPage);
             }
 
-            return new(rootPage) { Title = "😱📅 FOMOcal" };
+            return new(rootPage) { Title = "FOMOcal" };
         }
 
         internal static Page GetCurrentContentPage()
