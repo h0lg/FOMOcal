@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Maui.Layouts;
 using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
@@ -250,81 +251,58 @@ public partial class ScrapeJobEditor : ObservableObject
 
     public partial class View : VerticalStackLayout
     {
+        private readonly ScrapeJobEditor model;
+        private readonly Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry;
+
         public View(ScrapeJobEditor model, Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry)
         {
+            this.model = model;
+            this.createVisualSelectorEntry = createVisualSelectorEntry;
             BindingContext = model;
             Spacing = 5;
 
-            var helper = BndLbl(nameof(Help)).TextColor(Colors.Yellow)
-                .BindIsVisibleToValueOf(nameof(Help));
+            var helper = BndLbl(nameof(Help)).TextColor(Colors.Yellow).BindIsVisibleToValueOf(nameof(Help));
+            FlexLayout form = new() { Wrap = FlexWrap.Wrap, AlignItems = FlexAlignItems.Center };
 
-            var form = new HorizontalStackLayout { Spacing = 5 };
-            const string closest = nameof(Closest);
 
             List<IView> children = [
-                Lbl(model.label).Bold(),
-                Check(nameof(DisplayInputs))
-                    .ForwardFocusTo(model)
-                    .BindVisible(nameof(IsEmpty)),
+                HStack(5, Lbl(model.label).Bold(),
+                    Check(nameof(DisplayInputs)).ForwardFocusTo(model).BindVisible(nameof(IsEmpty))),
 
-                Lbl("closest").DisplayWithSignificant(closest),
-                createVisualSelectorEntry(
-                    Entr(closest)
-                        .ToolTip("An optional CSS selector to a common ancestor of the event container an the event detail" +
-                            " - for when the event detail has to be selected from outside of the event container," +
-                            " like a group that only displays the date once for multiple events on the same day.")
-                        .ForwardFocusTo(model),
-                    null) // for picking common ancestor
-                    .DisplayWithSignificant(closest),
+                SelectorEntry("closest", nameof(Closest), null, // for picking common ancestor
+                    "An optional CSS selector to a common ancestor of the event container an the event detail" +
+                    " - for when the event detail has to be selected from outside of the event container," +
+                    " like a group that only displays the date once for multiple events on the same day."),
 
-                Lbl("selector").DisplayWithSignificant(nameof(Selector)),
-                createVisualSelectorEntry(
-                    Entr(nameof(Selector))
-                        .ToolTip("A CSS selector to the element containing the text of the event detail." +
-                            " See https://www.w3schools.com/cssref/css_selectors.php and https://www.w3schools.com/cssref/css_ref_pseudo_classes.php")
-                        .ForwardFocusTo(model),
-                    () => model.Closest) // for picking descendant, preferrably from Closest
-                    .DisplayWithSignificant(nameof(Selector)),
+                SelectorEntry("selector", nameof(Selector), () => model.Closest, // for picking descendant, preferrably from Closest
+                    "A CSS selector to the element containing the text of the event detail." +
+                    " See https://www.w3schools.com/cssref/css_selectors.php and https://www.w3schools.com/cssref/css_ref_pseudo_classes.php"),
 
-                Lbl("ignore nested text").DisplayWithChecked(nameof(IgnoreNestedText)),
-                Check(nameof(IgnoreNestedText))
-                    .DisplayWithChecked(nameof(IgnoreNestedText))
-                    .ToolTip("Whether to ignore the text of nested elements and only extract direct text nodes from the HTML." +
-                        " Does not apply if an attribute is set.")
-                    .ForwardFocusTo(model),
+                LabeledInput("ignore nested text", Check(nameof(IgnoreNestedText)),
+                    "Whether to ignore the text of nested elements and only extract direct text nodes from the HTML." +
+                    " Does not apply if an attribute is set.").DisplayWithChecked(nameof(IgnoreNestedText)),
 
-                Lbl("attribute").DisplayWithSignificant(nameof(Attribute)),
-                Entr(nameof(Attribute))
-                    .DisplayWithSignificant(nameof(Attribute))
-                    .ToolTip("The name of the attribute of the selected element to extract the text from.")
-                    .ForwardFocusTo(model),
+                TextEntry("attribute", nameof(Attribute), "The name of the attribute of the selected element to extract the text from."),
 
-                Lbl("match").DisplayWithSignificant(nameof(Match)),
-                Entr(nameof(Match))
-                    .DisplayWithSignificant(nameof(Match))
-                    .ToolTip("A pattern (Regular Expression https://en.wikipedia.org/wiki/Regular_expression in .NET flavour) that matches the part of text to extract." +
-                        " You may want to do this to extract text that is not cleanly selectable." +
-                        " https://regex101.com/ is great to debug your RegEx, learn and find existing patterns." +
-                        " If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.")
-                    .ForwardFocusTo(model)
+                TextEntry("match", nameof(Match),
+                    "A pattern (Regular Expression https://en.wikipedia.org/wiki/Regular_expression in .NET flavour) that matches the part of text to extract." +
+                    " You may want to do this to extract text that is not cleanly selectable." +
+                    " https://regex101.com/ is great to debug your RegEx, learn and find existing patterns." +
+                    " If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.")
             ];
 
             if (model.DateScrapeJob is not null) children.AddRange(
-                Lbl("date format"),
-                    Entr(nameof(Format))
-                        .ToolTip("The .NET date format used to parse the date." +
-                            " See https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")
-                        .ForwardFocusTo(model),
+                TextEntry("date format", nameof(Format),
+                    "The .NET date format used to parse the date." +
+                    " See https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings"),
 
-                Lbl("culture"),
-                Entr(nameof(Culture))
-                    .ToolTip("The language/country code used to parse the date in ISO 639 (en) or ISO 3166 format (en-US)." +
-                        " See https://en.wikipedia.org/wiki/Language_code")
-                    .ForwardFocusTo(model));
+                TextEntry("culture", nameof(Culture),
+                    "The language/country code used to parse the date in ISO 639 (en) or ISO 3166 format (en-US)." +
+                    " See https://en.wikipedia.org/wiki/Language_code"));
 
-            foreach (var child in children)
+            foreach (Microsoft.Maui.Controls.View child in children)
             {
-                if (child is Label label) label.CenterVertical();
+                child.Margins(left: 10);
                 form.Children.Add(child);
             }
 
@@ -334,8 +312,22 @@ public partial class ScrapeJobEditor : ObservableObject
             Children.Add(PreviewOrErrorList(itemsSource: nameof(PreviewResults),
                 hasFocus: nameof(HasFocus), hasError: nameof(HasErrors), source: model));
 
-            model.UpdatePreview();
+            model.UpdatePreview(); // once initially
         }
+
+        private HorizontalStackLayout SelectorEntry(string label, string property, Func<string?>? maybeGetDescendantOfClosest, string tooltip)
+            => HStack(5, Lbl(label).CenterVertical(),
+                createVisualSelectorEntry((Entry)HintedInput(Entr(property), tooltip), maybeGetDescendantOfClosest))
+                .DisplayWithSignificant(property);
+
+        private HorizontalStackLayout TextEntry(string label, string property, string tooltip)
+            => LabeledInput(label, Entr(property), tooltip).DisplayWithSignificant(property);
+
+        private HorizontalStackLayout LabeledInput(string label, Microsoft.Maui.Controls.View view, string tooltip)
+            => HStack(5, Lbl(label).CenterVertical(), HintedInput(view, tooltip));
+
+        private Microsoft.Maui.Controls.View HintedInput(Microsoft.Maui.Controls.View view, string tooltip)
+            => view.ToolTip(tooltip).ForwardFocusTo(model);
 
         internal static VerticalStackLayout PreviewOrErrorList(string itemsSource, string hasFocus, string hasError, object source)
             => new VerticalStackLayout { Spacing = 10, Margin = new Thickness(0, verticalSize: 10) }
