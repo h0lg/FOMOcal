@@ -124,7 +124,7 @@ partial class VenueEditor
             return new()
             {
                 IsVisible = false,
-                BackgroundColor = Colors.DarkSlateGray,
+                StyleClass = ["VisualSelector"],
                 HeightRequest = 0, // to initialize it collapsed and fix first opening animation
                 Children = {
                     Grd(cols: [Star], rows: [Auto, Auto, Star], spacing: 0,

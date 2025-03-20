@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.Markup;
 using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
@@ -101,6 +102,18 @@ internal static class Widgets
     }
 }
 
+internal static class Styles
+{
+    internal static class Label
+    {
+        internal static string Headline = GetName(), SubHeadline = GetName(),
+            Clickable = GetName(), Help = GetName(), Error = GetName(), Success = GetName(),
+            Demoted = GetName(), VenueRowDetail = GetName();
+    }
+
+    private static string GetName([CallerMemberName] string key = "") => key;
+}
+
 internal static class ViewExtensions
 {
     internal static T OnFocusChanged<T>(this T vis, Action<VisualElement, bool> setFocused) where T : VisualElement
@@ -108,6 +121,12 @@ internal static class ViewExtensions
         vis.Focused += (_, _) => setFocused(vis, true);
         vis.Unfocused += (_, _) => setFocused(vis, false);
         return vis;
+    }
+
+    internal static T StyleClass<T>(this T styleable, string styleClass) where T : StyleableElement
+    {
+        if (styleClass != null) styleable.StyleClass = [styleClass];
+        return styleable;
     }
 
     internal static T ToolTip<T>(this T bindable, string text) where T : BindableObject

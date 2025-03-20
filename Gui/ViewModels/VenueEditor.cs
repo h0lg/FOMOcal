@@ -321,21 +321,21 @@ public partial class VenueEditor : ObservableObject
                 hasError: nameof(EventSelectorHasError), source: model);
 
             return VStack(spacing: 5,
-                Lbl("How to dig a gig").FontSize(16).Bold().CenterVertical(),
+                Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),
                 Lbl("The CSS selector to the event containers - of which there are probably multiple on the page," +
                     " each containing as many of the event details as possible - but only of a single event." +
                     " If you see that the event page groups multiple events on the same day into a group, try it out on those" +
                     " and choose a container that contains only one of their details." +
                     " You'll be able to select the date or other excluded event details from outside the container later.")
                     .BindVisible(nameof(EventSelectorHasFocus)) // display if entry is focused
-                    .TextColor(Colors.Yellow),
+                    .StyleClass(Styles.Label.Help),
                 Lbl("You may want to try this option if your event selector doesn't match anything without it." +
                     " It will load the page and wait for an element matching your selector to become available," +
                     " return when it does and time out if it doesn't after 10s. This works around pages that lazy-load events." +
                     " Some web servers only return an empty template of a page on the first request to improve the response time," +
                     " then fetch more data asynchronously and render it into the placeholders using a script running in your browser.")
                     .BindVisible(nameof(IsFocused), source: waitForJsRendering.Switch) // display if checkbox is focused
-                    .TextColor(Colors.Yellow),
+                    .StyleClass(Styles.Label.Help),
                 HWrap(5,
                     Lbl("Event container").Bold(), containerSelector,
                     Lbl("wait for JS rendering"), waitForJsRendering.Wrapper,
@@ -395,6 +395,7 @@ public partial class VenueEditor : ObservableObject
         private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)
         {
             Label lbl = Lbl("🖽").ToolTip("🥢 pluck from the page").FontSize(20).CenterVertical()
+                .StyleClass(Styles.Label.Clickable)
                 .TapGesture(async () =>
                 {
                     (string selector, bool pickDescendant) = pickRelativeTo.Invoke();

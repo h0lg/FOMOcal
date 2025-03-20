@@ -189,10 +189,10 @@ public partial class VenueList : ObservableObject
                 .ItemTemplate(new DataTemplate(() =>
                 {
                     var name = BndLbl(nameof(Venue.Name)).FontSize(16).Wrap();
-                    var location = BndLbl(nameof(Venue.Location)).FontSize(12).TextColor(Colors.Gray).Wrap();
+                    var location = BndLbl(nameof(Venue.Location)).StyleClass(Styles.Label.VenueRowDetail);
 
                     var lastRefreshed = BndLbl(nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:g}")
-                        .FontSize(12).TextColor(Colors.Gray)
+                        .StyleClass(Styles.Label.VenueRowDetail)
                         .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastRefreshed.HasValue);
 
                     var refresh = Btn("⛏", nameof(RefreshVenueCommand), source: model);
@@ -208,7 +208,7 @@ public partial class VenueList : ObservableObject
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
-            var title = Lbl("🏟 Venues").Bold().FontSize(20).CenterVertical();
+            var title = Lbl("🏟 Venues").StyleClass(Styles.Label.Headline).CenterVertical();
             var importVenues = Btn("📥", nameof(ImportVenuesCommand));
             var exportVenues = Btn("🥡", nameof(ExportVenuesCommand));
             var addVenue = Btn("➕", nameof(AddVenueCommand));

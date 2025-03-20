@@ -191,7 +191,8 @@ public partial class EventList : ObservableObject
                     var location = HStack(5,
                         BndLbl(nameof(Event.Venue), stringFormat: "🏟 {0}"),
                         OptionalTextLabel(nameof(Event.Stage), "🏛 {0}"),
-                        BndLbl(nameof(Event.Scraped), stringFormat: "⛏ {0:g}"));
+                        BndLbl(nameof(Event.Scraped), stringFormat: "⛏ {0:g}")
+                            .StyleClass(Styles.Label.Demoted));
 
                     var tickets = VStack(5,
                         OptionalTextLabel(nameof(Event.PresalePrice), "💳 {0}"),
@@ -218,7 +219,7 @@ public partial class EventList : ObservableObject
 
             Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5,
                 HWrap(new Thickness(0, 0, right: 5, 0), pastEvents,
-                    Lbl("Gigs").Bold().FontSize(20), searchBar.Grow(1), commands).View,
+                    Lbl("Gigs").StyleClass(Styles.Label.Headline), searchBar.Grow(1), commands).View,
                 list.Row(1));
         }
 

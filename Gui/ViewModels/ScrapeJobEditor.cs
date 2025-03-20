@@ -272,7 +272,7 @@ public partial class ScrapeJobEditor : ObservableObject
             BindingContext = model;
             Spacing = 5;
 
-            var helper = BndLbl(nameof(Help)).TextColor(Colors.Yellow).BindIsVisibleToValueOf(nameof(Help));
+            var helper = BndLbl(nameof(Help)).StyleClass(Styles.Label.Help).BindIsVisibleToValueOf(nameof(Help));
             FlexLayout form = new() { Wrap = FlexWrap.Wrap, AlignItems = FlexAlignItems.Center };
 
             (Switch Switch, Grid Wrapper) displayInputs = Swtch(nameof(DisplayInputs));
@@ -353,11 +353,30 @@ public partial class ScrapeJobEditor : ObservableObject
             => view.ToolTip(tooltip).ForwardFocusTo(model);
 
         internal static VerticalStackLayout PreviewOrErrorList(string itemsSource, string hasFocus, string hasError, object source)
-            => new VerticalStackLayout { Spacing = 10, Margin = new Thickness(0, verticalSize: 10) }
+        {
+            var observable = source as ObservableObject;
+            var hasErrorProperty = observable!.GetType().GetProperty(hasError)!;
+
+            var list = new VerticalStackLayout { Spacing = 10, Margin = new Thickness(0, verticalSize: 10) }
                 .Bind(BindableLayout.ItemsSourceProperty, itemsSource)
                 .BindVisible(new Binding(hasError), Converters.Or, new Binding(hasFocus)) // display if either has error or focus
-                .ItemTemplate(() => BndLbl().Bind(Label.TextColorProperty, hasError,
-                    convert: static (bool err) => err ? Colors.IndianRed : Colors.ForestGreen, source: source));
+                .ItemTemplate(() => SetItemClass(BndLbl(), HasError(hasErrorProperty, source))); // bind item with correct class on construction
+
+            // attaching event handler to set StyleClass on Label children because that property is not bindable
+            observable.PropertyChanged += (o, e) =>
+            {
+                if (e.PropertyName == hasError)
+                {
+                    bool hasErr = HasError(hasErrorProperty, source);
+                    foreach (Label label in list.Children) SetItemClass(label, hasErr);
+                }
+            };
+
+            return list;
+
+            static bool HasError(PropertyInfo hasErrorProperty, object source) => (bool)hasErrorProperty.GetValue(source)!;
+            static Label SetItemClass(Label label, bool hasErr) => label.StyleClass(hasErr ? Styles.Label.Error : Styles.Label.Success);
+        }
     }
 }
 
