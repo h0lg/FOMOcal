@@ -230,7 +230,7 @@ public partial class EventList : ObservableObject
 
                     return new Border
                     {
-                        Padding = 10,
+                        StyleClass = ["list-event"],
 
                         Content = new Grid
                         {
@@ -250,8 +250,7 @@ public partial class EventList : ObservableObject
                         convert: static (bool isPast) => isPast ? 0.5 : 1.0);
                 })
             }
-                .Bind(SelectableItemsView.SelectedItemsProperty, nameof(SelectedEvents))
-                .StyleSelected(typeof(Border), BackgroundColorProperty, Colors.Indigo);
+                .Bind(SelectableItemsView.SelectedItemsProperty, nameof(SelectedEvents));
 
             list.SelectionChanged += (o, e) => model.HasSelection = e.CurrentSelection.Count > 0;
 
