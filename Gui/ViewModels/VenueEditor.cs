@@ -201,6 +201,40 @@ public partial class VenueEditor : ObservableObject
             Title = model.isDeletable ? "Edit " + model.originalVenueName : "Add a venue";
 
             // Step 1: Venue Name and Program URL
+            var venueFields = VenueFields();
+
+            // Step 2: Event Selector
+            var eventContainer = EventContainerSelector().BindVisible(nameof(ShowEventContainer));
+
+            // Step 3: Event Details (Name, Date)
+            var requiredEventFields = VStack(0,
+                new ScrapeJobEditor.View(model.eventName, RelativeSelectorEntry),
+                new ScrapeJobEditor.View(model.eventDate, RelativeSelectorEntry))
+                .BindVisible(nameof(ShowRequiredEventFields));
+
+            // Step 4: Additional Event Details
+            var optionalEventFields = OptionalEventFields().BindVisible(nameof(ShowOptionalEventFields));
+
+            // form controls
+            var saveButton = Btn("💾 Save this venue", nameof(SaveCommand))
+                .BindVisible(nameof(ShowOptionalEventFields));
+
+            var deleteButton = Btn("🗑 Delete this venue", nameof(DeleteCommand)).IsVisible(model.isDeletable);
+
+            form = new ScrollView
+            {
+                Content = VStack(20,
+                    //progress,
+                    venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton)
+                    .Padding(20)
+            };
+
+            visualSelector = CreateVisualSelector();
+            Content = Grd(cols: [Star], rows: [Star, Auto], spacing: 0, form, visualSelector.Row(1));
+        }
+
+        private static VerticalStackLayout VenueFields()
+        {
             var urlEntry = Entr(nameof(ProgramUrl), placeholder: "Program page URL");
             var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
 
@@ -209,9 +243,11 @@ public partial class VenueEditor : ObservableObject
                     getter: static (VenueEditor vm) => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
-            var venueFields = VStack(0, urlEntry, nameEntry, location);
+            return VStack(0, urlEntry, nameEntry, location);
+        }
 
-            // Step 2: Event Selector
+        private Grid EventContainerSelector()
+        {
             Action<VisualElement, bool> setEventSelectorRelatedFocused = (vis, focused) => model.EventSelectorRelatedHasFocus = focused;
 
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector")
@@ -234,7 +270,7 @@ public partial class VenueEditor : ObservableObject
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
                 hasError: nameof(EventSelectorHasError), source: model);
 
-            var eventContainer = Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,
+            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("How to dig a gig").FontSize(16).Bold().CenterVertical(),
                 Lbl("The CSS selector to the event containers - of which there are probably multiple on the page," +
                     " each containing as many of the event details as possible - but only of a single event." +
@@ -252,19 +288,14 @@ public partial class VenueEditor : ObservableObject
                     .TextColor(Colors.Yellow).Row(1).ColumnSpan(4),
                 Lbl("Event container").Bold().CenterVertical().Row(2), containerSelector.Row(2).Column(1),
                 Lbl("wait for JS rendering").CenterVertical().Row(2).Column(2), waitForJsRendering.Wrapper.Row(2).Column(3),
-                previewOrErrors.Row(3).ColumnSpan(4))
-                .BindVisible(nameof(ShowEventContainer));
+                previewOrErrors.Row(3).ColumnSpan(4));
+        }
 
-            // Step 3: Event Details (Name, Date)
-            var requiredEventFields = VStack(0,
-                new ScrapeJobEditor.View(model.eventName, RelativeSelectorEntry),
-                new ScrapeJobEditor.View(model.eventDate, RelativeSelectorEntry))
-                .BindVisible(nameof(ShowRequiredEventFields));
-
-            // Step 4: Additional Event Details
+        private VerticalStackLayout OptionalEventFields()
+        {
             var evt = model.venue.Event;
 
-            var optionalEventFields = VStack(0,
+            return VStack(0,
                 OptionalScrapeJob("Subtitle", evt.SubTitle, nameof(Venue.EventScrapeJob.SubTitle)),
                 OptionalScrapeJob("Description", evt.Description, nameof(Venue.EventScrapeJob.Description)),
                 OptionalScrapeJob("Genres", evt.Genres, nameof(Venue.EventScrapeJob.Genres)),
@@ -275,24 +306,7 @@ public partial class VenueEditor : ObservableObject
                 OptionalScrapeJob("Door price", evt.DoorsPrice, nameof(Venue.EventScrapeJob.DoorsPrice)),
                 OptionalScrapeJob("Event page", evt.Url, nameof(Venue.EventScrapeJob.Url), defaultAttribute: "href"),
                 OptionalScrapeJob("Image", evt.ImageUrl, nameof(Venue.EventScrapeJob.ImageUrl), defaultAttribute: "src"),
-                OptionalScrapeJob("Tickets", evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href"))
-                .BindVisible(nameof(ShowOptionalEventFields));
-
-            // form controls
-            var saveButton = Btn("💾 Save this venue", nameof(SaveCommand))
-                .BindVisible(nameof(ShowOptionalEventFields));
-
-            var deleteButton = Btn("🗑 Delete this venue", nameof(DeleteCommand)).IsVisible(model.isDeletable);
-
-            form = new ScrollView
-            {
-                Content = VStack(20,
-                    venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton)
-                    .Padding(20)
-            };
-
-            visualSelector = CreateVisualSelector();
-            Content = Grd(cols: [Star], rows: [Star, Auto], spacing: 0, form, visualSelector.Row(1));
+                OptionalScrapeJob("Tickets", evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href"));
 
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
                => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute), RelativeSelectorEntry);
