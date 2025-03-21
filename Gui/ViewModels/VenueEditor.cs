@@ -227,7 +227,8 @@ public partial class VenueEditor : ObservableObject
                 });
 
             var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
-            var waitForJsRendering = Check(nameof(WaitForJsRendering)).OnFocusChanged(setEventSelectorRelatedFocused);
+            (Switch Switch, Grid Wrapper) waitForJsRendering = Swtch(nameof(WaitForJsRendering));
+            waitForJsRendering.Switch.OnFocusChanged(setEventSelectorRelatedFocused);
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
@@ -247,10 +248,10 @@ public partial class VenueEditor : ObservableObject
                     " return when it does and time out if it doesn't after 10s. This works around pages that lazy-load events." +
                     " Some web servers only return an empty template of a page on the first request to improve the response time," +
                     " then fetch more data asynchronously and render it into the placeholders using a script running in your browser.")
-                    .BindVisible(nameof(IsFocused), source: waitForJsRendering) // display if checkbox is focused
+                    .BindVisible(nameof(IsFocused), source: waitForJsRendering.Switch) // display if checkbox is focused
                     .TextColor(Colors.Yellow).Row(1).ColumnSpan(4),
                 Lbl("Event container").Bold().CenterVertical().Row(2), containerSelector.Row(2).Column(1),
-                Lbl("wait for JS rendering").CenterVertical().Row(2).Column(2), waitForJsRendering.Row(2).Column(3),
+                Lbl("wait for JS rendering").CenterVertical().Row(2).Column(2), waitForJsRendering.Wrapper.Row(2).Column(3),
                 previewOrErrors.Row(3).ColumnSpan(4))
                 .BindVisible(nameof(ShowEventContainer));
 

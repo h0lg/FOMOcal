@@ -15,6 +15,13 @@ internal static class Widgets
 
     internal static Label Lbl(string text) => new() { Text = text };
 
+    internal static HorizontalStackLayout LbldView(string label, View view, string? tooltip = null)
+    {
+        HorizontalStackLayout wrapper = HStack(5, Lbl(label), view);
+        if (tooltip.IsSignificant()) wrapper.ToolTip(tooltip!);
+        return wrapper;
+    }
+
     internal static Label BndLbl(string path = ".", string? stringFormat = null)
         => new Label().Bind(Label.TextProperty, path, stringFormat: stringFormat);
 
@@ -23,6 +30,14 @@ internal static class Widgets
 
     internal static CheckBox Check(string isCheckedPropertyPath)
         => new CheckBox().Margins(right: -20).Bind(CheckBox.IsCheckedProperty, isCheckedPropertyPath);
+
+    internal static (Switch Switch, Grid Wrapper) Swtch(string isToggledPropertyPath)
+    {
+        Switch swtch = new Switch().Bind(Switch.IsToggledProperty, isToggledPropertyPath);
+        return (Switch: swtch, Wrapper: SwtchWrp(swtch));
+    }
+
+    internal static Grid SwtchWrp(Switch swtch) => Grd(cols: [42], rows: [Auto], children: swtch);
 
     internal static Grid Grd(GridLength[] cols, GridLength[] rows, double spacing = 0, params IView[] children)
     {

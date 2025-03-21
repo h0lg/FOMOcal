@@ -264,10 +264,16 @@ public partial class ScrapeJobEditor : ObservableObject
             var helper = BndLbl(nameof(Help)).TextColor(Colors.Yellow).BindIsVisibleToValueOf(nameof(Help));
             FlexLayout form = new() { Wrap = FlexWrap.Wrap, AlignItems = FlexAlignItems.Center };
 
+            (Switch Switch, Grid Wrapper) displayInputs = Swtch(nameof(DisplayInputs));
+            (Switch Switch, Grid Wrapper) ignoreNestedText = Swtch(nameof(IgnoreNestedText));
+            displayInputs.Switch.ForwardFocusTo(model);
+
+            HintedInput(ignoreNestedText.Switch,
+                "Whether to ignore the text of nested elements and only extract direct text nodes from the HTML." +
+                " Does not apply if an attribute is set.");
 
             List<IView> children = [
-                HStack(5, Lbl(model.label).Bold(),
-                    Check(nameof(DisplayInputs)).ForwardFocusTo(model).BindVisible(nameof(IsEmpty))),
+                HStack(5, Lbl(model.label).Bold(), displayInputs.Wrapper.BindVisible(nameof(IsEmpty))),
 
                 SelectorEntry("closest", nameof(Closest), null, // for picking common ancestor
                     "An optional CSS selector to a common ancestor of the event container an the event detail" +
@@ -278,9 +284,7 @@ public partial class ScrapeJobEditor : ObservableObject
                     "A CSS selector to the element containing the text of the event detail." +
                     " See https://www.w3schools.com/cssref/css_selectors.php and https://www.w3schools.com/cssref/css_ref_pseudo_classes.php"),
 
-                LabeledInput("ignore nested text", Check(nameof(IgnoreNestedText)),
-                    "Whether to ignore the text of nested elements and only extract direct text nodes from the HTML." +
-                    " Does not apply if an attribute is set.").DisplayWithChecked(nameof(IgnoreNestedText)),
+                LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),
 
                 TextEntry("attribute", nameof(Attribute), "The name of the attribute of the selected element to extract the text from."),
 

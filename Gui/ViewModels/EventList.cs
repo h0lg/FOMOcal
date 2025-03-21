@@ -149,7 +149,7 @@ public partial class EventList : ObservableObject
 
                 Lbl("🕰 Past gigs").CenterVertical().Bold()
                     .TapGesture(() => model.ShowPastEvents = !model.ShowPastEvents),
-                Check(nameof(ShowPastEvents)));
+                Swtch(nameof(ShowPastEvents)).Wrapper);
 
             var searchBar = new SearchBar().Placeholder("Filter gigs by pipe | separated | terms")
                 .Bind(SearchBar.TextProperty, nameof(SearchText));

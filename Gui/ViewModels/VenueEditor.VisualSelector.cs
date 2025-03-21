@@ -48,12 +48,11 @@ partial class VenueEditor
             const string pickedSelector = nameof(PickedSelector);
 
             var header = HWrap(5,
-                Check(nameof(EnablePicking))
+                Swtch(nameof(EnablePicking)).Wrapper
                     .ToolTip("Toggle picking mode. You may want to disable this to interact with the page" +
                         " as you would in a normal browser, e.g. to close popups and overlays" +
                         " - or play with those eye-opening 🍪 cookie reminders sponsored by" +
-                        " the EU if you're lucky enough to be browsing from there.")
-                    .Margins(top: 5, right: -13),
+                        " the EU if you're lucky enough to be browsing from there."),
                 Lbl("Tap an element on the page to pick it.").TapGesture(TogglePicking),
                 Btn("⿴ Pick the outer element").BindIsVisibleToValueOf(pickedSelector).TapGesture(PickParent),
                 Lbl("until you're happy with your pick.").BindIsVisibleToValueOf(pickedSelector),
