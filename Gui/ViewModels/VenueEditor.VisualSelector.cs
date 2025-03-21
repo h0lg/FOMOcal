@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
+using SelectorOptions = FomoCal.Gui.ViewModels.AutomatedEventPageView.PickedSelectorOptions;
 
 namespace FomoCal.Gui.ViewModels;
 
@@ -15,12 +16,14 @@ partial class VenueEditor
     partial class Page
     {
         private readonly AbsoluteLayout visualSelector;
+        private readonly SelectorOptions selectorOptions = new() { SemanticClasses = true, LayoutClasses = true };
         private AutomatedEventPageView? pageView;
         private string? selectedQuery;
 
         private AbsoluteLayout CreateVisualSelector()
         {
             pageView = new(model.venue);
+            selectorOptions.PropertyChanged += (o, e) => pageView.SetPickedSelectorDetail(selectorOptions);
 
             pageView.HtmlWithEventsLoaded += async html =>
             {
@@ -59,11 +62,22 @@ partial class VenueEditor
                 Lbl("until you're happy with your pick.").BindIsVisibleToValueOf(pickedSelector),
                 Btn("🥢 Toggle selectors").BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector));
 
-            var selectors = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto], spacing: 5,
+            var selectors = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("Select parts of either selector you'd like to use.").ColumnSpan(2),
                 SelectorDisplay(pickedSelector).Row(1).ColumnSpan(2),
-                Btn("➕").TapGesture(AppendSelectedQuery).Row(2),
-                Lbl("Append the selected text to your query to try it out.").Row(2).Column(2))
+                HWrap(5,
+                    Lbl("Selector detail").Bold(),
+                    SelectorOption("tag name", nameof(SelectorOptions.TagName)),
+                    SelectorOption("id", nameof(SelectorOptions.Ids)),
+                    Lbl("classes").Bold(),
+                    SelectorOption("with style", nameof(SelectorOptions.LayoutClasses)),
+                    SelectorOption("without", nameof(SelectorOptions.SemanticClasses)),
+                    Lbl("other attibutes").Bold(),
+                    SelectorOption("names", nameof(SelectorOptions.OtherAttributes)),
+                    SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues)),
+                    SelectorOption("position", nameof(SelectorOptions.Position))).Row(2).ColumnSpan(2),
+                Lbl("Select parts of the selector text you like to use and append them to your query to try them out.").Row(3),
+                Btn("➕").TapGesture(AppendSelectedQuery).Row(3).Column(1))
                 .BindVisible(nameof(ShowPickedSelector));
 
             return new()
@@ -79,6 +93,9 @@ partial class VenueEditor
                 }
             };
         }
+
+        private HorizontalStackLayout SelectorOption(string label, string isCheckedPropertyPath)
+            => HStack(5, Check(isCheckedPropertyPath, source: selectorOptions), Lbl(label).CenterVertical());
 
         private Editor SelectorDisplay(string propertyPath)
         {

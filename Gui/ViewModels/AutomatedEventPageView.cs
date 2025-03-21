@@ -57,6 +57,12 @@ public partial class AutomatedEventPageView : WebView
     private static readonly JsonSerializerOptions jsonOptionSerializerOptions
         = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
+    internal void SetPickedSelectorDetail(PickedSelectorOptions selectorDetail)
+    {
+        var json = JsonSerializer.Serialize(selectorDetail, jsonOptionSerializerOptions);
+        EvaluateJavaScriptAsync($"{picking}withOptions({json});");
+    }
+
     private async void OnNavigatingAsync(object? sender, WebNavigatingEventArgs args)
     {
         /*  Using Navigating event triggered by setting location to an identifyable fixed URL in JS to call back to the host app.
@@ -145,5 +151,16 @@ public partial class AutomatedEventPageView : WebView
         [ObservableProperty] private string selector;
         [ObservableProperty] private uint intervalDelayMs;
         [ObservableProperty] private uint maxTries;
+    }
+
+    internal partial class PickedSelectorOptions : ObservableObject
+    {
+        [ObservableProperty] private bool tagName;
+        [ObservableProperty] private bool ids;
+        [ObservableProperty] private bool semanticClasses;
+        [ObservableProperty] private bool layoutClasses;
+        [ObservableProperty] private bool otherAttributes;
+        [ObservableProperty] private bool otherAttributeValues;
+        [ObservableProperty] private bool position;
     }
 }

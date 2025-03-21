@@ -28,8 +28,8 @@ internal static class Widgets
     internal static Entry Entr(string path, string? placeholder = null)
         => new Entry { Placeholder = placeholder }.Bind(Entry.TextProperty, path);
 
-    internal static CheckBox Check(string isCheckedPropertyPath)
-        => new CheckBox().Margins(right: -20).Bind(CheckBox.IsCheckedProperty, isCheckedPropertyPath);
+    internal static CheckBox Check(string isCheckedPropertyPath, object? source = null)
+        => new CheckBox().Margins(right: -20).Bind(CheckBox.IsCheckedProperty, isCheckedPropertyPath, source: source);
 
     internal static (Switch Switch, Grid Wrapper) Swtch(string isToggledPropertyPath)
     {

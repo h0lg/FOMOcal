@@ -21,6 +21,37 @@
         action.call(undefined, 'click', intercept, true);
     }
 
+    const classStyleCache = new Map();
+
+    function hasStyles(className) {
+        const selector = '.' + className;
+        if (classStyleCache.has(selector)) return classStyleCache.get(selector);
+        console.debug('searching styles for', className);
+
+        for (const sheet of document.styleSheets) {
+            console.debug('searching sheet', sheet.href || sheet.ownerNode);
+
+            try {
+                const rules = sheet.cssRules || [];
+
+                for (const rule of rules) {
+                    if (rule.selectorText && rule.selectorText.includes(selector)) {
+                        console.debug('found styles for', className);
+                        classStyleCache.set(selector, true);
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.error('error accessing cssRules of style sheet', sheet, e);
+                continue; // Some stylesheets are not accessible due to CORS
+            }
+        }
+
+        console.debug('found no styles for', className);
+        classStyleCache.set(className, false);
+        return false;
+    }
+
     function getClosestCommonAncestor(element, selector) {
         while (element) {
             if (element.querySelector(selector)) return element;
@@ -30,18 +61,71 @@
         return null;
     }
 
+    const selectorDetail = {
+        tagName: false,
+        ids: false,
+        semanticClasses: true,
+        layoutClasses: true,
+        otherAttributes: false,
+        otherAttributeValues: false,
+        position: false
+    };
+
+    function getClasses(element) {
+        if (!element.className || !selectorDetail.semanticClasses && !selectorDetail.layoutClasses) return [];
+        let classes = Array.from(element.classList);
+
+        if (selectorDetail.semanticClasses && !selectorDetail.layoutClasses)
+            classes = classes.filter(cls => !hasStyles(cls));
+        else if (selectorDetail.layoutClasses && !selectorDetail.semanticClasses)
+            classes = classes.filter(cls => hasStyles(cls));
+
+        return classes;
+    }
+
+    function getOtherAttributes(element) {
+        return Array.from(element.attributes)
+            .filter(attr => attr.name !== 'id' && attr.name !== 'class');  // Exclude id and class
+    }
+
+    function normalizeAttributeValue(value) {
+        return encodeURIComponent(value.trim().replace(/\s+/g, ' '));
+    }
+
+    function getAttributeDetail(attr) {
+        return selectorDetail.otherAttributeValues
+            ? attr.name + `='${normalizeAttributeValue(attr.value)}'`
+            : attr.name;
+    }
+
+    function getPosition(element) {
+        const siblings = Array.from(element.parentNode.children);
+        return siblings.length > 1 ? siblings.indexOf(element) + 1 : 1;
+    }
+
     function createCssSelector(element) {
-            let selector = element.tagName.toLowerCase();
-            if (element.id) selector += `#${element.id}`;
+        let selector = '';
 
-            if (element.className) {
-                let classes = Array.from(element.classList);
-                if (classes.length) selector += `.${classes.join('.')}`;
-                let siblingIndex = Array.from(element.parentNode.children).indexOf(element) + 1;
-                selector += `:nth-child(${siblingIndex})`;
-            }
+        if (selectorDetail.ids && element.id) selector += `#${element.id}`;
 
-        return selector;
+        const classes = getClasses(element);
+        if (classes.length) selector += `.${classes.join('.')}`;
+
+        if (selectorDetail.otherAttributes) {
+            const attributes = getOtherAttributes(element).map(attr => `[${getAttributeDetail(attr)}]`);
+            if (attributes.length) selector += attributes.join('');
+        }
+
+        if (selectorDetail.position) {
+            const position = getPosition(element);
+            if (position > 1) selector += `:nth-child(${position})`;
+        }
+
+        // make sure to return a valid selector if selectorDetail.tagName is false
+        const elementName = selectorDetail.tagName || !selector.length || selector.startsWith(':')
+            ? element.tagName.toLowerCase() : '';
+
+        return elementName + selector;
     }
 
     function getCssSelector(anchor, element) {
@@ -56,10 +140,11 @@
     }
 
     function pick(target) {
+        if (!target) return;
         let css;
 
         if (pickDescendant) {
-        const root = target.closest(anchor);
+            const root = target.closest(anchor);
             console.info('picking descendant relative to', anchor);
             if (root === null) notifyPicked('');
             css = getCssSelector(root, target);
@@ -100,6 +185,11 @@
             console.info('picking relative to', anchorSelector, 'descendant', descendant);
             anchor = anchorSelector;
             pickDescendant = descendant;
+        },
+
+        withOptions: detail => {
+            Object.assign(selectorDetail, detail);
+            pick(document.querySelector(picked));
         },
 
         parent: () => { pick(document.querySelector(picked).parentNode); }
