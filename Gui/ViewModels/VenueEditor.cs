@@ -19,10 +19,13 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] private bool showEventContainer;
     [ObservableProperty] private bool showRequiredEventFields;
     [ObservableProperty] private bool showOptionalEventFields;
+
     [ObservableProperty] private bool eventSelectorHasFocus;
     [ObservableProperty] private bool eventSelectorRelatedHasFocus; // for when related controls have focus
     [ObservableProperty] private bool eventSelectorHasError;
     [ObservableProperty] private string[]? previewedEventTexts;
+    [ObservableProperty] private int skipEvents;
+    [ObservableProperty] private int takeEvents = 5;
 
     private AngleSharp.Dom.IDocument? programDocument;
     private AngleSharp.Dom.IElement[]? previewedEvents;
@@ -101,6 +104,12 @@ public partial class VenueEditor : ObservableObject
         eventDate = ScrapeJob("Date", evt.Date, nameof(Venue.EventScrapeJob.Date));
         eventName.IsValidChanged += (_, _) => RevealMore();
         eventDate.IsValidChanged += (_, _) => RevealMore();
+
+        PropertyChanged += (o, e) =>
+        {
+            if (e.PropertyName == nameof(SkipEvents) || e.PropertyName == nameof(TakeEvents))
+                UpdateEventSelectorPreview();
+        };
     }
 
     private ScrapeJobEditor ScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty,
@@ -129,25 +138,32 @@ public partial class VenueEditor : ObservableObject
         ShowEventContainer = hasName && hasProgramUrl;
         ShowRequiredEventFields = ShowEventContainer && EventSelector.IsSignificant();
         ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValid && eventDate.IsValid;
+        if (ShowRequiredEventFields && previewedEvents == null) UpdateEventSelectorPreview();
+        revealingMore.Release();
+    }
 
-        if (ShowRequiredEventFields && programDocument != null && previewedEvents == null)
+    private void UpdateEventSelectorPreview()
+    {
+        if (programDocument == null)
         {
-            try
-            {
-                previewedEvents = programDocument.SelectEvents(venue).Take(5).ToArray();
-                PreviewedEventTexts = previewedEvents.Select(e => e.TextContent.NormalizeWhitespace()).ToArray();
-                scrapeJobEditors.ForEach(e => e.UpdatePreview());
-                EventSelectorHasError = false;
-            }
-            catch (Exception ex)
-            {
-                previewedEvents = null;
-                PreviewedEventTexts = [ex.Message];
-                EventSelectorHasError = true;
-            }
+            PreviewedEventTexts = null;
+            EventSelectorHasError = false;
+            return;
         }
 
-        revealingMore.Release();
+        try
+        {
+            previewedEvents = programDocument.SelectEvents(venue).Skip(SkipEvents).Take(TakeEvents).ToArray();
+            PreviewedEventTexts = previewedEvents.Select(e => e.TextContent.NormalizeWhitespace()).ToArray();
+            scrapeJobEditors.ForEach(e => e.UpdatePreview());
+            EventSelectorHasError = false;
+        }
+        catch (Exception ex)
+        {
+            previewedEvents = null;
+            PreviewedEventTexts = [ex.Message];
+            EventSelectorHasError = true;
+        }
     }
 
     [RelayCommand]
@@ -246,7 +262,7 @@ public partial class VenueEditor : ObservableObject
             return VStack(0, urlEntry, nameEntry, location);
         }
 
-        private Grid EventContainerSelector()
+        private VerticalStackLayout EventContainerSelector()
         {
             Action<VisualElement, bool> setEventSelectorRelatedFocused = (vis, focused) => model.EventSelectorRelatedHasFocus = focused;
 
@@ -270,7 +286,7 @@ public partial class VenueEditor : ObservableObject
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
                 hasError: nameof(EventSelectorHasError), source: model);
 
-            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,
+            return VStack(spacing: 5,
                 Lbl("How to dig a gig").FontSize(16).Bold().CenterVertical(),
                 Lbl("The CSS selector to the event containers - of which there are probably multiple on the page," +
                     " each containing as many of the event details as possible - but only of a single event." +
@@ -278,17 +294,21 @@ public partial class VenueEditor : ObservableObject
                     " and choose a container that contains only one of their details." +
                     " You'll be able to select the date or other excluded event details from outside the container later.")
                     .BindVisible(nameof(EventSelectorHasFocus)) // display if entry is focused
-                    .TextColor(Colors.Yellow).Row(1).ColumnSpan(4),
+                    .TextColor(Colors.Yellow),
                 Lbl("You may want to try this option if your event selector doesn't match anything without it." +
                     " It will load the page and wait for an element matching your selector to become available," +
                     " return when it does and time out if it doesn't after 10s. This works around pages that lazy-load events." +
                     " Some web servers only return an empty template of a page on the first request to improve the response time," +
                     " then fetch more data asynchronously and render it into the placeholders using a script running in your browser.")
                     .BindVisible(nameof(IsFocused), source: waitForJsRendering.Switch) // display if checkbox is focused
-                    .TextColor(Colors.Yellow).Row(1).ColumnSpan(4),
-                Lbl("Event container").Bold().CenterVertical().Row(2), containerSelector.Row(2).Column(1),
-                Lbl("wait for JS rendering").CenterVertical().Row(2).Column(2), waitForJsRendering.Wrapper.Row(2).Column(3),
-                previewOrErrors.Row(3).ColumnSpan(4));
+                    .TextColor(Colors.Yellow),
+                HWrap(5,
+                    Lbl("Event container").Bold(), containerSelector,
+                    Lbl("wait for JS rendering"), waitForJsRendering.Wrapper,
+                    Lbl("Preview events").Bold(),
+                    LabeledStepper("skipping", nameof(SkipEvents), max: 100),
+                    LabeledStepper("and taking", nameof(TakeEvents), max: 10)),
+                previewOrErrors);
         }
 
         private VerticalStackLayout OptionalEventFields()
@@ -310,6 +330,14 @@ public partial class VenueEditor : ObservableObject
 
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
                => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute), RelativeSelectorEntry);
+        }
+
+        private static HorizontalStackLayout LabeledStepper(string label, string valueProperty, int max)
+        {
+            Stepper stepper = new() { Minimum = 0, Maximum = max, Increment = 1 };
+            stepper.Bind(Stepper.ValueProperty, valueProperty);
+            var display = BndLbl(nameof(Stepper.Value), source: stepper);
+            return HStack(5, Lbl(label), stepper, display);
         }
 
         private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)

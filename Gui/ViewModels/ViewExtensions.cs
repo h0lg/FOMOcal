@@ -22,8 +22,8 @@ internal static class Widgets
         return wrapper;
     }
 
-    internal static Label BndLbl(string path = ".", string? stringFormat = null)
-        => new Label().Bind(Label.TextProperty, path, stringFormat: stringFormat);
+    internal static Label BndLbl(string path = ".", string? stringFormat = null, object? source = null)
+        => new Label().Bind(Label.TextProperty, path, stringFormat: stringFormat, source: source);
 
     internal static Entry Entr(string path, string? placeholder = null)
         => new Entry { Placeholder = placeholder }.Bind(Entry.TextProperty, path);
