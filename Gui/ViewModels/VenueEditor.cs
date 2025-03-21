@@ -264,23 +264,42 @@ public partial class VenueEditor : ObservableObject
 
         private VerticalStackLayout EventContainerSelector()
         {
-            Action<VisualElement, bool> setEventSelectorRelatedFocused = (vis, focused) => model.EventSelectorRelatedHasFocus = focused;
+            var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
-            var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector")
-                .OnFocusChanged((vis, focused) =>
+            selectorText.OnFocusChanged(async (vis, focused) =>
+            {
+                if (focused)
                 {
-                    setEventSelectorRelatedFocused(vis, focused);
+                    model.EventSelectorRelatedHasFocus = focused;
+                    model.EventSelectorHasFocus = focused;
+                }
+                /*  Only propagate the loss of focus to the property
+                    if entry has not currently opened the visualSelector
+                    to keep the help visible while working there */
+                else if (model.visualSelectorHost != vis)
+                {
+                    await Task.Delay(300); // to allow for using the skip/take steppers without flickering
 
-                    /*  Only propagate the loss of focus to the property
-                        if entry has not currently opened the visualSelector
-                        to keep the help visible while working there */
-                    if (focused || model.visualSelectorHost != vis)
+                    if (!selectorText.IsFocused)
+                    {
                         model.EventSelectorHasFocus = focused;
-                });
+                        model.EventSelectorRelatedHasFocus = focused;
+                    }
+                }
+            });
 
             var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
             (Switch Switch, Grid Wrapper) waitForJsRendering = Swtch(nameof(WaitForJsRendering));
-            waitForJsRendering.Switch.OnFocusChanged(setEventSelectorRelatedFocused);
+
+            waitForJsRendering.Switch.OnFocusChanged(async (vis, focused) =>
+            {
+                if (focused) model.EventSelectorRelatedHasFocus = focused;
+                else
+                {
+                    await Task.Delay(300); // to allow for using the skip/take steppers without flickering
+                    if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = focused;
+                }
+            });
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
@@ -306,8 +325,8 @@ public partial class VenueEditor : ObservableObject
                     Lbl("Event container").Bold(), containerSelector,
                     Lbl("wait for JS rendering"), waitForJsRendering.Wrapper,
                     Lbl("Preview events").Bold(),
-                    LabeledStepper("skipping", nameof(SkipEvents), max: 100),
-                    LabeledStepper("and taking", nameof(TakeEvents), max: 10)),
+                    LabeledStepper("skipping", nameof(SkipEvents), max: 100, onValueChanged: () => selectorText.Focus()),
+                    LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus())),
                 previewOrErrors);
         }
 
@@ -332,12 +351,11 @@ public partial class VenueEditor : ObservableObject
                => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute), RelativeSelectorEntry);
         }
 
-        private static HorizontalStackLayout LabeledStepper(string label, string valueProperty, int max)
+        private static HorizontalStackLayout LabeledStepper(string label, string valueProperty, int max, Action onValueChanged)
         {
-            Stepper stepper = new() { Minimum = 0, Maximum = max, Increment = 1 };
-            stepper.Bind(Stepper.ValueProperty, valueProperty);
-            var display = BndLbl(nameof(Stepper.Value), source: stepper);
-            return HStack(5, Lbl(label), stepper, display);
+            var stepper = new Stepper() { Minimum = 0, Maximum = max, Increment = 1 }.Bind(Stepper.ValueProperty, valueProperty);
+            stepper.ValueChanged += (o, e) => onValueChanged(); // because Un/Focus events aren't firing
+            return HStack(5, Lbl(label), BndLbl(valueProperty), stepper);
         }
 
         private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)
