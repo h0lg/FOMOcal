@@ -21,12 +21,12 @@
         action.call(undefined, 'click', intercept, true);
     }
 
-    const classStyleCache = new Map();
+    const cssRuleSelectors = new Set(), // first-level cache including all CSS rule selectors
+        classHasStyle = new Map(); // lazily-filled second-level cache for looking up whether a className pops up in cssRuleSelectors
 
-    function hasStyles(className) {
-        const selector = '.' + className;
-        if (classStyleCache.has(selector)) return classStyleCache.get(selector);
-        console.debug('searching styles for', className);
+    function buildCssRuleSelectorCache() {
+        cssRuleSelectors.clear();
+        classHasStyle.clear(); // Clear secondary cache when rebuilding
 
         for (const sheet of document.styleSheets) {
             console.debug('searching sheet', sheet.href || sheet.ownerNode);
@@ -35,20 +35,34 @@
                 const rules = sheet.cssRules || [];
 
                 for (const rule of rules) {
-                    if (rule.selectorText && rule.selectorText.includes(selector)) {
-                        console.debug('found styles for', className);
-                        classStyleCache.set(selector, true);
-                        return true;
+                    if (rule.selectorText) {
+                        cssRuleSelectors.add(rule.selectorText.trim());
                     }
                 }
             } catch (e) {
-                console.error('error accessing cssRules of style sheet', sheet, e);
-                continue; // Some stylesheets are not accessible due to CORS
+                console.error('Error accessing cssRules of stylesheet', sheet, e);
+            }
+        }
+    }
+
+    function hasStyles(className) {
+        if (classHasStyle.has(className)) return classHasStyle.get(className);
+
+        const classSelector = '.' + className;
+
+        for (const selector of cssRuleSelectors) {
+            if (!selector.includes(classSelector)) continue; // fast pre-filter
+            const classRegex = new RegExp(`(^|\\s)\\.${className}(\\s|$|[:.,>)])`);
+
+            if (classRegex.test(selector)) {
+                console.debug('found styles for', className);
+                classHasStyle.set(className, true);
+                return true;
             }
         }
 
         console.debug('found no styles for', className);
-        classStyleCache.set(className, false);
+        classHasStyle.set(className, false);
         return false;
     }
 
@@ -80,7 +94,7 @@
         else if (selectorDetail.layoutClasses && !selectorDetail.semanticClasses)
             classes = classes.filter(cls => hasStyles(cls));
 
-        return classes;
+        return classes.filter(cls => cls !== pickedClass);
     }
 
     function getOtherAttributes(element) {
@@ -177,6 +191,7 @@
 
             document.head.appendChild(style);
             enable(true);
+            buildCssRuleSelectorCache(); // to pre-fill first-level cache
         },
 
         enable,
