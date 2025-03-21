@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Markup;
 using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
@@ -115,8 +116,8 @@ internal static class ViewExtensions
         return bindable;
     }
 
-    internal static T BindVisible<T>(this T vis, string property, object? source = null) where T : VisualElement
-        => vis.Bind(VisualElement.IsVisibleProperty, property, source: source);
+    internal static T BindVisible<T>(this T vis, string property, object? source = null, IValueConverter? converter = null) where T : VisualElement
+        => vis.Bind(VisualElement.IsVisibleProperty, property, converter: converter, source: source);
 
     internal static T BindIsVisibleToValueOf<T>(this T vis, string textProperty) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, textProperty, convert: static (string? value) => value.IsSignificant());
@@ -152,4 +153,19 @@ internal static class ViewExtensions
         if (element is ScrollView scrollView) return FindTopLayout(scrollView.Content);
         return null;
     }
+}
+
+public class InverseBooleanConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
+    {
+        bool booleanValue => !booleanValue,
+        _ => false // Return false if the value is not a boolean
+    };
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
+    {
+        bool booleanValue => !booleanValue,
+        _ => false // Return false if the value is not a boolean
+    };
 }

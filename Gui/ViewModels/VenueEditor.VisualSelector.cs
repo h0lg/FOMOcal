@@ -67,8 +67,10 @@ partial class VenueEditor
                 Lbl("until you're happy with your pick.").BindIsVisibleToValueOf(pickedCss),
                 Btn("🥢 Toggle selectors").BindIsVisibleToValueOf(pickedCss).TapGesture(TogglePickedSelector));
 
-            var selectors = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
-                Lbl("Select parts of either selector you'd like to use.").ColumnSpan(2),
+            Switch xPathSyntax = new(); // enables switching between CSS and XPath syntax to save space
+
+            var selectors = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
+                HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath")).Column(1),
                 HWrap(5,
                     Lbl("Selector detail").Bold(),
                     SelectorOption("tag name", nameof(SelectorOptions.TagName)),
@@ -79,11 +81,13 @@ partial class VenueEditor
                     Lbl("other attibutes").Bold(),
                     SelectorOption("names", nameof(SelectorOptions.OtherAttributes)),
                     SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues)),
-                    SelectorOption("position", nameof(SelectorOptions.Position))).Row(1).ColumnSpan(2),
-                Lbl("CSS").Bold().CenterVertical().Row(2), SelectorDisplay(pickedCss).Row(2).Column(1),
-                Lbl("XPath").Bold().CenterVertical().Row(3), SelectorDisplay(nameof(PickedXpath)).Row(3).Column(2),
-                Btn("➕").TapGesture(AppendSelectedQuery).Row(4),
-                Lbl("Append the selected text to your query to try it out.").Row(4).Column(2))
+                    SelectorOption("position", nameof(SelectorOptions.Position))),
+                SelectorDisplay(pickedCss).Row(1).ColumnSpan(2)
+                    .BindVisible(nameof(Switch.IsToggled), source: xPathSyntax, converter: new InverseBooleanConverter()),
+                SelectorDisplay(nameof(PickedXpath)).Row(1).ColumnSpan(2)
+                    .BindVisible(nameof(Switch.IsToggled), source: xPathSyntax),
+                Lbl("Select parts of the selector text you like to use and append them to your query to try them out.").Row(2),
+                Btn("➕").TapGesture(AppendSelectedQuery).Row(2).Column(1))
                 .BindVisible(nameof(ShowPickedSelectors));
 
             return new()
