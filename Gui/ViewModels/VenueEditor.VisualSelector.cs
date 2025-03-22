@@ -12,6 +12,7 @@ partial class VenueEditor
     [ObservableProperty] private string? pickedSelector;
     [ObservableProperty] private bool enablePicking = true;
     [ObservableProperty] private bool showPickedSelector;
+    [ObservableProperty] private bool showSelectorDetail;
 
     partial class Page
     {
@@ -51,39 +52,45 @@ partial class VenueEditor
 
             const string pickedSelector = nameof(PickedSelector);
 
-            var header = HWrap(5,
+            var controlsAndInstructions = HWrap(5,
                 Swtch(nameof(EnablePicking)).Wrapper
                     .ToolTip("Toggle picking mode. You may want to disable this to interact with the page" +
                         " as you would in a normal browser, e.g. to close popups and overlays" +
                         " - or play with those eye-opening 🍪 cookie reminders sponsored by" +
                         " the EU if you're lucky enough to be browsing from there."),
-                Lbl("Tap an element on the page to pick it.").TapGesture(TogglePicking),
-                Btn("⿴ Pick the outer element").BindIsVisibleToValueOf(pickedSelector).TapGesture(PickParent),
+                Lbl("Tap a page element to pick it.").TapGesture(TogglePicking),
+                Btn("⿴ Pick its container").BindIsVisibleToValueOf(pickedSelector).TapGesture(PickParent),
                 Lbl("if you need.").BindIsVisibleToValueOf(pickedSelector),
-                Btn("🥢 Choose a selector").BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector));
+                Btn("🥢 Choose a selector").BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector),
+                Btn("🍜 selector options").BindVisible(nameof(ShowPickedSelector)).TapGesture(ToggleSelectorDetail));
 
             var xPathSyntax = new Switch() // enables switching between CSS and XPath syntax to save space
                 .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: selectorOptions);
 
             var syntax = HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath"));
 
-            var selectors = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
-                HWrap(5,
-                    syntax,
-                    Lbl("Selector detail").Bold(),
-                    SelectorOption("tag name", nameof(SelectorOptions.TagName)),
-                    SelectorOption("id", nameof(SelectorOptions.Ids)),
-                    Lbl("classes").Bold(),
-                    SelectorOption("with style", nameof(SelectorOptions.LayoutClasses)),
-                    SelectorOption("without", nameof(SelectorOptions.SemanticClasses)),
-                    Lbl("other attibutes").Bold(),
-                    SelectorOption("names", nameof(SelectorOptions.OtherAttributes)),
-                    SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues)),
-                    SelectorOption("position", nameof(SelectorOptions.Position))).ColumnSpan(2),
-                SelectorDisplay(pickedSelector).Row(1).ColumnSpan(2),
-                Lbl("Select parts of the selector text you like to use and append them to your query to try them out.").Row(2),
-                Btn("➕").TapGesture(AppendSelectedQuery).Row(2).Column(1))
-                .BindVisible(nameof(ShowPickedSelector));
+            View[] selectorDetails = [syntax,
+                Lbl("detail").Bold(),
+                SelectorOption("tag name", nameof(SelectorOptions.TagName)),
+                SelectorOption("id", nameof(SelectorOptions.Ids)),
+                Lbl("classes").Bold(),
+                SelectorOption("with style", nameof(SelectorOptions.LayoutClasses)),
+                SelectorOption("without", nameof(SelectorOptions.SemanticClasses)),
+                Lbl("other attibutes").Bold(),
+                SelectorOption("names", nameof(SelectorOptions.OtherAttributes)),
+                SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues)),
+                SelectorOption("position", nameof(SelectorOptions.Position))];
+
+            foreach (var view in selectorDetails)
+                controlsAndInstructions.AddChild(view.BindVisible(nameof(ShowSelectorDetail)));
+
+            View[] appendSelection = [
+                Lbl("Select parts of the selector text and"),
+                Btn("➕ append").TapGesture(AppendSelectedQuery),
+                Lbl("them to your query to try them out.")];
+
+            foreach (var view in appendSelection)
+                controlsAndInstructions.AddChild(view.BindVisible(nameof(ShowPickedSelector)));
 
             return new()
             {
@@ -91,7 +98,9 @@ partial class VenueEditor
                 BackgroundColor = Colors.DarkSlateGray,
                 Children = {
                     Grd(cols: [Star], rows: [Auto, Auto, Star], spacing: 0,
-                        header, selectors.Row(1), pageView.Row(2))
+                        controlsAndInstructions.View,
+                        SelectorDisplay(pickedSelector).Row(1).ColumnSpan(2).BindVisible(nameof(ShowPickedSelector)),
+                        pageView.Row(2))
                         .LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
                     Btn("🗙").TapGesture(HideVisualSelector).Size(30, 30).TranslationY(-35) // float half above upper boundary
                         .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, autosized
@@ -113,6 +122,7 @@ partial class VenueEditor
         private void TogglePicking() => model.EnablePicking = !model.EnablePicking;
         private async void PickParent() => await pageView!.PickParent();
         private void TogglePickedSelector() => model.ShowPickedSelector = !model.ShowPickedSelector;
+        private void ToggleSelectorDetail() => model.ShowSelectorDetail = !model.ShowSelectorDetail;
         private void AppendSelectedQuery() => model.visualSelectorHost!.Text += " " + selectedQuery;
 
         private async Task ShowVisualSelectorForAsync(Entry entry, string selector, bool descendant)

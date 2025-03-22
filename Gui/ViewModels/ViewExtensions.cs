@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using CommunityToolkit.Maui.Markup;
+﻿using CommunityToolkit.Maui.Markup;
 using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
@@ -78,9 +77,9 @@ internal static class Widgets
         return layout;
     }
 
-    internal static FlexLayout HWrap(params View[] children) => HWrap(null, children);
+    internal static (FlexLayout View, Action<View> AddChild) HWrap(params View[] children) => HWrap(null, children);
 
-    internal static FlexLayout HWrap(Thickness? childMargin = null, params View[] children)
+    internal static (FlexLayout View, Action<View> AddChild) HWrap(Thickness? childMargin = null, params View[] children)
     {
         FlexLayout layout = new()
         {
@@ -89,15 +88,16 @@ internal static class Widgets
             AlignItems = FlexAlignItems.Center
         };
 
-        foreach (var child in children)
+        foreach (var child in children) AddChild(child);
+        return (layout, AddChild);
+
+        void AddChild(View child)
         {
             layout.Children.Add(child);
 
             if (childMargin.HasValue && child.Margin == default)
                 child.Margin = childMargin.Value;
         }
-
-        return layout;
     }
 }
 

@@ -326,7 +326,7 @@ public partial class VenueEditor : ObservableObject
                     Lbl("wait for JS rendering"), waitForJsRendering.Wrapper,
                     Lbl("Preview events").Bold(),
                     LabeledStepper("skipping", nameof(SkipEvents), max: 100, onValueChanged: () => selectorText.Focus()),
-                    LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus())),
+                    LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus())).View,
                 previewOrErrors);
         }
 

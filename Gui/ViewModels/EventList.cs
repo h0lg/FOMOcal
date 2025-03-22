@@ -216,7 +216,7 @@ public partial class EventList : ObservableObject
             list.SelectionChanged += (o, e) => model.HasSelection = e.CurrentSelection.Count > 0;
 
             Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5,
-                HWrap(pastEvents, searchBar.Grow(1), commands),
+                HWrap(pastEvents, searchBar.Grow(1), commands).View,
                 list.Row(1));
         }
 
