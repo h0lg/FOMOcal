@@ -133,6 +133,17 @@ internal static class ViewExtensions
         return label;
     }
 
+    internal static Task AnimateHeightRequest(this VisualElement view, double endValue, uint duration = 300)
+    {
+        var tcs = new TaskCompletionSource<bool>(); // Create a task to await
+        var animation = new Animation(v => view.HeightRequest = v, view.HeightRequest, endValue);
+
+        animation.Commit(view, name: nameof(AnimateHeightRequest), length: duration, easing: Easing.CubicOut,
+            finished: (v, c) => tcs.SetResult(true));
+
+        return tcs.Task; // Await the completion of the animation
+    }
+
     internal static VisualElement? FindTopLayout(this Element element)
     {
         if (element is Layout layout) return layout;

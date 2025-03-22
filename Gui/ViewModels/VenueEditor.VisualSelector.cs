@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
 
@@ -13,11 +14,11 @@ partial class VenueEditor
 
     partial class Page
     {
-        private readonly Grid visualSelector;
+        private readonly AbsoluteLayout visualSelector;
         private AutomatedEventPageView? pageView;
         private string? selectedQuery;
 
-        private Grid CreateVisualSelector()
+        private AbsoluteLayout CreateVisualSelector()
         {
             pageView = new(model.venue);
 
@@ -56,8 +57,7 @@ partial class VenueEditor
                 Lbl("Tap an element on the page to pick it.").TapGesture(TogglePicking),
                 Btn("⿴ Pick the outer element").BindIsVisibleToValueOf(pickedSelector).TapGesture(PickParent),
                 Lbl("until you're happy with your pick.").BindIsVisibleToValueOf(pickedSelector),
-                Btn("🥢 Toggle selectors").BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector),
-                Btn("🗙").TapGesture(HideVisualSelector));
+                Btn("🥢 Toggle selectors").BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector));
 
             var selectors = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto], spacing: 5,
                 Lbl("Select parts of either selector you'd like to use.").ColumnSpan(2),
@@ -66,16 +66,18 @@ partial class VenueEditor
                 Lbl("Append the selected text to your query to try it out.").Row(2).Column(2))
                 .BindVisible(nameof(ShowPickedSelector));
 
-            var visualSelector = Grd(cols: [Star], rows: [Auto, Auto, Star], spacing: 5,
-                header, selectors.Row(1), pageView.Row(2))
-                .IsVisible(false).BackgroundColor(Colors.DarkSlateGray);
-
-            SizeChanged += (o, e) => SyncHeightWithPage();
-            SyncHeightWithPage(); // to init HeightRequest to init TranslationY for smooth first opening
-            visualSelector.TranslationY = visualSelector.HeightRequest;
-            return visualSelector;
-
-            void SyncHeightWithPage() => visualSelector.HeightRequest = Height - 100;
+            return new()
+            {
+                IsVisible = false,
+                BackgroundColor = Colors.DarkSlateGray,
+                Children = {
+                    Grd(cols: [Star], rows: [Auto, Auto, Star], spacing: 0,
+                        header, selectors.Row(1), pageView.Row(2))
+                        .LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
+                    Btn("🗙").TapGesture(HideVisualSelector).Size(30, 30).TranslationY(-35) // float half above upper boundary
+                        .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, autosized
+                }
+            };
         }
 
         private Editor SelectorDisplay(string propertyPath)
@@ -97,7 +99,7 @@ partial class VenueEditor
             entry.Focus(); // to keep its help open
             visualSelector.IsVisible = true;
             await pageView!.PickRelativeTo(selector, descendant);
-            await visualSelector.TranslateTo(0, 0, 300, Easing.CubicInOut);
+            await visualSelector.AnimateHeightRequest(Height - 100);
             await form.ScrollToAsync(entry, ScrollToPosition.End, true); // scroll entry to end so that Help above is visible
         }
 
@@ -107,7 +109,7 @@ partial class VenueEditor
 
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                await visualSelector.TranslateTo(0, visualSelector.HeightRequest, 300, Easing.CubicInOut);
+                await visualSelector.AnimateHeightRequest(0);
                 visualSelector.IsVisible = false;
                 Entry entry = model.visualSelectorHost; // keep a reference to it before resetting
                 model.visualSelectorHost = null; // reset before re-focusing entry because its handler may check model.visualSelectorHost
