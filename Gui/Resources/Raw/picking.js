@@ -76,6 +76,7 @@
     }
 
     const selectorDetail = {
+        xPathSyntax: false,
         tagName: false,
         ids: false,
         semanticClasses: true,
@@ -189,26 +190,24 @@
 
     function pick(target) {
         if (!target) return;
-        let css, xpath;
+        let selector;
 
         if (pickDescendant) {
             const root = target.closest(anchor);
             console.info('picking descendant relative to', anchor);
-            if (root === null) notifyPicked('', '');
-            css = getCssSelector(root, target);
-            xpath = getXPath(root, target);
+            if (root === null) notifyPicked('');
+            selector = selectorDetail.xPathSyntax ? getXPath(root, target) : getCssSelector(root, target);
         } else {
             const root = getClosestCommonAncestor(target, anchor);
-            if (root === null) notifyPicked('', '');
-            css = createCssSelector(root);
-            xpath = createXPath(root);
+            if (root === null) notifyPicked('');
+            selector = selectorDetail.xPathSyntax ? createXPath(root) : createCssSelector(root);
             target = root;
         }
 
-        console.info('picked', css, xpath);
+        console.info('picked', selector);
         document.querySelectorAll(picked).forEach(el => el.classList.remove(pickedClass));
         target.classList.add(pickedClass);
-        notifyPicked(css, xpath);
+        notifyPicked(selector);
     }
 
     // exported API, register globally to enable calling it after

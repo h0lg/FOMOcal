@@ -154,18 +154,3 @@ internal static class ViewExtensions
         return null;
     }
 }
-
-public class InverseBooleanConverter : IValueConverter
-{
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
-    {
-        bool booleanValue => !booleanValue,
-        _ => false // Return false if the value is not a boolean
-    };
-
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
-    {
-        bool booleanValue => !booleanValue,
-        _ => false // Return false if the value is not a boolean
-    };
-}
