@@ -161,6 +161,8 @@ internal static class ViewExtensions
 
 internal static class Converters
 {
+    internal static FuncConverter<bool, bool> Not = new(value => !value, value => !value);
     internal static Func<ValueTuple<bool, bool>, bool> Or = ((bool a, bool b) values) => values.a || values.b;
+    internal static Func<ValueTuple<bool, bool>, bool> And = ((bool a, bool b) values) => values.a && values.b;
     internal static FuncConverter<string, bool> IsSignificant = new(value => value.IsSignificant());
 }

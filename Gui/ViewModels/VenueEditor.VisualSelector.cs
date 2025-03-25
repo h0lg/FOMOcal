@@ -50,19 +50,27 @@ partial class VenueEditor
                     pageView.EnablePicking(model.EnablePicking);
             };
 
-            const string pickedSelector = nameof(PickedSelector);
+            const string pickedSelector = nameof(PickedSelector),
+                showPickedSelector = nameof(ShowPickedSelector);
 
             var controlsAndInstructions = HWrap(5,
                 Swtch(nameof(EnablePicking)).Wrapper
+                    .BindVisible(showPickedSelector, converter: Converters.Not)
                     .ToolTip("Toggle picking mode. You may want to disable this to interact with the page" +
                         " as you would in a normal browser, e.g. to close popups and overlays" +
                         " - or play with those eye-opening 🍪 cookie reminders sponsored by" +
                         " the EU if you're lucky enough to be browsing from there."),
-                Lbl("Tap a page element to pick it.").TapGesture(TogglePicking),
-                Btn("⿴ Pick its container").BindIsVisibleToValueOf(pickedSelector).TapGesture(PickParent),
-                Lbl("if you need.").BindIsVisibleToValueOf(pickedSelector),
-                Btn("🥢 Choose a selector").BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector),
-                Btn("🍜 selector options").BindVisible(nameof(ShowPickedSelector)).TapGesture(ToggleSelectorDetail));
+                Lbl("Tap a page element to pick it.").TapGesture(TogglePicking)
+                    .BindVisible(showPickedSelector, converter: Converters.Not),
+                Btn("⿴ Pick its container").TapGesture(PickParent)
+                    .BindVisible(new Binding(pickedSelector, converter: Converters.IsSignificant),
+                        Converters.And, new Binding(showPickedSelector, converter: Converters.Not)),
+                Lbl("if you need.")
+                    .BindVisible(new Binding(pickedSelector, converter: Converters.IsSignificant),
+                        Converters.And, new Binding(showPickedSelector, converter: Converters.Not)),
+                new Button().BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector)
+                    .Bind(Button.TextProperty, showPickedSelector,
+                        convert: static (bool showSelector) => showSelector ? "⏮ Back to ⛶ picking an element" : "🥢 Choose a selector next ⏭"));
 
             var xPathSyntax = new Switch() // enables switching between CSS and XPath syntax to save space
                 .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: selectorOptions);
@@ -81,27 +89,33 @@ partial class VenueEditor
                 SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues)),
                 SelectorOption("position", nameof(SelectorOptions.Position))];
 
-            foreach (var view in selectorDetails)
-                controlsAndInstructions.AddChild(view.BindVisible(nameof(ShowSelectorDetail)));
-
             View[] appendSelection = [
                 Lbl("Select parts of the selector text and"),
                 Btn("➕ append").TapGesture(AppendSelectedQuery),
-                Lbl("them to your query to try them out.")];
+                Lbl("them to your query to try them out."),
+                Btn("🍜 selector options").BindVisible(showPickedSelector).TapGesture(ToggleSelectorDetail)];
 
             foreach (var view in appendSelection)
-                controlsAndInstructions.AddChild(view.BindVisible(nameof(ShowPickedSelector)));
+                controlsAndInstructions.AddChild(view.BindVisible(showPickedSelector));
+
+            foreach (var view in selectorDetails)
+                controlsAndInstructions.AddChild(
+                    view.BindVisible(new Binding(showPickedSelector),
+                        Converters.And, new Binding(nameof(ShowSelectorDetail))));
+
+            Editor selectorDisplay = SelectorDisplay(pickedSelector).BindVisible(showPickedSelector);
+            SetupAutoSizing(controlsAndInstructions.View, selectorDisplay);
 
             return new()
             {
                 IsVisible = false,
                 BackgroundColor = Colors.DarkSlateGray,
+                HeightRequest = 0, // to initialize it collapsed and fix first opening animation
                 Children = {
                     Grd(cols: [Star], rows: [Auto, Auto, Star], spacing: 0,
                         controlsAndInstructions.View,
-                        SelectorDisplay(pickedSelector).Row(1).ColumnSpan(2).BindVisible(nameof(ShowPickedSelector)),
-                        pageView.Row(2))
-                        .LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
+                        selectorDisplay.Row(1).ColumnSpan(2),
+                        pageView.BindVisible(showPickedSelector, converter: Converters.Not).Row(2)).LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
                     Btn("🗙").TapGesture(HideVisualSelector).Size(30, 30).TranslationY(-35) // float half above upper boundary
                         .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, autosized
                 }
@@ -132,12 +146,16 @@ partial class VenueEditor
 
         private async Task ShowVisualSelectorForAsync(Entry entry, string selector, bool descendant)
         {
+            // reset UI state to allow picking an element
+            model.ShowPickedSelector = false;
+            model.ShowSelectorDetail = false;
+            model.EnablePicking = true;
+
             model.visualSelectorHost = entry;
             entry.Focus(); // to keep its help open
             visualSelector.IsVisible = true;
             await pageView!.PickRelativeTo(selector, descendant);
-            await visualSelector.AnimateHeightRequest(Height - 100);
-            await form.ScrollToAsync(entry, ScrollToPosition.End, true); // scroll entry to end so that Help above is visible
+            await UpdateHeightAsync();
         }
 
         private void HideVisualSelector()
@@ -150,8 +168,57 @@ partial class VenueEditor
                 visualSelector.IsVisible = false;
                 Entry entry = model.visualSelectorHost; // keep a reference to it before resetting
                 model.visualSelectorHost = null; // reset before re-focusing entry because its handler may check model.visualSelectorHost
+                form.HeightRequest = -1; // reset form height
                 entry.Focus(); // re-focus the entry to keep its help and preview or errors open
             });
         }
+
+        #region Sizing
+        private readonly SemaphoreSlim heightUpdate = new(1, 1);
+        private VisualElement[]? selectorControls; // used to measure required size of container when ShowPickedSelector
+
+        private void SetupAutoSizing(params VisualElement[] selectorControls)
+        {
+            this.selectorControls = selectorControls;
+
+            /* eagerly subscribe to the SizeChanged of visuals influencing the required container height
+             * for when ShowPickedSelector is true and it has dynamic height, see UpdateHeightAsync */
+            foreach (var vis in (VisualElement[])[.. selectorControls, this])
+                vis.SizeChanged += async (object? sender, EventArgs e) =>
+                {
+                    // exit handler early if height update is unnecessary
+                    if (!visualSelector.IsVisible) return;
+                    await UpdateHeightAsync();
+                };
+        }
+
+        private async Task UpdateHeightAsync()
+        {
+            if (heightUpdate.CurrentCount == 0) return; // drop parallel update requests
+            heightUpdate.Wait();
+            double height = 0;
+
+            if (model.ShowPickedSelector) // calculate dynamic height based on measured selectorControls sizes
+                foreach (var child in selectorControls!)
+                {
+                    var measuredSize = child.Measure(Width, double.PositiveInfinity);
+                    height += measuredSize.Height;
+                }
+            else height = Height - 100;
+
+            await visualSelector.AnimateHeightRequest(height);
+
+            if (model.visualSelectorHost != null)
+            {
+                form.HeightRequest = Height - height; // shrink form so End is visible to scroll there
+
+                // scroll entry to end so that Help above is visible
+                await form.ScrollToAsync(model.visualSelectorHost, ScrollToPosition.End, animated: true);
+            }
+            else form.HeightRequest = -1; // reset form height
+
+            heightUpdate.Release();
+        }
+        #endregion
     }
 }
