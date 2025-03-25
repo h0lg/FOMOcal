@@ -174,7 +174,7 @@
             element = element.parentNode;
         }
 
-        return path.join(' > ');
+        return path.join('\n> '); // include line breaks to help identify path delimiters
     }
 
     function getXPath(anchor, element) {
@@ -185,7 +185,7 @@
             element = element.parentNode;
         }
 
-        return '//' + path.join('/');
+        return '//' + path.join('\n/'); // include line breaks to help identify path delimiters
     }
 
     function pick(target) {
@@ -207,7 +207,7 @@
         console.info('picked', selector);
         document.querySelectorAll(picked).forEach(el => el.classList.remove(pickedClass));
         target.classList.add(pickedClass);
-        notifyPicked(selector);
+        notifyPicked(selector.replaceAll('\n', '%0A')); // URL-encode line breaks
     }
 
     // exported API, register globally to enable calling it after

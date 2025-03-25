@@ -113,7 +113,12 @@ partial class VenueEditor
 
         private Editor SelectorDisplay(string propertyPath)
         {
-            var editor = new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }.Bind(Editor.TextProperty, propertyPath);
+            var editor = new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }
+                .ToolTip("You need some part of the selector in the last line - it selects the element you chose." +
+                    " Parts from the ancestor path in the above lines may help to narrow down your selection" +
+                    " if just using the selector from the last line matches too much.")
+                .Bind(Editor.TextProperty, propertyPath, BindingMode.OneWay);
+
             // save selected part of selector query for AppendSelectedQuery
             editor.Unfocused += (o, e) => selectedQuery = editor.Text.Substring(editor.CursorPosition, editor.SelectionLength);
             return editor;
@@ -123,7 +128,7 @@ partial class VenueEditor
         private async void PickParent() => await pageView!.PickParent();
         private void TogglePickedSelector() => model.ShowPickedSelector = !model.ShowPickedSelector;
         private void ToggleSelectorDetail() => model.ShowSelectorDetail = !model.ShowSelectorDetail;
-        private void AppendSelectedQuery() => model.visualSelectorHost!.Text += " " + selectedQuery;
+        private void AppendSelectedQuery() => model.visualSelectorHost!.Text += " " + selectedQuery.NormalizeWhitespace();
 
         private async Task ShowVisualSelectorForAsync(Entry entry, string selector, bool descendant)
         {
