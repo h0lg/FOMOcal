@@ -13,6 +13,7 @@ public partial class ScrapeJobEditor : ObservableObject
     internal readonly bool IsOptional;
 
     internal ScrapeJob? ScrapeJob { get; private set; }
+    internal DateScrapeJob? DateScrapeJob => ScrapeJob as DateScrapeJob;
     public string EventProperty { get; }
 
     [ObservableProperty] private string?[]? previewResults;
@@ -81,6 +82,30 @@ public partial class ScrapeJobEditor : ObservableObject
             OnPropertyChanged();
         }
     }
+
+    public string Format
+    {
+        /* No need to handle model.scrapeJob being initialized lazily.
+         * We currently only have one DateScrapeJob and it is required i.e. initialized. */
+        get => DateScrapeJob!.Format;
+        set
+        {
+            if (DateScrapeJob!.Format == value) return;
+            DateScrapeJob.Format = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string Culture
+    {
+        get => DateScrapeJob!.Culture;
+        set
+        {
+            if (DateScrapeJob!.Culture == value) return;
+            DateScrapeJob.Culture = value;
+            OnPropertyChanged();
+        }
+    }
     #endregion
 
     public bool IsEmpty => Selector.IsNullOrWhiteSpace();
@@ -128,7 +153,7 @@ public partial class ScrapeJobEditor : ObservableObject
         EventProperty = eventProperty;
 
         string[] scrapeJobProperties = [nameof(Closest), nameof(Selector), nameof(IgnoreNestedText),
-            nameof(Attribute), nameof(Match)];
+            nameof(Attribute), nameof(Match), nameof(Format), nameof(Culture)];
 
         PropertyChanged += (o, e) =>
         {
@@ -284,33 +309,18 @@ public partial class ScrapeJobEditor : ObservableObject
                     .ForwardFocusTo(model)
             ];
 
-            if (model.ScrapeJob is DateScrapeJob dateScrapeJob)
-            {
-                /* No need to bind visibility to DisplayInputs or handle model.scrapeJob being initialized lazily.
-                 * We currently only have one DateScrapeJob and it is required i.e. initialized. */
-
-                children.AddRange(
-                    Lbl("date format"),
-                    new Entry().Text(dateScrapeJob.Format)
-                        .Bind(Entry.TextProperty,
-                            getter: (ScrapeJobEditor _) => dateScrapeJob.Format,
-                            setter: (ScrapeJobEditor _, string value) => dateScrapeJob.Format = value)
-                        .OnTextChanged(_ => model.UpdatePreview())
+            if (model.DateScrapeJob is not null) children.AddRange(
+                Lbl("date format"),
+                    Entr(nameof(Format))
                         .ToolTip("The .NET date format used to parse the date." +
                             " See https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")
                         .ForwardFocusTo(model),
 
-                    Lbl("culture"),
-                    new Entry().Text(dateScrapeJob.Culture)
-                        .Bind(Entry.TextProperty,
-                            getter: (ScrapeJobEditor _) => dateScrapeJob.Culture,
-                            setter: (ScrapeJobEditor _, string value) => dateScrapeJob.Culture = value)
-                        .OnTextChanged(_ => model.UpdatePreview())
-                        .ToolTip("The language/country code used to parse the date in ISO 639 (en) or ISO 3166 format (en-US)." +
-                            " See https://en.wikipedia.org/wiki/Language_code")
-                        .ForwardFocusTo(model)
-                );
-            }
+                Lbl("culture"),
+                Entr(nameof(Culture))
+                    .ToolTip("The language/country code used to parse the date in ISO 639 (en) or ISO 3166 format (en-US)." +
+                        " See https://en.wikipedia.org/wiki/Language_code")
+                    .ForwardFocusTo(model));
 
             foreach (var child in children)
             {
