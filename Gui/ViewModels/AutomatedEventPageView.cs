@@ -26,6 +26,9 @@ public partial class AutomatedEventPageView : WebView
     /// <see cref="Venue.EventScrapeJob.WaitForJsRendering"/> and that times out.</summary>
     internal event Action<string?>? HtmlWithEventsLoaded;
 
+    /// <summary>An event that notifies the subscriber about ann error loading the <see cref="Venue.ProgramUrl"/>.</summary>
+    internal event Action<WebNavigationResult>? ErrorLoading;
+
     /// <summary>An event that notifies the subscriber about a DOM node
     /// having been picked and returning its selector.</summary>
     internal event Action<string>? PickedSelector;
@@ -111,7 +114,12 @@ public partial class AutomatedEventPageView : WebView
 
     private async void OnNavigatedAsync(object? sender, WebNavigatedEventArgs args)
     {
-        if (args.Result != WebNavigationResult.Success) return;
+        if (args.Result != WebNavigationResult.Success)
+        {
+            ErrorLoading?.Invoke(args.Result); // notify awaiter
+            return;
+        }
+
         string script = "";
 
         if (venue.Event.RequiresAutomation())

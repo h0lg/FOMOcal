@@ -103,6 +103,18 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
             else eventHtmlLoading.TrySetResult(null);
         };
 
+        loader!.ErrorLoading += navigationResult =>
+        {
+            if (!throwOnTimeout && navigationResult == WebNavigationResult.Timeout)
+                eventHtmlLoading.TrySetResult(null);
+            else
+            {
+                string suffix = navigationResult == WebNavigationResult.Cancel ? "ed" : "";
+                var message = $"navigation {navigationResult}{suffix}";
+                eventHtmlLoading.TrySetException(new Exception(message));
+            }
+        };
+
         return eventHtmlLoading.Task;
     }
 

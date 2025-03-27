@@ -52,6 +52,17 @@ partial class VenueEditor
                 model.RevealMore();
             };
 
+            pageView.ErrorLoading += async navigationResult =>
+            {
+                model.previewedEvents = null;
+                model.programDocument = null;
+                model.IsEventPageLoading = false;
+                string suffix = navigationResult == WebNavigationResult.Cancel ? "ed" : "";
+                var message = $"Navigation {navigationResult}{suffix}.";
+                await App.CurrentPage.DisplayAlert("Error loading event page.", message, "Ok");
+                model.RevealMore();
+            };
+
             pageView.PickedSelector += selector => model.PickedSelector = selector;
 
             model.PropertyChanged += (o, e) =>
