@@ -123,7 +123,7 @@ partial class VenueEditor
         }
 
         private HorizontalStackLayout SelectorOption(string label, string isCheckedPropertyPath)
-            => HStack(5, Check(isCheckedPropertyPath, source: selectorOptions), Lbl(label));
+            => LbldView(label, Check(isCheckedPropertyPath, source: selectorOptions));
 
         private Editor SelectorDisplay(string propertyPath)
         {
