@@ -129,6 +129,15 @@ public partial class AutomatedEventPageView : WebView
 
     private static string NavigateTo(string quotedUrl) => $"location = {quotedUrl};";
 
+    internal static string GetLeafSelector(string selector, bool isXpath)
+    {
+        string pathDelimiter = isXpath ? "\n/" : "\n> ";
+        int lastIndex = selector.LastIndexOf(pathDelimiter);
+        if (lastIndex < 0) return selector;
+        string displayed = selector[(lastIndex + pathDelimiter.Length)..];
+        return isXpath ? "//" + displayed : displayed;
+    }
+
     /*  Used to cache the loaded and pre-processed script while allowing for a
      *  thread-safe asynchronous lazy initialization that only ever happens once. */
     private static readonly Lazy<Task<string>> waitForSelectorScript = new(() => LoadAndInlineScriptAsync("waitForSelector.js"));

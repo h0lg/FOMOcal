@@ -9,22 +9,32 @@ namespace FomoCal.Gui.ViewModels;
 
 partial class VenueEditor
 {
-    [ObservableProperty] private string? pickedSelector;
+    private readonly SelectorOptions selectorOptions = new() { SemanticClasses = true, LayoutClasses = true };
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] private string? pickedSelector;
     [ObservableProperty] private bool enablePicking = true;
     [ObservableProperty] private bool showPickedSelector;
     [ObservableProperty] private bool showSelectorDetail;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] private bool includePickedSelectorPath;
+
+    public string? DisplayedSelector
+    {
+        get
+        {
+            if (IncludePickedSelectorPath || PickedSelector.IsNullOrWhiteSpace()) return PickedSelector;
+            return AutomatedEventPageView.GetLeafSelector(PickedSelector!, selectorOptions.XPathSyntax);
+        }
+    }
 
     partial class Page
     {
         private readonly AbsoluteLayout visualSelector;
-        private readonly SelectorOptions selectorOptions = new() { SemanticClasses = true, LayoutClasses = true };
         private AutomatedEventPageView? pageView;
         private string? selectedQuery;
 
         private AbsoluteLayout CreateVisualSelector()
         {
             pageView = new(model.venue);
-            selectorOptions.PropertyChanged += (o, e) => pageView.SetPickedSelectorDetail(selectorOptions);
+            model.selectorOptions.PropertyChanged += (o, e) => pageView.SetPickedSelectorDetail(model.selectorOptions);
 
             pageView.HtmlWithEventsLoaded += async html =>
             {
@@ -50,7 +60,7 @@ partial class VenueEditor
                     pageView.EnablePicking(model.EnablePicking);
             };
 
-            const string pickedSelector = nameof(PickedSelector),
+            const string displayedSelector = nameof(DisplayedSelector),
                 showPickedSelector = nameof(ShowPickedSelector);
 
             var controlsAndInstructions = HWrap(5,
@@ -63,22 +73,23 @@ partial class VenueEditor
                 Lbl("Tap a page element to pick it.").TapGesture(TogglePicking)
                     .BindVisible(showPickedSelector, converter: Converters.Not),
                 Btn("⿴ Pick its container").TapGesture(PickParent)
-                    .BindVisible(new Binding(pickedSelector, converter: Converters.IsSignificant),
+                    .BindVisible(new Binding(displayedSelector, converter: Converters.IsSignificant),
                         Converters.And, new Binding(showPickedSelector, converter: Converters.Not)),
                 Lbl("if you need.")
-                    .BindVisible(new Binding(pickedSelector, converter: Converters.IsSignificant),
+                    .BindVisible(new Binding(displayedSelector, converter: Converters.IsSignificant),
                         Converters.And, new Binding(showPickedSelector, converter: Converters.Not)),
-                new Button().BindIsVisibleToValueOf(pickedSelector).TapGesture(TogglePickedSelector)
+                new Button().BindIsVisibleToValueOf(displayedSelector).TapGesture(TogglePickedSelector)
                     .Bind(Button.TextProperty, showPickedSelector,
                         convert: static (bool showSelector) => showSelector ? "⏮ Back to ⛶ picking an element" : "🥢 Choose a selector next ⏭"));
 
             var xPathSyntax = new Switch() // enables switching between CSS and XPath syntax to save space
-                .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: selectorOptions);
+                .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: model.selectorOptions);
 
             var syntax = HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath"));
 
             View[] selectorDetails = [syntax,
                 Lbl("detail").Bold(),
+                LbldView("ancestor path", Check(nameof(IncludePickedSelectorPath))),
                 SelectorOption("tag name", nameof(SelectorOptions.TagName)),
                 SelectorOption("id", nameof(SelectorOptions.Ids)),
                 Lbl("classes").Bold(),
@@ -103,7 +114,7 @@ partial class VenueEditor
                     view.BindVisible(new Binding(showPickedSelector),
                         Converters.And, new Binding(nameof(ShowSelectorDetail))));
 
-            Editor selectorDisplay = SelectorDisplay(pickedSelector).BindVisible(showPickedSelector);
+            Editor selectorDisplay = SelectorDisplay(displayedSelector).BindVisible(showPickedSelector);
             SetupAutoSizing(controlsAndInstructions.View, selectorDisplay);
 
             return new()
@@ -123,7 +134,7 @@ partial class VenueEditor
         }
 
         private HorizontalStackLayout SelectorOption(string label, string isCheckedPropertyPath)
-            => LbldView(label, Check(isCheckedPropertyPath, source: selectorOptions));
+            => LbldView(label, Check(isCheckedPropertyPath, source: model.selectorOptions));
 
         private Editor SelectorDisplay(string propertyPath)
         {
