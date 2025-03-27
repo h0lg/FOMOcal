@@ -61,10 +61,7 @@ partial class VenueEditor
                     pageView.EnablePicking(model.EnablePicking);
                 else if (e.PropertyName == nameof(WaitForJsRendering)
                     || (e.PropertyName == nameof(EventSelector) && model.WaitForJsRendering))
-                {
-                    model.IsEventPageLoading = true;
-                    pageView.Reload();
-                }
+                    Reload();
             };
 
             const string displayedSelector = nameof(DisplayedSelector),
@@ -161,6 +158,12 @@ partial class VenueEditor
         private void TogglePickedSelector() => model.ShowPickedSelector = !model.ShowPickedSelector;
         private void ToggleSelectorDetail() => model.ShowSelectorDetail = !model.ShowSelectorDetail;
         private void AppendSelectedQuery() => model.visualSelectorHost!.Text += " " + selectedQuery.NormalizeWhitespace();
+
+        private void Reload()
+        {
+            model.IsEventPageLoading = true;
+            pageView!.Reload();
+        }
 
         private async Task ShowVisualSelectorForAsync(Entry entry, string selector, bool descendant)
         {
