@@ -47,6 +47,7 @@ partial class VenueEditor
                 }
 
                 model.previewedEvents = null;
+                model.IsEventPageLoading = false;
                 model.RevealMore();
             };
 
@@ -58,6 +59,12 @@ partial class VenueEditor
                     pageView.Source = model.ProgramUrl;
                 else if (e.PropertyName == nameof(EnablePicking))
                     pageView.EnablePicking(model.EnablePicking);
+                else if (e.PropertyName == nameof(WaitForJsRendering)
+                    || (e.PropertyName == nameof(EventSelector) && model.WaitForJsRendering))
+                {
+                    model.IsEventPageLoading = true;
+                    pageView.Reload();
+                }
             };
 
             const string displayedSelector = nameof(DisplayedSelector),

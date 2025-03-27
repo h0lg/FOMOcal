@@ -16,6 +16,7 @@ public partial class VenueEditor : ObservableObject
     private readonly SemaphoreSlim revealingMore = new(1, 1);
     private Entry? visualSelectorHost;
 
+    [ObservableProperty] private bool isEventPageLoading = true;
     [ObservableProperty] private bool showEventContainer;
     [ObservableProperty] private bool showRequiredEventFields;
     [ObservableProperty] private bool showOptionalEventFields;
@@ -249,7 +250,7 @@ public partial class VenueEditor : ObservableObject
             Content = Grd(cols: [Star], rows: [Star, Auto], spacing: 0, form, visualSelector.Row(1));
         }
 
-        private static VerticalStackLayout VenueFields()
+        private static Grid VenueFields()
         {
             var urlEntry = Entr(nameof(ProgramUrl), placeholder: "Program page URL");
             var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
@@ -259,7 +260,16 @@ public partial class VenueEditor : ObservableObject
                     getter: static (VenueEditor vm) => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
-            return VStack(0, urlEntry, nameEntry, location);
+            var loadingIndicator = new ActivityIndicator { IsRunning = true }
+                .BindVisible(new Binding(nameof(ProgramUrl), converter: Converters.IsSignificant),
+                    Converters.And, new Binding(nameof(IsEventPageLoading)));
+
+            return Grd(cols: [Auto, Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
+                FldLbl("🕸"), urlEntry.Column(1), loadingIndicator.Column(2),
+                FldLbl("🏷").Row(1), nameEntry.Row(1).Column(1).ColumnSpan(2),
+                FldLbl("📍").Row(2), location.Row(2).Column(1).ColumnSpan(2));
+
+            static Label FldLbl(string Text) => Lbl(Text).CenterVertical();
         }
 
         private VerticalStackLayout EventContainerSelector()
