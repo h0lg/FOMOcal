@@ -123,7 +123,7 @@ partial class VenueEditor
         }
 
         private HorizontalStackLayout SelectorOption(string label, string isCheckedPropertyPath)
-            => HStack(5, Check(isCheckedPropertyPath, source: selectorOptions), Lbl(label).CenterVertical());
+            => HStack(5, Check(isCheckedPropertyPath, source: selectorOptions), Lbl(label));
 
         private Editor SelectorDisplay(string propertyPath)
         {

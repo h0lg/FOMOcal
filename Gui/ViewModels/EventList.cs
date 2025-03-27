@@ -147,7 +147,7 @@ public partial class EventList : ObservableObject
                 Btn("🗑", nameof(CleanUpPastEventsCommand))
                     .BindVisible(nameof(CanDeletePastEvents)),
 
-                Lbl("🕰 Past gigs").CenterVertical().Bold()
+                Lbl("🕰 Past gigs").Bold()
                     .TapGesture(() => model.ShowPastEvents = !model.ShowPastEvents),
                 Swtch(nameof(ShowPastEvents)).Wrapper);
 
@@ -156,7 +156,7 @@ public partial class EventList : ObservableObject
 
             var commands = HStack(5,
                 Btn("👆 de/select all", nameof(SelectAllEventsCommand)),
-                Lbl("🥡 export selected as").CenterVertical().BindVisible(nameof(HasSelection)),
+                Lbl("🥡 export selected as").BindVisible(nameof(HasSelection)),
                 ExportButton("📆 iCal", nameof(ExportToIcsCommand)),
                 ExportButton("▦ CSV", nameof(ExportToCsvCommand)));
 

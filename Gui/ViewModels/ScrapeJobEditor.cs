@@ -320,7 +320,7 @@ public partial class ScrapeJobEditor : ObservableObject
         }
 
         private HorizontalStackLayout SelectorEntry(string label, string property, Func<string?>? maybeGetDescendantOfClosest, string tooltip)
-            => HStack(5, Lbl(label).CenterVertical(),
+            => HStack(5, Lbl(label),
                 createVisualSelectorEntry((Entry)HintedInput(Entr(property), tooltip), maybeGetDescendantOfClosest))
                 .DisplayWithSignificant(property);
 
@@ -328,7 +328,7 @@ public partial class ScrapeJobEditor : ObservableObject
             => LabeledInput(label, Entr(property), tooltip).DisplayWithSignificant(property);
 
         private HorizontalStackLayout LabeledInput(string label, Microsoft.Maui.Controls.View view, string tooltip)
-            => HStack(5, Lbl(label).CenterVertical(), HintedInput(view, tooltip));
+            => HStack(5, Lbl(label), HintedInput(view, tooltip));
 
         private Microsoft.Maui.Controls.View HintedInput(Microsoft.Maui.Controls.View view, string tooltip)
             => view.ToolTip(tooltip).ForwardFocusTo(model);

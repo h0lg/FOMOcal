@@ -71,8 +71,8 @@ internal static class Widgets
         HorizontalStackLayout layout = new();
         if (spacing.HasValue) layout.Spacing = spacing.Value;
 
-        foreach (var child in children)
-            layout.Children.Add(child);
+        foreach (View child in children)
+            layout.Children.Add(child.CenterVertical());
 
         return layout;
     }
