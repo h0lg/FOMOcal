@@ -336,8 +336,7 @@ public partial class ScrapeJobEditor : ObservableObject
         internal static VerticalStackLayout PreviewOrErrorList(string itemsSource, string hasFocus, string hasError, object source)
             => new VerticalStackLayout { Spacing = 10, Margin = new Thickness(0, verticalSize: 10) }
                 .Bind(BindableLayout.ItemsSourceProperty, itemsSource)
-                .Bind<VerticalStackLayout, bool, bool, bool>(IsVisibleProperty, binding1: new Binding(hasError), binding2: new Binding(hasFocus),
-                    convert: static values => values.Item1 || values.Item2) // display if either has error or focus
+                .BindVisible(new Binding(hasError), Converters.Or, new Binding(hasFocus)) // display if either has error or focus
                 .ItemTemplate(() => BndLbl().Bind(Label.TextColorProperty, hasError,
                     convert: static (bool err) => err ? Colors.IndianRed : Colors.ForestGreen, source: source));
     }
@@ -349,14 +348,10 @@ internal static class ScopeJobEditorExtensions
         => vis.OnFocusChanged(async (vis, focused) => await model.SetFocusAsync(vis, focused));
 
     internal static T DisplayWithSignificant<T>(this T vis, string textPropertyName) where T : VisualElement
-        => vis.Bind<T, bool, string, bool>(VisualElement.IsVisibleProperty,
-            binding1: new Binding(nameof(ScrapeJobEditor.HasFocus)),
-            binding2: new Binding(textPropertyName),
-            convert: values => values.Item1 || values.Item2.IsSignificant());
+        => vis.BindVisible(new Binding(nameof(ScrapeJobEditor.HasFocus)), Converters.Or,
+            new Binding(textPropertyName, converter: Converters.IsSignificant));
 
     internal static T DisplayWithChecked<T>(this T vis, string boolPropertyName) where T : VisualElement
-        => vis.Bind<T, bool, bool, bool>(VisualElement.IsVisibleProperty,
-            binding1: new Binding(nameof(ScrapeJobEditor.HasFocus)),
-            binding2: new Binding(boolPropertyName),
-            convert: values => values.Item1 || values.Item2);
+        => vis.BindVisible(new Binding(nameof(ScrapeJobEditor.HasFocus)),
+            Converters.Or, new Binding(boolPropertyName));
 }

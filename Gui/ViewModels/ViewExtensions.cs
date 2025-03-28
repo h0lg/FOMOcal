@@ -119,8 +119,12 @@ internal static class ViewExtensions
     internal static T BindVisible<T>(this T vis, string property, object? source = null, IValueConverter? converter = null) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, property, converter: converter, source: source);
 
+    internal static T BindVisible<T>(this T vis, BindingBase binding1,
+        Func<ValueTuple<bool, bool>, bool> convert, BindingBase binding2) where T : VisualElement
+        => vis.Bind(VisualElement.IsVisibleProperty, binding1, binding2, convert: convert);
+
     internal static T BindIsVisibleToValueOf<T>(this T vis, string textProperty) where T : VisualElement
-        => vis.Bind(VisualElement.IsVisibleProperty, textProperty, convert: static (string? value) => value.IsSignificant());
+        => vis.Bind(VisualElement.IsVisibleProperty, textProperty, converter: Converters.IsSignificant);
 
     internal static T OnTextChanged<T>(this T input, Action<TextChangedEventArgs> handle) where T : InputView
     {
@@ -153,4 +157,10 @@ internal static class ViewExtensions
         if (element is ScrollView scrollView) return FindTopLayout(scrollView.Content);
         return null;
     }
+}
+
+internal static class Converters
+{
+    internal static Func<ValueTuple<bool, bool>, bool> Or = ((bool a, bool b) values) => values.a || values.b;
+    internal static FuncConverter<string, bool> IsSignificant = new(value => value.IsSignificant());
 }
