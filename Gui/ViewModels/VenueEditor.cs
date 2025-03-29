@@ -85,16 +85,18 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
-    public bool ScrollDownToLoadMore
+    public string? NextEventPageSelector
     {
-        get => venue.Event.ScrollDownToLoadMore;
+        get => venue.Event.NextPageSelector;
         set
         {
-            if (value == venue.Event.ScrollDownToLoadMore) return;
-            venue.Event.ScrollDownToLoadMore = value;
+            if (value == venue.Event.NextPageSelector) return;
+            venue.Event.NextPageSelector = value;
             OnPropertyChanged();
         }
     }
+
+    public List<Venue.PagingStrategy> PagingStrategies { get; } = [.. Enum.GetValues<Venue.PagingStrategy>()];
 
     internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter)
     {
@@ -115,6 +117,8 @@ public partial class VenueEditor : ObservableObject
             if (e.PropertyName == nameof(SkipEvents) || e.PropertyName == nameof(TakeEvents))
                 UpdateEventSelectorPreview();
         };
+
+        RevealMore(); // once initially if we're editing to reveal event container
     }
 
     private ScrapeJobEditor ScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty,
@@ -293,9 +297,24 @@ public partial class VenueEditor : ObservableObject
             });
 
             var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
-
             (Switch Switch, Grid Wrapper) waitForJsRendering = Toggle(nameof(WaitForJsRendering));
-            (Switch Switch, Grid Wrapper) scrollDownToLoadMore = Toggle(nameof(ScrollDownToLoadMore));
+
+            Picker pagingStrategy = new()
+            {
+                ItemsSource = model.PagingStrategies.ConvertAll(e => e.GetDescription()),
+                SelectedIndex = model.PagingStrategies.IndexOf(model.venue.Event.PagingStrategy)
+            };
+
+            pagingStrategy.SelectedIndexChanged += (s, e) =>
+            {
+                if (pagingStrategy.SelectedIndex >= 0)
+                    model.venue.Event.PagingStrategy = model.PagingStrategies[pagingStrategy.SelectedIndex];
+            };
+
+            var nextPageSelector = SelectorEntry(Entr(nameof(NextEventPageSelector)).Placeholder("next page"),
+                pickRelativeTo: () => (selector: "body", pickDescendant: true))
+                .BindVisible(nameof(Picker.SelectedIndex), pagingStrategy,
+                    Converters.Func<int>(i => model.PagingStrategies[i] == Venue.PagingStrategy.NavigateLinkToLoadMore));
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
@@ -320,7 +339,8 @@ public partial class VenueEditor : ObservableObject
                 HWrap(5,
                     Lbl("Event container").Bold(), containerSelector,
                     Lbl("wait for JS rendering"), waitForJsRendering.Wrapper,
-                    Lbl("scroll down to load more"), scrollDownToLoadMore.Wrapper,
+                    Lbl("loading"), pagingStrategy,
+                    nextPageSelector,
                     Lbl("Preview events").Bold(),
                     LabeledStepper("skipping", nameof(SkipEvents), max: 100, onValueChanged: () => selectorText.Focus()),
                     LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus())).View,

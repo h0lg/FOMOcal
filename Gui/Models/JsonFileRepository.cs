@@ -26,7 +26,7 @@ public class JsonFileStore(string storagePath)
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
         WriteIndented = true,
-        Converters = { new IgnoreInsignificantStringConverter() }
+        Converters = { new IgnoreInsignificantStringConverter(), new JsonStringEnumConverter() }
     };
 
     private string GetFilePath(string fileName) => Path.Combine(storagePath, fileName + ".json");

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Text.Json;
 
 namespace FomoCal;
@@ -20,8 +21,10 @@ public class Venue
     public class EventScrapeJob
     {
         public required string Selector { get; set; }
-        public bool ScrollDownToLoadMore { get; set; }
         public bool WaitForJsRendering { get; set; }
+        public PagingStrategy PagingStrategy { get; set; }
+        public string? NextPageSelector { get; set; }
+        public int? MaxEvents { get; set; }
         public required ScrapeJob Name { get; set; }
         public required DateScrapeJob Date { get; set; }
 
@@ -40,7 +43,11 @@ public class Venue
         public ScrapeJob? ImageUrl { get; set; }
         public ScrapeJob? TicketUrl { get; set; }
 
-        internal bool WaitsForEvents() => WaitForJsRendering || ScrollDownToLoadMore;
+        internal bool LoadsMoreOnScrollDown() => PagingStrategy == PagingStrategy.ScrollDownToLoadMore;
+        internal bool WaitsForEvents() => WaitForJsRendering || LoadsMoreOnScrollDown();
+
+        internal bool LoadsMoreOnNextPage() => NextPageSelector.IsSignificant() &&
+            PagingStrategy == PagingStrategy.NavigateLinkToLoadMore;
 
         public override bool Equals(object? obj) => obj is EventScrapeJob other && Equals(other);
 
@@ -83,6 +90,18 @@ public class Venue
             hash.Add(TicketUrl);
             return hash.ToHashCode();
         }
+    }
+
+    public enum PagingStrategy
+    {
+        [Description("all on the first page")]
+        AllOnOne = 0,
+
+        [Description("different by navigating link")]
+        NavigateLinkToLoadMore = 2,
+
+        [Description("more by scrolling down")]
+        ScrollDownToLoadMore = 3
     }
 }
 

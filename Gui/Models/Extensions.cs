@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.ComponentModel;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace FomoCal;
 
@@ -79,5 +81,15 @@ internal static class EnumerableExtensions
     {
         set.RemoveWhere(newItems.Contains); // Remove old duplicates
         set.UnionWith(newItems);
+    }
+}
+
+internal static class EnumExtensions
+{
+    internal static string GetDescription<T>(this T value) where T : Enum
+    {
+        var field = typeof(T).GetField(value.ToString());
+        var attribute = field?.GetCustomAttribute<DescriptionAttribute>();
+        return attribute?.Description ?? value.ToString();
     }
 }

@@ -165,4 +165,5 @@ internal static class Converters
     internal static Func<ValueTuple<bool, bool>, bool> Or = ((bool a, bool b) values) => values.a || values.b;
     internal static Func<ValueTuple<bool, bool>, bool> And = ((bool a, bool b) values) => values.a && values.b;
     internal static FuncConverter<string, bool> IsSignificant = new(value => value.IsSignificant());
+    internal static FuncConverter<T, bool> Func<T>(Func<T?, bool> predicate) => new(predicate);
 }

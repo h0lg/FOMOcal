@@ -124,7 +124,7 @@ public partial class AutomatedEventPageView : WebView
     private string GetWaitForSelectorOptions()
     {
         waitForSelectorOptions.Selector = venue.Event.Selector;
-        waitForSelectorOptions.ScrollDownToLoadMore = venue.Event.ScrollDownToLoadMore;
+        waitForSelectorOptions.ScrollDownToLoadMore = venue.Event.LoadsMoreOnScrollDown();
         return JsonSerializer.Serialize(waitForSelectorOptions, jsonOptionSerializerOptions);
     }
 
