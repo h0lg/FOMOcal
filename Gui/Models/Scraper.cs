@@ -84,7 +84,7 @@ public sealed class Scraper : IDisposable
     /// which is when it is removed again.</summary>
     internal async Task<DomDoc> GetDocumentAsync(Venue venue)
     {
-        if (!venue.Event.WaitForJsRendering)
+        if (!venue.Event.WaitsForEvents())
             return await context.OpenAsync(venue.ProgramUrl);
 
         AutomatedEventPageView loader = new(venue);

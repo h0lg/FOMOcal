@@ -85,6 +85,17 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
+    public bool ScrollDownToLoadMore
+    {
+        get => venue.Event.ScrollDownToLoadMore;
+        set
+        {
+            if (value == venue.Event.ScrollDownToLoadMore) return;
+            venue.Event.ScrollDownToLoadMore = value;
+            OnPropertyChanged();
+        }
+    }
+
     internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter)
     {
         this.venue = venue;
@@ -282,17 +293,9 @@ public partial class VenueEditor : ObservableObject
             });
 
             var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
-            (Switch Switch, Grid Wrapper) waitForJsRendering = Swtch(nameof(WaitForJsRendering));
 
-            waitForJsRendering.Switch.OnFocusChanged(async (vis, focused) =>
-            {
-                if (focused) model.EventSelectorRelatedHasFocus = focused;
-                else
-                {
-                    await Task.Delay(300); // to allow for using the skip/take steppers without flickering
-                    if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = focused;
-                }
-            });
+            (Switch Switch, Grid Wrapper) waitForJsRendering = Toggle(nameof(WaitForJsRendering));
+            (Switch Switch, Grid Wrapper) scrollDownToLoadMore = Toggle(nameof(ScrollDownToLoadMore));
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
@@ -317,10 +320,28 @@ public partial class VenueEditor : ObservableObject
                 HWrap(5,
                     Lbl("Event container").Bold(), containerSelector,
                     Lbl("wait for JS rendering"), waitForJsRendering.Wrapper,
+                    Lbl("scroll down to load more"), scrollDownToLoadMore.Wrapper,
                     Lbl("Preview events").Bold(),
                     LabeledStepper("skipping", nameof(SkipEvents), max: 100, onValueChanged: () => selectorText.Focus()),
                     LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus())).View,
                 previewOrErrors);
+
+            (Switch Switch, Grid Wrapper) Toggle(string isToggledPropertyPath)
+            {
+                (Switch Switch, Grid Wrapper) toggle = Swtch(isToggledPropertyPath);
+
+                toggle.Switch.OnFocusChanged(async (vis, focused) =>
+                {
+                    if (focused) model.EventSelectorRelatedHasFocus = focused;
+                    else
+                    {
+                        await Task.Delay(300); // to allow for using the skip/take steppers without flickering
+                        if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = focused;
+                    }
+                });
+
+                return toggle;
+            }
         }
 
         private VerticalStackLayout OptionalEventFields()

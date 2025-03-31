@@ -20,6 +20,7 @@ public class Venue
     public class EventScrapeJob
     {
         public required string Selector { get; set; }
+        public bool ScrollDownToLoadMore { get; set; }
         public bool WaitForJsRendering { get; set; }
         public required ScrapeJob Name { get; set; }
         public required DateScrapeJob Date { get; set; }
@@ -38,6 +39,8 @@ public class Venue
         public ScrapeJob? Url { get; set; }
         public ScrapeJob? ImageUrl { get; set; }
         public ScrapeJob? TicketUrl { get; set; }
+
+        internal bool WaitsForEvents() => WaitForJsRendering || ScrollDownToLoadMore;
 
         public override bool Equals(object? obj) => obj is EventScrapeJob other && Equals(other);
 

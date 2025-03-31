@@ -18,7 +18,7 @@ public partial class AutomatedEventPageView : WebView
     * i.e. wait for approx. 5sec for JS rendering or scrolling down to load more before timing out
     * while a change in the number of matched events resets the iterations (and wait time)
     * until we time out or load at least 100 events. */
-    private readonly WaitForSelectorOptions waitForSelectorOptions = new() { IntervalDelayMs = 200, MaxTries = 25 };
+    private readonly WaitForSelectorOptions waitForSelectorOptions = new() { IntervalDelayMs = 200, MaxMatches = 100, MaxTries = 25 };
 
     /// <summary>An event that notifies the subscriber about the DOM from <see cref="Venue.ProgramUrl"/>
     /// being ready for scraping and returning its HTML - or null if it should
@@ -104,7 +104,7 @@ public partial class AutomatedEventPageView : WebView
         if (args.Result != WebNavigationResult.Success) return;
         string script = "";
 
-        if (venue.Event.WaitForJsRendering)
+        if (venue.Event.WaitsForEvents())
         {
             script += await waitForSelectorScript.Value; // load script with API
             script += $"{waitForSelector}init(loaded => {{ {NavigateTo($"'{eventsLoaded}?' + loaded")} }});";
@@ -124,6 +124,7 @@ public partial class AutomatedEventPageView : WebView
     private string GetWaitForSelectorOptions()
     {
         waitForSelectorOptions.Selector = venue.Event.Selector;
+        waitForSelectorOptions.ScrollDownToLoadMore = venue.Event.ScrollDownToLoadMore;
         return JsonSerializer.Serialize(waitForSelectorOptions, jsonOptionSerializerOptions);
     }
 
@@ -159,6 +160,8 @@ public partial class AutomatedEventPageView : WebView
     {
         [ObservableProperty] private string selector;
         [ObservableProperty] private uint intervalDelayMs;
+        [ObservableProperty] private bool scrollDownToLoadMore;
+        [ObservableProperty] private uint maxMatches;
         [ObservableProperty] private uint maxTries;
     }
 
