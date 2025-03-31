@@ -74,9 +74,9 @@ public sealed class Scraper : IDisposable
         loader.IsVisible = false;
         var layout = App.GetCurrentContentPage().FindTopLayout() as Layout;
         layout!.Add(loader); // to start its lifecycle
-        DomDoc document = await GetDocument(loader);
-        layout.Remove(loader);
-        return document;
+
+        try { return await GetDocument(loader); }
+        finally { layout.Remove(loader); } // make sure to remove loader again
     }
 
     private Task<DomDoc> GetDocument(AutomatedEventPageView loader)
