@@ -63,6 +63,12 @@ public partial class AutomatedEventPageView : WebView
         EvaluateJavaScriptAsync($"{picking}withOptions({json});");
     }
 
+    internal Task ClickElementToLoadMore(string selector)
+        => EvaluateJavaScriptAsync($"{waitForSelector}afterClickingOn('{selector}', {GetWaitForSelectorOptions()});");
+
+    internal Task ScrollDownToLoadMore()
+        => EvaluateJavaScriptAsync($"{waitForSelector}afterScrollingDown({GetWaitForSelectorOptions()});");
+
     private async void OnNavigatingAsync(object? sender, WebNavigatingEventArgs args)
     {
         /*  Using Navigating event triggered by setting location to an identifyable fixed URL in JS to call back to the host app.
@@ -104,12 +110,14 @@ public partial class AutomatedEventPageView : WebView
         if (args.Result != WebNavigationResult.Success) return;
         string script = "";
 
-        if (venue.Event.WaitsForEvents())
+        if (venue.Event.RequiresAutomation())
         {
             script += await waitForSelectorScript.Value; // load script with API
             script += $"{waitForSelector}init(loaded => {{ {NavigateTo($"'{eventsLoaded}?' + loaded")} }});";
-            script += $"{waitForSelector}withOptions({GetWaitForSelectorOptions()}); {waitForSelector}start();";
         }
+
+        if (venue.Event.WaitForJsRendering)
+            script += $"{waitForSelector}onLoad({GetWaitForSelectorOptions()});";
         else script += NavigateTo($"'{eventsLoaded}?true'"); // if view is used to load URL without waiting, call back immediately
 
         if (PickedSelector != null)
@@ -124,7 +132,6 @@ public partial class AutomatedEventPageView : WebView
     private string GetWaitForSelectorOptions()
     {
         waitForSelectorOptions.Selector = venue.Event.Selector;
-        waitForSelectorOptions.ScrollDownToLoadMore = venue.Event.LoadsMoreOnScrollDown();
         return JsonSerializer.Serialize(waitForSelectorOptions, jsonOptionSerializerOptions);
     }
 
@@ -160,7 +167,6 @@ public partial class AutomatedEventPageView : WebView
     {
         [ObservableProperty] private string selector;
         [ObservableProperty] private uint intervalDelayMs;
-        [ObservableProperty] private bool scrollDownToLoadMore;
         [ObservableProperty] private uint maxMatches;
         [ObservableProperty] private uint maxTries;
     }

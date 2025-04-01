@@ -33,22 +33,23 @@ public sealed class Scraper : IDisposable
     }
 
     /// <summary>Scrapes <see cref="Event"/>s from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/>.</summary>
-    public async Task<List<Event>> ScrapeVenueAsync(Venue venue)
+    public async Task<HashSet<Event>> ScrapeVenueAsync(Venue venue)
     {
-        var events = new List<Event>();
+        HashSet<Event> events = [];
 
         var eventPage = GetEventPage(venue);
 
         try
         {
             var document = await eventPage.Loading;
-            ScrapeEvents(venue, events, document);
+            ScrapeEvents(venue, events, document!);
 
             while (eventPage.HasMore())
             {
                 document = await eventPage.LoadMoreAsync();
-                if (document == null) break;
-                ScrapeEvents(venue, events, document);
+                if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
+                var added = ScrapeEvents(venue, events, document);
+                if (!added) break; // stop loading more if scraping current page yielded no new events to prevent loop
             }
         }
         catch (Exception ex)
@@ -63,8 +64,10 @@ public sealed class Scraper : IDisposable
         return events;
     }
 
-    private static void ScrapeEvents(Venue venue, List<Event> events, DomDoc document)
+    private static bool ScrapeEvents(Venue venue, HashSet<Event> events, DomDoc document)
     {
+        var addedAny = false;
+
         foreach (var eventElement in document.SelectEvents(venue))
         {
             var name = venue.Event.Name.GetValue(eventElement);
@@ -90,8 +93,10 @@ public sealed class Scraper : IDisposable
                 TicketUrl = venue.Event.TicketUrl?.GetUrl(eventElement)
             };
 
-            events.Add(scrapedEvent);
+            addedAny = events.Add(scrapedEvent) || addedAny;
         }
+
+        return addedAny;
     }
 
     /// <summary>Loads the <see cref="DomDoc"/> from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/> for scraping.
@@ -100,7 +105,7 @@ public sealed class Scraper : IDisposable
     /// That view loads the URL and waits until the <see cref="Venue.EventScrapeJob.Selector"/> matches anything,
     /// which is when it is removed again.</summary>
     private EventPage GetEventPage(Venue venue)
-        => venue.Event.WaitsForEvents()
+        => venue.Event.RequiresAutomation()
             ? new EventPage(venue, TopLayout, CreateDocumentAsync)
             : new EventPage(venue, context);
 

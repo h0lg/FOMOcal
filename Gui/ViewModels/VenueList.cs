@@ -17,7 +17,7 @@ public partial class VenueList : ObservableObject
 
     public ObservableCollection<Venue> Venues { get; } = [];
 
-    internal event Action<Venue, List<Event>>? EventsScraped;
+    internal event Action<Venue, HashSet<Event>>? EventsScraped;
     internal event Action<string, string>? VenueRenamed;
     internal event Action<string>? VenueDeleted;
 

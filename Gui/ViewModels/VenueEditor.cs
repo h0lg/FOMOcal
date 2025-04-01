@@ -314,7 +314,7 @@ public partial class VenueEditor : ObservableObject
             var nextPageSelector = SelectorEntry(Entr(nameof(NextEventPageSelector)).Placeholder("next page"),
                 pickRelativeTo: () => (selector: "body", pickDescendant: true))
                 .BindVisible(nameof(Picker.SelectedIndex), pagingStrategy,
-                    Converters.Func<int>(i => model.PagingStrategies[i] == Venue.PagingStrategy.NavigateLinkToLoadMore));
+                    Converters.Func<int>(i => model.PagingStrategies[i].RequiresNextPageSelector()));
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),

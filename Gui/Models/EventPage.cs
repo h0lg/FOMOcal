@@ -1,6 +1,8 @@
 ﻿using AngleSharp;
 using AngleSharp.Dom;
+using CommunityToolkit.Maui.Markup;
 using FomoCal.Gui.ViewModels;
+using Microsoft.Maui.Layouts;
 using DomDoc = AngleSharp.Dom.IDocument;
 
 namespace FomoCal;
@@ -13,56 +15,80 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     private readonly Func<string, Task<DomDoc>>? createDocumentFromHtmlAsync;
     private readonly Action? cleanup;
 
-    internal Task<DomDoc> Loading { get; private set; }
+    internal Task<DomDoc?> Loading { get; private set; }
 
     internal EventPage(Venue venue, IBrowsingContext browsingContext)
     {
         this.venue = venue;
         this.browsingContext = browsingContext;
-        Loading = browsingContext.OpenAsync(venue.ProgramUrl);
+        Loading = browsingContext.OpenAsync(venue.ProgramUrl)!;
     }
 
     internal EventPage(Venue venue, Layout layout, Func<string, Task<DomDoc>> createDocumentFromHtmlAsync)
     {
         this.venue = venue;
         this.createDocumentFromHtmlAsync = createDocumentFromHtmlAsync;
-        loader = new(venue);
-        loader.IsVisible = false;
-        layout.Add(loader); // to start its lifecycle
-        Loading = LoadDocument();
-        cleanup = () => layout.Remove(loader); // make sure to remove loader again
+
+        const int height = 1000, width = 1000;
+
+        /* Add loader to an AbsoluteLayout that lets it have a decent size and be IsVisible
+         * (which some pages require to properly scroll and load more events)
+         * while staying out of view and not taking up space in the layout it's added to. */
+        loader = new AutomatedEventPageView(venue)
+            //.LayoutBounds(0, 0, width, height) // use to see what's going on
+            .LayoutBounds(width, height, width, height) // position off-screen with a decent size
+            .LayoutFlags(AbsoluteLayoutFlags.None);
+
+        AbsoluteLayout wrapper = new() { WidthRequest = 0, HeightRequest = 0 };
+        wrapper.Add(loader);
+        layout.Add(wrapper); // to start the loader's lifecycle
+
+        Loading = LoadDocument(throwOnTimeout: true); // first page of events is required
+        cleanup = () => layout.Remove(wrapper); // make sure to remove loader again
     }
 
-    internal bool HasMore() => venue.Event.LoadsMoreOnNextPage() && GetNextPageElement() != null;
+    internal bool HasMore() => venue.Event.LoadsMoreOnScrollDown()
+        || venue.Event.LoadsMoreOnNextPage() && GetNextPageElement() != null;
 
     internal async Task<DomDoc?> LoadMoreAsync()
     {
-        var nextPage = GetNextPageElement()!;
-
-        if (venue.Event.PagingStrategy == Venue.PagingStrategy.NavigateLinkToLoadMore)
+        switch (venue.Event.PagingStrategy)
         {
-            var href = nextPage.GetAttribute("href");
-            if (href.IsNullOrWhiteSpace() || href == "#") return null;
-            var url = nextPage.HyperReference(href!);
+            case Venue.PagingStrategy.ClickElementToLoadMore:
+                await loader!.ClickElementToLoadMore(venue.Event.NextPageSelector!);
+                Loading = LoadDocument();
+                break;
+            case Venue.PagingStrategy.NavigateLinkToLoadMore:
+                var nextPage = GetNextPageElement()!;
+                var href = nextPage.GetAttribute("href");
+                if (href.IsNullOrWhiteSpace() || href == "#") return null; // to prevent loop
+                var url = nextPage.HyperReference(href!);
 
-            if (browsingContext != null)
-            {
-                Loading = browsingContext.OpenAsync(url);
-                return await Loading;
-            }
-            else
-            {
-                loader!.Source = url.ToString();
-                return await LoadDocument();
-            }
+                if (browsingContext != null)
+                {
+                    Loading = browsingContext.OpenAsync(url)!;
+                }
+                else
+                {
+                    loader!.Source = url.ToString();
+                    Loading = LoadDocument();
+                }
+
+                break;
+            case Venue.PagingStrategy.ScrollDownToLoadMore:
+                await loader!.ScrollDownToLoadMore();
+                Loading = LoadDocument();
+                break;
+            default:
+                throw new InvalidOperationException($"{nameof(Venue.PagingStrategy)} {venue.Event.PagingStrategy} is not supported");
         }
 
-        throw new InvalidOperationException($"{nameof(Venue.PagingStrategy)} {venue.Event.PagingStrategy} is not supported on element {nextPage}");
+        return await Loading;
     }
 
-    private Task<DomDoc> LoadDocument()
+    private Task<DomDoc?> LoadDocument(bool throwOnTimeout = false)
     {
-        TaskCompletionSource<DomDoc> eventHtmlLoading = new();
+        TaskCompletionSource<DomDoc?> eventHtmlLoading = new();
 
         loader!.HtmlWithEventsLoaded += async html =>
         {
@@ -71,14 +97,14 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
                 var doc = await createDocumentFromHtmlAsync!(html!);
                 eventHtmlLoading.TrySetResult(doc);
             }
-            else eventHtmlLoading.SetException(new Exception(loader.EventLoadingTimedOut));
+            else if (throwOnTimeout) eventHtmlLoading.TrySetException(new Exception(loader.EventLoadingTimedOut));
+            else eventHtmlLoading.TrySetResult(null);
         };
 
-        Loading = eventHtmlLoading.Task;
-        return Loading;
+        return eventHtmlLoading.Task;
     }
 
-    private AngleSharp.Dom.IElement? GetNextPageElement() => Loading.Result.QuerySelector(venue.Event.NextPageSelector!);
+    private AngleSharp.Dom.IElement? GetNextPageElement() => Loading.Result?.QuerySelector(venue.Event.NextPageSelector!);
 
     private bool isDisposed;
 
@@ -87,7 +113,6 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
         if (isDisposed) return;
         Loading.Dispose();
         cleanup?.Invoke();
-        isDisposed = true;
-        GC.SuppressFinalize(this); // to avoid unnecessary GC overhead
+        isDisposed = true; // allow GC to clean up the rest
     }
 }

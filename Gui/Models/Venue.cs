@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json;
+using static FomoCal.Venue;
 
 namespace FomoCal;
 
@@ -44,10 +45,9 @@ public class Venue
         public ScrapeJob? TicketUrl { get; set; }
 
         internal bool LoadsMoreOnScrollDown() => PagingStrategy == PagingStrategy.ScrollDownToLoadMore;
-        internal bool WaitsForEvents() => WaitForJsRendering || LoadsMoreOnScrollDown();
-
-        internal bool LoadsMoreOnNextPage() => NextPageSelector.IsSignificant() &&
-            PagingStrategy == PagingStrategy.NavigateLinkToLoadMore;
+        private bool WaitsForEvents() => WaitForJsRendering || LoadsMoreOnScrollDown();
+        internal bool RequiresAutomation() => WaitsForEvents() || PagingStrategy.ClicksElementToLoad();
+        internal bool LoadsMoreOnNextPage() => NextPageSelector.IsSignificant() && PagingStrategy.RequiresNextPageSelector();
 
         public override bool Equals(object? obj) => obj is EventScrapeJob other && Equals(other);
 
@@ -97,6 +97,9 @@ public class Venue
         [Description("all on the first page")]
         AllOnOne = 0,
 
+        [Description("more by clicking")]
+        ClickElementToLoadMore = 1,
+
         [Description("different by navigating link")]
         NavigateLinkToLoadMore = 2,
 
@@ -123,4 +126,10 @@ internal static class VenueExtensions
             existing.Add(import);
         }
     }
+
+    internal static bool RequiresNextPageSelector(this PagingStrategy strategy)
+        => strategy == PagingStrategy.NavigateLinkToLoadMore || strategy.ClicksElementToLoad();
+
+    internal static bool ClicksElementToLoad(this PagingStrategy strategy)
+        => strategy == PagingStrategy.ClickElementToLoadMore;
 }

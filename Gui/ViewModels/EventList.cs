@@ -32,7 +32,7 @@ public partial class EventList : ObservableObject
     }
 
     // Called from the MainPage on VenueList.EventsScraped
-    internal void RefreshWith(List<Event> newEvents)
+    internal void RefreshWith(HashSet<Event> newEvents)
     {
         if (newEvents.Count == 0) return;
 
