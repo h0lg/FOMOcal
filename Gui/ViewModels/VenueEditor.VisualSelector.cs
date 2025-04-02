@@ -111,7 +111,7 @@ partial class VenueEditor
 
             var xPathSyntax = new Switch() // enables switching between CSS and XPath syntax to save space
                 .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: model.selectorOptions)
-                .InlineTooltipOnFocus(string.Format(HelpTexts.SelectorSyntaxFormat, string.Format(FomoCal.ScrapeJob.XPathSelectorFormat, "selector")), help);
+                .InlineTooltipOnFocus(string.Format(HelpTexts.SelectorSyntaxFormat, FomoCal.ScrapeJob.XPathSelectorPrefix), help);
 
             var syntax = HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath"));
 
@@ -196,17 +196,17 @@ partial class VenueEditor
         {
             Entry host = model.visualSelectorHost!;
             var existing = host.Text ?? "";
-            var xpathMatch = FomoCal.ScrapeJob.XpathSelectorPattern().Match(existing);
+            var hasXpath = FomoCal.ScrapeJob.TryGetXPathSelector(existing, out var existingXpath);
             string normalized = selectedQuery.NormalizeWhitespace();
 
             if (model.selectorOptions.XPathSyntax)
             {
-                var selector = xpathMatch.Success ? xpathMatch.Value + normalized // append to existing XPath
+                var selector = hasXpath ? existingXpath + normalized // append to existing XPath
                     : normalized; // discard CSS query
 
                 host.Text = FomoCal.ScrapeJob.FormatXpathSelector(selector);
             }
-            else host.Text = xpathMatch.Success ? normalized // discard XPath query
+            else host.Text = hasXpath ? normalized // discard XPath query
                 : existing + " " + normalized; // append to existing CSS
         }
 

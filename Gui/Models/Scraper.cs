@@ -1,4 +1,5 @@
 ﻿using AngleSharp;
+using AngleSharp.XPath;
 using FomoCal.Gui;
 using FomoCal.Gui.ViewModels;
 using DomDoc = AngleSharp.Dom.IDocument;
@@ -28,7 +29,7 @@ public sealed partial class Scraper : IDisposable
 
     public Scraper()
     {
-        var config = Configuration.Default.WithDefaultLoader().WithXPath();
+        var config = Configuration.Default.WithDefaultLoader();
         context = BrowsingContext.New(config);
     }
 
@@ -119,5 +120,8 @@ public sealed partial class Scraper : IDisposable
 internal static class ScraperExtensions
 {
     internal static IEnumerable<AngleSharp.Dom.IElement> SelectEvents(this DomDoc document, Venue venue)
-        => document.QuerySelectorAll(venue.Event.Selector);
+        => ScrapeJob.TryGetXPathSelector(venue.Event.Selector, out var xPathSelector)
+            // see https://github.com/AngleSharp/AngleSharp.XPath
+            ? document.Body.SelectNodes(xPathSelector).OfType<AngleSharp.Dom.IElement>()
+            : document.QuerySelectorAll(venue.Event.Selector);
 }

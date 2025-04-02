@@ -310,7 +310,8 @@ namespace FomoCal.Gui.Resources {
         ///
         ///# XPath
         ///For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
-        ///^^Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for y [rest of string was truncated]&quot;;.
+        ///^^Make sure to stick to XPath 1.0 features and prefix your selector with &apos;{0}&apos;. Using the ➕ append button will do that for you.
+        ///^^E.g. to select elements with class &apos;event&apos; that have a &apos;categor [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SelectorSyntaxFormat {
             get {

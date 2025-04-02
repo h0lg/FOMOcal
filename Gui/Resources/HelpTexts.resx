@@ -168,9 +168,9 @@ You may want to do this e.g. to convert a date string into a valid format. Patte
 
 # XPath
 For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
-^^Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for you.
+^^Make sure to stick to XPath 1.0 features and prefix your selector with '{0}'. Using the ➕ append button will do that for you.
 ^^E.g. to select elements with class 'event' that have a 'category' class div with the cleaned text 'concert', you'd write:
-^^*[xpath&gt;"//div[contains(@class, 'event')][.//div[@class='category' and normalize-space(.)='concert']]"]</value>
+^^{0}//div[contains(@class, 'event')][.//div[@class='category' and normalize-space(.)='concert']]</value>
   </data>
   <data name="EnablePicking" xml:space="preserve">
     <value>Toggle picking mode.

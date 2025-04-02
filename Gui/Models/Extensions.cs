@@ -84,6 +84,10 @@ internal static class EnumerableExtensions
         set.RemoveWhere(newItems.Contains); // Remove old duplicates
         set.UnionWith(newItems);
     }
+
+    /// <summary>Returns only the non-null elements from <paramref name="nullables"/>.</summary>
+    internal static IEnumerable<T> WithValue<T>(this IEnumerable<T> nullables)
+        => nullables.Where(v => v != null).Select(v => v);
 }
 
 internal static class EnumExtensions

@@ -1,14 +1,36 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
+using AngleSharp.XPath;
 
 namespace FomoCal;
 
 public partial class ScrapeJob
 {
-    internal const string XPathSelectorFormat = "*[xpath>\"{0}\"]";
-    internal static string FormatXpathSelector(string selector) => string.Format(XPathSelectorFormat, selector);
-    [GeneratedRegex("(?<=\\[xpath>\")(.+)(?=\"\\])")] internal static partial Regex XpathSelectorPattern();
+    internal const string XPathSelectorPrefix = "XPATH^";
+    internal static string FormatXpathSelector(string selector) => XPathSelectorPrefix + selector;
+    [GeneratedRegex("(?<=\\[xpath>\")(.+)(?=\"\\])")] private static partial Regex OldXpathSelectorPattern();
+
+    internal static bool TryGetXPathSelector(string selector, [MaybeNullWhen(false)] out string xPathSelector)
+    {
+        if (selector.StartsWith(XPathSelectorPrefix, StringComparison.Ordinal))
+        {
+            xPathSelector = selector[XPathSelectorPrefix.Length..];
+            return true;
+        }
+
+        var xpathMatch = OldXpathSelectorPattern().Match(selector);
+
+        if (xpathMatch.Success)
+        {
+            xPathSelector = xpathMatch.Value;
+            return true;
+        }
+
+        xPathSelector = null;
+        return false;
+    }
 
     protected static T? AddOrThrow<T>(List<Exception>? errors, Error error)
     {
@@ -52,11 +74,24 @@ public partial class ScrapeJob
     {
         try
         {
-            AngleSharp.Dom.IElement? node = Closest.IsSignificant() ? element.Closest(Closest!) : element;
-            if (Selector.IsSignificant()) node = node?.QuerySelector(Selector!);
+            INode? node = element;
+
+            if (Closest.IsSignificant())
+                node = TryGetXPathSelector(Closest!, out var xPathClosest)
+                    /* select on ancestor axis, [1] yielding the nearest one
+                     * (because XPath returns ancestor nodes in reverse order — closest first)
+                     * see also https://github.com/AngleSharp/AngleSharp.XPath */
+                    ? element.SelectSingleNode($"ancestor-or-self::{xPathClosest}[1]")
+                    : element.Closest(Closest!);
+
+            if (Selector.IsSignificant() && node is AngleSharp.Dom.IElement selectable)
+                node = TryGetXPathSelector(Selector!, out var xPathSelector)
+                    ? selectable.SelectSingleNode(xPathSelector)
+                    : selectable.QuerySelector(Selector!);
+
             if (node == null) return null;
 
-            var text = Attribute.IsSignificant() ? node.GetAttribute(Attribute!)
+            var text = Attribute.IsSignificant() && node is AngleSharp.Dom.IElement attributed ? attributed.GetAttribute(Attribute!)
                 : IgnoreNestedText ? node.ChildNodes.Where(n => n.NodeType == NodeType.Text).Select(n => n.TextContent).LineJoin()
                 : node.TextContent;
 

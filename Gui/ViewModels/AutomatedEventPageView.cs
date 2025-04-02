@@ -148,9 +148,9 @@ public partial class AutomatedEventPageView : WebView
 
     private string GetWaitForSelectorOptions()
     {
-        var xpathMatch = ScrapeJob.XpathSelectorPattern().Match(venue.Event.Selector);
-        waitForSelectorOptions.IsXpathSelector = xpathMatch.Success;
-        waitForSelectorOptions.Selector = xpathMatch.Success ? xpathMatch.Value : venue.Event.Selector;
+        var isXpath = ScrapeJob.TryGetXPathSelector(venue.Event.Selector, out var xPathSelector);
+        waitForSelectorOptions.IsXpathSelector = isXpath;
+        waitForSelectorOptions.Selector = isXpath ? xPathSelector! : venue.Event.Selector;
         return JsonSerializer.Serialize(waitForSelectorOptions, jsonOptionSerializerOptions);
     }
 
