@@ -8,6 +8,23 @@ namespace FomoCal;
 public sealed class Scraper : IDisposable
 {
     private readonly IBrowsingContext context;
+    private Layout? topLayout;
+
+    private Layout TopLayout
+    {
+        get
+        {
+            if (topLayout == null)
+            {
+                topLayout = App.GetCurrentContentPage().FindTopLayout() as Layout;
+
+                if (topLayout == null) throw new InvalidOperationException(
+                    $"You need to use the {nameof(Scraper)} on a {nameof(ContentPage)} with a {nameof(Layout)} to attach the {nameof(AutomatedEventPageView)} to.");
+            }
+
+            return topLayout!;
+        }
+    }
 
     public Scraper()
     {
@@ -72,11 +89,10 @@ public sealed class Scraper : IDisposable
 
         AutomatedEventPageView loader = new(venue);
         loader.IsVisible = false;
-        var layout = App.GetCurrentContentPage().FindTopLayout() as Layout;
-        layout!.Add(loader); // to start its lifecycle
+        TopLayout.Add(loader); // to start its lifecycle
 
         try { return await GetDocument(loader); }
-        finally { layout.Remove(loader); } // make sure to remove loader again
+        finally { TopLayout.Remove(loader); } // make sure to remove loader again
     }
 
     private Task<DomDoc> GetDocument(AutomatedEventPageView loader)
