@@ -8,6 +8,31 @@ public class ScrapeJob
     public string Selector { get; set; } = string.Empty;
     public bool IgnoreNestedText { get; set; }
     public string? Attribute { get; set; }
+
+    public string? Replace
+    {
+        get => replace;
+        set
+        {
+            replace = value;
+            replacements = null;
+        }
+    }
+
+    private string? replace;
+    private Dictionary<string, string>? replacements;
+
+    private Dictionary<string, string> Replacements
+    {
+        get
+        {
+            if (replacements == null && Replace.IsSignificant())
+                replacements = Replace!.ExplodeInlinedReplacements();
+
+            return replacements!;
+        }
+    }
+
     public string? Match { get; set; }
 
     public virtual string? GetValue(AngleSharp.Dom.IElement element)
@@ -26,6 +51,7 @@ public class ScrapeJob
 
             if (value.IsNullOrWhiteSpace()) return null;
             value = value.NormalizeWhitespace();
+            if (Replace.IsSignificant()) value = value.ApplyReplacements(Replacements);
             return Match.IsSignificant() ? ApplyRegex(value!, Match!) : value;
         }
         catch (Exception ex)

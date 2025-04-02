@@ -21,6 +21,34 @@ internal static class StringExtensions
         return result.Trim(); // trim leading/trailing whitespace
     }
 
+    internal static string ApplyReplacements(this string input, Dictionary<string, string> replacements)
+    {
+        foreach (var pair in replacements) // Apply each replacement pair
+            input = Regex.Replace(input, Regex.Escape(pair.Key), pair.Value);
+
+        return input;
+    }
+
+    // Regex pattern to match "Pattern => Replacement, Pattern2 =>" pairs
+    private static readonly Regex inlinedReplacements = new(@"([^=\s]+)\s*=>\s*([^,]*)");
+
+    /// <summary>Explodes the inlined <paramref name="replacements"/> in the form "Pattern => Replacement, Pattern2 =>"
+    /// into pairs for <see cref="ApplyReplacements(string, Dictionary{string, string})"/>.</summary>
+    internal static Dictionary<string, string> ExplodeInlinedReplacements(this string replacements)
+    {
+        // Create a dictionary to hold the pairs (pattern => replacement)
+        Dictionary<string, string> exploded = [];
+
+        // Use Regex to find all pattern-replacement pairs
+        foreach (Match match in inlinedReplacements.Matches(replacements))
+        {
+            string patternKey = match.Groups[1].Value;
+            exploded[patternKey] = match.Groups[2].Value;
+        }
+
+        return exploded;
+    }
+
     /// <summary>Indicates whether <paramref name="text"/> contains any of the supplied
     /// <paramref name="terms"/> using <paramref name="stringComparison"/> to compare.</summary>
     internal static bool ContainsAny(this string text, IEnumerable<string> terms,

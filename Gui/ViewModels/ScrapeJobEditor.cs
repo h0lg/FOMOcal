@@ -73,6 +73,17 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
+    public string? Replace
+    {
+        get => ScrapeJob?.Replace;
+        set
+        {
+            if (ScrapeJob == null || ScrapeJob.Replace == value) return;
+            ScrapeJob.Replace = value;
+            OnPropertyChanged();
+        }
+    }
+
     public string? Match
     {
         get => ScrapeJob?.Match;
@@ -154,7 +165,7 @@ public partial class ScrapeJobEditor : ObservableObject
         EventProperty = eventProperty;
 
         string[] scrapeJobProperties = [nameof(Closest), nameof(Selector), nameof(IgnoreNestedText),
-            nameof(Attribute), nameof(Match), nameof(Format), nameof(Culture)];
+            nameof(Attribute), nameof(Replace), nameof(Match), nameof(Format), nameof(Culture)];
 
         PropertyChanged += (o, e) =>
         {
@@ -287,6 +298,13 @@ public partial class ScrapeJobEditor : ObservableObject
                 LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),
 
                 TextEntry("attribute", nameof(Attribute), "The name of the attribute of the selected element to extract the text from."),
+
+                TextEntry("replace", nameof(Replace),
+                    "Multiple optional replacements to apply, in the form \"Pattern => Replacement, Pattern2 =>\"." +
+                    " You may want to do this e.g. to convert a date string into a valid format." +
+                    " Patterns are Regular Expressions https://en.wikipedia.org/wiki/Regular_expression in .NET flavour, but plain text often works." +
+                    " https://regex101.com/ is great to debug your patterns, learn and find existing patterns." +
+                    " If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this."),
 
                 TextEntry("match", nameof(Match),
                     "A pattern (Regular Expression https://en.wikipedia.org/wiki/Regular_expression in .NET flavour) that matches the part of text to extract." +
