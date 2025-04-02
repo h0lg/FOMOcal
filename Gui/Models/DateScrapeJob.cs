@@ -11,15 +11,16 @@ public class DateScrapeJob : ScrapeJob
     {
         var rawValue = base.GetValue(element);
         if (string.IsNullOrWhiteSpace(rawValue)) return null;
+        CultureInfo culture = new(Culture);
+        const DateTimeStyles style = DateTimeStyles.None;
 
-        try
-        {
-            return DateTime.ParseExact(rawValue, Format, new CultureInfo(Culture));
-        }
-        catch (Exception ex)
-        {
-            throw new Error($"Failed to parse date '{rawValue}' using format '{Format}' in culture '{Culture}'.", ex);
-        }
+        if (DateTime.TryParseExact(rawValue, Format, culture, style, out DateTime parsedDate)) return parsedDate;
+
+        if (!Format.Contains('y') // retry parsing date as next year's for format without year info
+            && DateTime.TryParseExact(rawValue + " " + (DateTime.Today.Year + 1), Format + " yyyy",
+                culture, style, out DateTime nextYearsDate)) return nextYearsDate;
+
+        throw new Error($"Failed to parse date '{rawValue}' using format '{Format}' in culture '{Culture}'.");
     }
 
     public override string? GetValue(AngleSharp.Dom.IElement element) => GetDate(element)?.ToString("D");
