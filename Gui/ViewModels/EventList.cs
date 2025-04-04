@@ -145,13 +145,14 @@ public partial class EventList : ObservableObject
 
             var pastEvents = HStack(5,
                 Btn("🗑", nameof(CleanUpPastEventsCommand))
-                    .BindVisible(nameof(CanDeletePastEvents)),
+                    .BindVisible(nameof(CanDeletePastEvents))
+                    .ToolTip("Remove old gig pasta"),
 
-                Lbl("🕰 Past gigs").Bold()
+                Lbl("🕞 Past").Bold()
                     .TapGesture(() => model.ShowPastEvents = !model.ShowPastEvents),
                 Swtch(nameof(ShowPastEvents)).Wrapper);
 
-            var searchBar = new SearchBar().Placeholder("Filter gigs by pipe | separated | terms")
+            var searchBar = new SearchBar().Placeholder("filter by pipe | separated | terms")
                 .Bind(SearchBar.TextProperty, nameof(SearchText));
 
             var commands = HStack(5,
@@ -179,7 +180,7 @@ public partial class EventList : ObservableObject
                         OptionalTextLabel(nameof(Event.Genres), "🎷 {0}").Wrap());
 
                     var times = VStack(5,
-                        BndLbl(nameof(Event.Date), stringFormat: "{0:d}").Bold(),
+                        BndLbl(nameof(Event.Date), stringFormat: "📆 {0:ddd d MMM yy}").Bold(),
                         OptionalTextLabel(nameof(Event.DoorsTime), "🚪 {0}"),
                         OptionalTextLabel(nameof(Event.StartTime), "🎼 {0}"));
 
@@ -216,7 +217,8 @@ public partial class EventList : ObservableObject
             list.SelectionChanged += (o, e) => model.HasSelection = e.CurrentSelection.Count > 0;
 
             Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5,
-                HWrap(pastEvents, searchBar.Grow(1), commands).View,
+                HWrap(new Thickness(0, 0, right: 5, 0), pastEvents,
+                    Lbl("Gigs").Bold().FontSize(20), searchBar.Grow(1), commands).View,
                 list.Row(1));
         }
 
