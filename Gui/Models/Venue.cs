@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Text.Json;
 
 namespace FomoCal;
 
@@ -13,6 +14,8 @@ public class Venue
     public override bool Equals(object? obj) => obj is Venue other && Equals(other);
     public bool Equals(Venue? other) => other is not null && GetHashCode() == other.GetHashCode();
     public override int GetHashCode() => HashCode.Combine(Name, ProgramUrl);
+
+    internal Venue DeepCopy() => JsonSerializer.Deserialize<Venue>(JsonSerializer.Serialize(this))!;
 
     public class EventScrapeJob
     {

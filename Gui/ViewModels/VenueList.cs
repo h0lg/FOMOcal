@@ -59,20 +59,28 @@ public partial class VenueList : ObservableObject
     [RelayCommand]
     private async Task AddVenue()
     {
-        TaskCompletionSource<VenueEditor.Result?> adding = new();
-        VenueEditor model = new(null, scraper, adding);
+        TaskCompletionSource<VenueEditor.Actions?> adding = new();
+
+        Venue added = new()
+        {
+            Name = "",
+            ProgramUrl = "",
+            Event = new() { Selector = "", Name = new(), Date = new() }
+        };
+
+        VenueEditor model = new(added, scraper, adding);
         await navigation.PushAsync(new VenueEditor.Page(model));
-        VenueEditor.Result? result = await adding.Task; // wait for editor
+        VenueEditor.Actions? result = await adding.Task; // wait for editor
         if (result == null) return; // canceled, do nothing
 
-        switch (result.Action)
+        switch (result)
         {
-            case VenueEditor.Result.Actions.Saved:
-                Venues.Add(result.Venue);
+            case VenueEditor.Actions.Saved:
+                Venues.Add(added);
                 await SaveVenues();
                 break;
 
-            case VenueEditor.Result.Actions.Deleted:
+            case VenueEditor.Actions.Deleted:
                 break;
         }
 
@@ -80,28 +88,31 @@ public partial class VenueList : ObservableObject
     }
 
     [RelayCommand]
-    private async Task EditVenue(Venue venue)
+    private async Task EditVenue(Venue original)
     {
-        TaskCompletionSource<VenueEditor.Result?> editing = new();
-        VenueEditor model = new(venue, scraper, editing);
+        TaskCompletionSource<VenueEditor.Actions?> editing = new();
+        Venue edited = original.DeepCopy(); // so that original is not changed by the editor
+        VenueEditor model = new(edited, scraper, editing);
         await navigation.PushAsync(new VenueEditor.Page(model));
-        VenueEditor.Result? result = await editing.Task; // wait for editor
+        VenueEditor.Actions? result = await editing.Task; // wait for editor
         if (result == null) return; // canceled, do nothing
 
-        switch (result.Action)
+        switch (result)
         {
-            case VenueEditor.Result.Actions.Saved:
-                await SaveVenues(); // since we passed the venue by reference, it's already updated
+            case VenueEditor.Actions.Saved:
+                Venues.Remove(original);
+                Venues.Add(edited);
+                await SaveVenues();
 
-                if (result.OriginalVenueName != venue.Name)
-                    VenueRenamed?.Invoke(result.OriginalVenueName!, venue.Name); // notify subscribers
+                if (original.Name != edited.Name)
+                    VenueRenamed?.Invoke(original.Name, edited.Name); // notify subscribers
 
                 await LoadVenuesAsync(); // to refresh UI
                 break;
 
-            case VenueEditor.Result.Actions.Deleted:
-                Venues.Remove(result.Venue);
-                VenueDeleted?.Invoke(result.OriginalVenueName!); // notify subscribers
+            case VenueEditor.Actions.Deleted:
+                Venues.Remove(original);
+                VenueDeleted?.Invoke(original.Name); // notify subscribers
                 await SaveVenues();
                 break;
         }

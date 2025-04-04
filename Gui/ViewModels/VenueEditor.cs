@@ -9,9 +9,9 @@ namespace FomoCal.Gui.ViewModels;
 public partial class VenueEditor : ObservableObject
 {
     private readonly bool isDeletable;
-    private readonly string? originalVenueName;
+    private readonly string originalVenueName;
     private readonly Scraper scraper;
-    private readonly TaskCompletionSource<Result?> awaiter;
+    private readonly TaskCompletionSource<Actions?> awaiter;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
     private readonly SemaphoreSlim revealingMore = new(1, 1);
     private Entry? visualSelectorHost;
@@ -85,20 +85,13 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
-    internal VenueEditor(Venue? venue, Scraper scraper, TaskCompletionSource<Result?> awaiter)
+    internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter)
     {
-        isDeletable = venue != null;
-        originalVenueName = venue?.Name;
-
-        this.venue = venue ?? new Venue
-        {
-            Name = "",
-            ProgramUrl = "",
-            Event = new() { Selector = "", Name = new(), Date = new() }
-        };
-
+        this.venue = venue;
         this.scraper = scraper;
         this.awaiter = awaiter;
+        isDeletable = venue.ProgramUrl.IsSignificant();
+        originalVenueName = venue.Name;
 
         var evt = this.venue.Event;
         eventName = ScrapeJob("Name", evt.Name, nameof(Venue.EventScrapeJob.Name));
@@ -177,7 +170,7 @@ public partial class VenueEditor : ObservableObject
             property.SetValue(venue.Event, editor.IsEmpty ? null : editor.ScrapeJob);
         }
 
-        awaiter.SetResult(new Result(venue, Result.Actions.Saved, originalVenueName));
+        awaiter.SetResult(Actions.Saved);
     }
 
     [RelayCommand]
@@ -187,24 +180,10 @@ public partial class VenueEditor : ObservableObject
             $"Are you sure you want to delete the venue {venue.Name}?",
             "Yes", "No");
 
-        if (isConfirmed) awaiter.SetResult(new Result(venue, Result.Actions.Deleted, originalVenueName));
+        if (isConfirmed) awaiter.SetResult(Actions.Deleted);
     }
 
-    internal record Result
-    {
-        public Venue Venue { get; }
-        public Actions Action { get; }
-        public string? OriginalVenueName { get; }
-
-        internal Result(Venue venue, Actions action, string? originalVenueName)
-        {
-            Venue = venue;
-            Action = action;
-            OriginalVenueName = originalVenueName;
-        }
-
-        internal enum Actions { Saved, Deleted }
-    }
+    internal enum Actions { Saved, Deleted }
 
     public partial class Page : ContentPage
     {
