@@ -124,7 +124,7 @@ public partial class VenueEditor : ObservableObject
     private ScrapeJobEditor ScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty,
         bool isOptional = false, string? defaultAttribute = null)
     {
-        ScrapeJobEditor editor = new(label, scrapeJob,
+        ScrapeJobEditor editor = new(label, scrapeJob ?? new ScrapeJob(),
             () => previewedEvents, () => visualSelectorHost,
             eventProperty, isOptional, defaultAttribute);
 

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using System.Reflection;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Maui.Layouts;
 using static FomoCal.Gui.ViewModels.Widgets;
@@ -13,50 +14,49 @@ public partial class ScrapeJobEditor : ObservableObject
     private readonly string? defaultAttribute;
     internal readonly bool IsOptional;
 
-    internal ScrapeJob? ScrapeJob { get; private set; }
+    internal ScrapeJob ScrapeJob { get; private set; }
     internal DateScrapeJob? DateScrapeJob => ScrapeJob as DateScrapeJob;
     public string EventProperty { get; }
 
     [ObservableProperty] private string?[]? previewResults;
     [ObservableProperty] private bool hasErrors;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayInputs))] private bool isEmpty;
 
     #region ScrapeJob proxy properties
+    private static readonly string[] scrapeJobStringPropertyNames = [nameof(Closest), nameof(Selector), nameof(Attribute), nameof(Replace), nameof(Match)];
+    private static readonly string[] scrapeJobPropertyNames = [.. scrapeJobStringPropertyNames, nameof(IgnoreNestedText), nameof(Format), nameof(Culture)];
+
+    private static readonly PropertyInfo[] scrapeJobStringProperties = typeof(ScrapeJobEditor).GetProperties()
+        .Where(p => scrapeJobStringPropertyNames.Contains(p.Name)).ToArray();
+
     public string? Closest
     {
-        get => ScrapeJob?.Closest;
+        get => ScrapeJob.Closest;
         set
         {
-            if (ScrapeJob == null || ScrapeJob.Closest == value) return;
+            if (ScrapeJob.Closest == value) return;
             ScrapeJob.Closest = value;
             OnPropertyChanged();
         }
     }
 
-    public string Selector
+    public string? Selector
     {
-        get => ScrapeJob?.Selector ?? "";
+        get => ScrapeJob.Selector;
         set
         {
-            if (ScrapeJob == null && value.IsSignificant())
-            {
-                ScrapeJob = new();
-                Attribute = defaultAttribute;
-            }
-
-            if (ScrapeJob == null || ScrapeJob.Selector == value) return;
+            if (ScrapeJob.Selector == value) return;
             ScrapeJob.Selector = value;
             OnPropertyChanged();
-            OnPropertyChanged(nameof(IsEmpty));
-            OnPropertyChanged(nameof(DisplayInputs));
         }
     }
 
     public bool IgnoreNestedText
     {
-        get => ScrapeJob?.IgnoreNestedText ?? false;
+        get => ScrapeJob.IgnoreNestedText;
         set
         {
-            if (ScrapeJob == null || ScrapeJob.IgnoreNestedText == value) return;
+            if (ScrapeJob.IgnoreNestedText == value) return;
             ScrapeJob.IgnoreNestedText = value;
             OnPropertyChanged();
         }
@@ -64,10 +64,10 @@ public partial class ScrapeJobEditor : ObservableObject
 
     public string? Attribute
     {
-        get => ScrapeJob?.Attribute;
+        get => ScrapeJob.Attribute;
         set
         {
-            if (ScrapeJob == null || ScrapeJob.Attribute == value) return;
+            if (ScrapeJob.Attribute == value) return;
             ScrapeJob.Attribute = value;
             OnPropertyChanged();
         }
@@ -75,10 +75,10 @@ public partial class ScrapeJobEditor : ObservableObject
 
     public string? Replace
     {
-        get => ScrapeJob?.Replace;
+        get => ScrapeJob.Replace;
         set
         {
-            if (ScrapeJob == null || ScrapeJob.Replace == value) return;
+            if (ScrapeJob.Replace == value) return;
             ScrapeJob.Replace = value;
             OnPropertyChanged();
         }
@@ -86,10 +86,10 @@ public partial class ScrapeJobEditor : ObservableObject
 
     public string? Match
     {
-        get => ScrapeJob?.Match;
+        get => ScrapeJob.Match;
         set
         {
-            if (ScrapeJob == null || ScrapeJob.Match == value) return;
+            if (ScrapeJob.Match == value) return;
             ScrapeJob.Match = value;
             OnPropertyChanged();
         }
@@ -119,8 +119,6 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
     #endregion
-
-    public bool IsEmpty => Selector.IsNullOrWhiteSpace();
 
     private bool displayInputs;
     public bool DisplayInputs
@@ -152,7 +150,7 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
-    internal ScrapeJobEditor(string label, ScrapeJob? scrapeJob,
+    internal ScrapeJobEditor(string label, ScrapeJob scrapeJob,
         Func<AngleSharp.Dom.IElement[]?> getEventsForPreview, Func<VisualElement?> getVisualSelectorHost,
         string eventProperty, bool isOptional, string? defaultAttribute = null)
     {
@@ -164,15 +162,23 @@ public partial class ScrapeJobEditor : ObservableObject
         IsOptional = isOptional;
         EventProperty = eventProperty;
 
-        string[] scrapeJobProperties = [nameof(Closest), nameof(Selector), nameof(IgnoreNestedText),
-            nameof(Attribute), nameof(Replace), nameof(Match), nameof(Format), nameof(Culture)];
-
         PropertyChanged += (o, e) =>
         {
-            if (scrapeJobProperties.Contains(e.PropertyName)) UpdatePreview();
+            if (!scrapeJobPropertyNames.Contains(e.PropertyName)) return;
+
+            if (scrapeJobStringPropertyNames.Contains(e.PropertyName))
+            {
+                UpdateEmpty();
+                if (!IsEmpty && Attribute.IsNullOrWhiteSpace()) Attribute = defaultAttribute;
+            }
+
+            UpdatePreview();
         };
+
+        UpdateEmpty(); // to initialize it correctly
     }
 
+    private void UpdateEmpty() => IsEmpty = !scrapeJobStringProperties.Any(p => ((string?)p.GetValue(this, null)).IsSignificant());
     private void Validate() => IsValid = !HasErrors && PreviewResults?.Length == getEventsForPreview()?.Length;
 
     private Guid? focusedId; // tracks the child that currently has focus
@@ -210,7 +216,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
     internal void UpdatePreview()
     {
-        if (ScrapeJob == null) return;
+        if (IsEmpty) return;
 
         try
         {
@@ -229,7 +235,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 try
                 {
                     // use defaultAttribute as an indicator to scrape a URL
-                    var value = defaultAttribute == null ? ScrapeJob!.GetValue(e) : ScrapeJob!.GetUrl(e);
+                    var value = defaultAttribute == null ? ScrapeJob.GetValue(e) : ScrapeJob.GetUrl(e);
                     return (value, null);
                 }
                 catch (Exception ex)

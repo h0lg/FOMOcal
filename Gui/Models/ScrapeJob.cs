@@ -5,7 +5,7 @@ namespace FomoCal;
 public class ScrapeJob
 {
     public string? Closest { get; set; }
-    public string Selector { get; set; } = string.Empty;
+    public string? Selector { get; set; }
     public bool IgnoreNestedText { get; set; }
     public string? Attribute { get; set; }
 
@@ -37,12 +37,10 @@ public class ScrapeJob
 
     public virtual string? GetValue(AngleSharp.Dom.IElement element)
     {
-        if (Selector.IsNullOrWhiteSpace()) return null;
-
         try
         {
             AngleSharp.Dom.IElement? node = Closest.IsSignificant() ? element.Closest(Closest!) : element;
-            node = node?.QuerySelector(Selector);
+            if (Selector.IsSignificant()) node = node?.QuerySelector(Selector!);
             if (node == null) return null;
 
             var value = Attribute.IsSignificant() ? node.GetAttribute(Attribute!)
