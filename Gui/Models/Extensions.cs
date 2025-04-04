@@ -93,3 +93,25 @@ internal static class EnumExtensions
         return attribute?.Description ?? value.ToString();
     }
 }
+
+internal static class FileHelper
+{
+    internal static async Task WriteAsync(string filePath, string contents)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        await File.WriteAllTextAsync(filePath, contents);
+    }
+
+    internal static void ShareFile(string filePath, string contentType, string title)
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            // see https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/data/share#share-a-file
+            await Share.Default.RequestAsync(new ShareFileRequest
+            {
+                Title = title,
+                File = new ShareFile(filePath, contentType)
+            });
+        });
+    }
+}

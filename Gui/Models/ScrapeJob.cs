@@ -35,7 +35,7 @@ public class ScrapeJob
 
     public string? Match { get; set; }
 
-    public virtual string? GetValue(AngleSharp.Dom.IElement element)
+    public virtual string? GetValue(AngleSharp.Dom.IElement element, List<Exception>? errors = null)
     {
         try
         {
@@ -54,15 +54,23 @@ public class ScrapeJob
         }
         catch (Exception ex)
         {
-            throw new Error($"Failed while extracting value from closest '{Closest}' selector '{Selector}' Attribute '{Attribute}' Match '{Match}'", ex);
+            var error = new Error($"Failed while extracting value from closest '{Closest}' selector '{Selector}' Attribute '{Attribute}' Match '{Match}'", ex);
+            return AddOrThrow<string?>(errors, error);
         }
+    }
+
+    protected static T? AddOrThrow<T>(List<Exception>? errors, Error error)
+    {
+        if (errors == null) throw error;
+        errors.Add(error);
+        return default;
     }
 
     /// <summary>Returns an absolute URL for relative or root-relative paths
     /// scraped from <paramref name="element"/>, like from href or src attributes.</summary>
-    internal string? GetUrl(AngleSharp.Dom.IElement element)
+    internal string? GetUrl(AngleSharp.Dom.IElement element, List<Exception>? errors = null)
     {
-        string? maybeRelativeUri = GetValue(element);
+        string? maybeRelativeUri = GetValue(element, errors);
 
         return maybeRelativeUri == null ? null
             : new Uri(new Uri(element.BaseUri), maybeRelativeUri).ToString();

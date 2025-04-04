@@ -33,45 +33,46 @@ public sealed class Scraper : IDisposable
     }
 
     /// <summary>Scrapes <see cref="Event"/>s from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/>.</summary>
-    public async Task<HashSet<Event>> ScrapeVenueAsync(Venue venue)
+    public async Task<(HashSet<Event> events, List<Exception> errors)> ScrapeVenueAsync(Venue venue)
     {
         HashSet<Event> events = [];
+        List<Exception> errors = [];
 
         var eventPage = GetEventPage(venue);
 
         try
         {
             var document = await eventPage.Loading;
-            ScrapeEvents(venue, events, document!);
+            ScrapeEvents(venue, events, errors, document!);
 
             while (eventPage.HasMore())
             {
                 document = await eventPage.LoadMoreAsync();
                 if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
-                var added = ScrapeEvents(venue, events, document);
+                var added = ScrapeEvents(venue, events, errors, document);
                 if (!added) break; // stop loading more if scraping current page yielded no new events to prevent loop
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Error] Failed to scrape venue {venue.Name}: {ex.Message}");
+            errors.Add(new ScrapeJob.Error($"Failed to scrape venue {venue.Name}", ex));
         }
         finally
         {
             eventPage.Dispose();
         }
 
-        return events;
+        return (events, errors);
     }
 
-    private static bool ScrapeEvents(Venue venue, HashSet<Event> events, DomDoc document)
+    private static bool ScrapeEvents(Venue venue, HashSet<Event> events, List<Exception> errors, DomDoc document)
     {
         var addedAny = false;
 
         foreach (var eventElement in document.SelectEvents(venue))
         {
-            var name = venue.Event.Name.GetValue(eventElement);
-            DateTime? date = venue.Event.Date.GetDate(eventElement);
+            var name = venue.Event.Name.GetValue(eventElement, errors);
+            DateTime? date = venue.Event.Date.GetDate(eventElement, errors);
             if (name == null || date == null) continue;
 
             var scrapedEvent = new Event
@@ -80,17 +81,17 @@ public sealed class Scraper : IDisposable
                 Name = name,
                 Date = date.Value,
                 Scraped = DateTime.Now,
-                SubTitle = venue.Event.SubTitle?.GetValue(eventElement),
-                Description = venue.Event.Description?.GetValue(eventElement),
-                Genres = venue.Event.Genres?.GetValue(eventElement),
-                Stage = venue.Event.Stage?.GetValue(eventElement),
-                DoorsTime = venue.Event.DoorsTime?.GetValue(eventElement),
-                StartTime = venue.Event.StartTime?.GetValue(eventElement),
-                PresalePrice = venue.Event.PresalePrice?.GetValue(eventElement),
-                DoorsPrice = venue.Event.DoorsPrice?.GetValue(eventElement),
-                Url = venue.Event.Url?.GetUrl(eventElement),
-                ImageUrl = venue.Event.ImageUrl?.GetUrl(eventElement),
-                TicketUrl = venue.Event.TicketUrl?.GetUrl(eventElement)
+                SubTitle = venue.Event.SubTitle?.GetValue(eventElement, errors),
+                Description = venue.Event.Description?.GetValue(eventElement, errors),
+                Genres = venue.Event.Genres?.GetValue(eventElement, errors),
+                Stage = venue.Event.Stage?.GetValue(eventElement, errors),
+                DoorsTime = venue.Event.DoorsTime?.GetValue(eventElement, errors),
+                StartTime = venue.Event.StartTime?.GetValue(eventElement, errors),
+                PresalePrice = venue.Event.PresalePrice?.GetValue(eventElement, errors),
+                DoorsPrice = venue.Event.DoorsPrice?.GetValue(eventElement, errors),
+                Url = venue.Event.Url?.GetUrl(eventElement, errors),
+                ImageUrl = venue.Event.ImageUrl?.GetUrl(eventElement, errors),
+                TicketUrl = venue.Event.TicketUrl?.GetUrl(eventElement, errors)
             };
 
             addedAny = events.Add(scrapedEvent) || addedAny;

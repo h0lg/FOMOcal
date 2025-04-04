@@ -99,20 +99,12 @@ internal static class Export
     private static async Task ExportFile(string fileTypeLabel, string contents, string extension, string contentType)
     {
         string filePath = GetExportFilePath(extension);
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-        await File.WriteAllTextAsync(filePath, contents);
-        await ShareFile(fileTypeLabel, filePath, contentType);
+        await FileHelper.WriteAsync(filePath, contents);
+        ShareFile(fileTypeLabel, filePath, contentType);
     }
 
-    internal static async Task ShareFile(string fileTypeLabel, string filePath, string contentType)
-    {
-        // see https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/data/share#share-a-file
-        await Share.Default.RequestAsync(new ShareFileRequest
-        {
-            Title = "Share " + fileTypeLabel + " export",
-            File = new ShareFile(filePath, contentType)
-        });
-    }
+    internal static void ShareFile(string fileTypeLabel, string filePath, string contentType)
+        => FileHelper.ShareFile(filePath, contentType, title: $"Share {fileTypeLabel} export");
 
     private static string GetExportFilePath(string extension)
         => Path.Combine(MauiProgram.StoragePath, "exports",

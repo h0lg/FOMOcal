@@ -26,7 +26,12 @@ public partial class VenueList : ObservableObject
         this.venueRepo = venueRepo;
         this.scraper = scraper;
         this.navigation = navigation;
-        _ = LoadVenuesAsync(); // Fire & forget (no need to await in constructor)
+
+        // Fire & forget (no need to await in constructor)
+        _ = LoadVenuesAsync().ContinueWith(async t =>
+        {
+            if (t.Exception != null) await ErrorReport.WriteAsyncAndShare(t.Exception.ToString(), "loading venues");
+        });
     }
 
     private async Task LoadVenuesAsync()
@@ -123,21 +128,31 @@ public partial class VenueList : ObservableObject
     [RelayCommand]
     private async Task RefreshVenue(Venue venue)
     {
-        await RefreshEvents(venue);
+        var errors = await RefreshEvents(venue);
         RefreshList();
         await SaveVenues();
+        if (errors.Count > 0) await WriteErrorReportAsync(ReportErrors(errors, venue));
     }
 
     [RelayCommand]
     private async Task RefreshAllVenues()
     {
-        await Task.WhenAll(Venues.Select(RefreshEvents));
+        var refreshs = Venues.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
+        await Task.WhenAll(refreshs.Select(r => r.task));
         RefreshList();
         await SaveVenues();
+
+        var scrapesWithErrors = refreshs.Where(r => r.task.Result.Count > 0).ToArray();
+
+        if (scrapesWithErrors.Length > 0)
+        {
+            string errorReport = scrapesWithErrors.Select(r => ReportErrors(r.task.Result, r.venue)).Join(ErrorReport.OutputSpacing);
+            await WriteErrorReportAsync(errorReport);
+        }
     }
 
     [RelayCommand]
-    private async Task ExportVenues() => await venueRepo.ShareFile("venues");
+    private void ExportVenues() => venueRepo.ShareFile("venues");
 
     [RelayCommand]
     private async Task ImportVenues()
@@ -169,14 +184,23 @@ public partial class VenueList : ObservableObject
         }
     }
 
-    private async Task RefreshEvents(Venue venue)
+    private async Task<List<Exception>> RefreshEvents(Venue venue)
     {
-        var events = await scraper.ScrapeVenueAsync(venue);
+        (HashSet<Event> events, List<Exception> errors) = await scraper.ScrapeVenueAsync(venue);
         venue.LastRefreshed = DateTime.Now;
         EventsScraped?.Invoke(venue, events); // notify subscribers
+        return errors;
     }
 
     private Task SaveVenues() => venueRepo.SaveCompleteAsync(Venues.ToHashSet());
+
+    private static string ReportErrors(List<Exception> errors, Venue venue)
+        => errors.Select(ex => ex.ToString())
+            .Prepend("Scraping " + venue.Name + " " + venue.ProgramUrl)
+            .Join(ErrorReport.OutputSpacing);
+
+    private static async Task WriteErrorReportAsync(string errorReport)
+        => await ErrorReport.WriteAsyncAndShare(errorReport, "refreshing venues");
 
     public partial class View : ContentView
     {

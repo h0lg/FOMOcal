@@ -10,6 +10,12 @@
         {
             this.services = services;
             InitializeComponent();
+
+            MauiExceptions.UnhandledException += async (sender, args) =>
+            {
+                Exception exception = (Exception)args.ExceptionObject;
+                await ErrorReport.WriteAsyncAndShare(exception.ToString(), "caught globally");
+            };
         }
 
         protected override Window CreateWindow(IActivationState? activationState)

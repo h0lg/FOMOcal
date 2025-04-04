@@ -9,7 +9,10 @@ public partial class MainPage : ContentPage
 {
     public MainPage(JsonFileRepository<Venue> venueRepo, Scraper scraper, EventList eventList)
     {
-        _ = eventList.LoadEvents();
+        _ = eventList.LoadEvents().ContinueWith(async t =>
+        {
+            if (t.Exception != null) await ErrorReport.WriteAsyncAndShare(t.Exception.ToString(), "loading events");
+        });
 
         VenueList venueList = new(venueRepo, scraper, Navigation);
         venueList.EventsScraped += (venue, events) => eventList.RefreshWith(events);
