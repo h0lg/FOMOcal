@@ -65,6 +65,73 @@
         }, settings.intervalDelayMs);
     }
 
+    function getClosestCommonAncestor(elements) {
+        if (!elements.length) return null;
+        if (elements.length === 1) return elements[0].parentNode;
+
+        // Helper function to get the CCA of two elements
+        function findCCA(el1, el2) {
+            const ancestors = new Set();
+
+            // Collect all ancestors of el1
+            while (el1) {
+                ancestors.add(el1);
+                el1 = el1.parentNode;
+            }
+
+            // Traverse up from el2 until we find a common ancestor
+            while (el2 && !ancestors.has(el2)) {
+                el2 = el2.parentNode;
+            }
+
+            return el2; // This is the closest common ancestor
+        }
+
+        // Start with the CCA of the first two elements
+        let commonAncestor = findCCA(elements[0], elements[1]);
+
+        // Check the rest of the elements
+        for (let i = 2; i < elements.length; i++) {
+            if (!commonAncestor.contains(elements[i])) {
+                commonAncestor = findCCA(commonAncestor, elements[i]);
+            }
+        }
+
+        return commonAncestor;
+    }
+
+    function waitForMutation(timeoutMs = 5000, options = { childList: true, subtree: true, attributes: true }) {
+        return new Promise((resolve, reject) => {
+            let timeoutId,
+                successTimeoutId;
+
+            const contentElements = getMatches();
+            console.debug(settings.selector, 'already loaded', contentElements.length);
+            if (!contentElements.length) return reject(new Error(`Timeout: No elements match selector '${settings.selector}' found to observe`));
+            const targetNode = getClosestCommonAncestor([...contentElements]);
+
+            const observer = new MutationObserver((mutations, obs) => {
+                console.info('mutation observer detected changes');
+                if (successTimeoutId) clearTimeout(successTimeoutId); // to only resolve after the last mutation
+
+                successTimeoutId = setTimeout(() => {
+                    clearTimeout(timeoutId); // Prevent timeout rejection
+                    obs.disconnect(); // Stop observing
+                    resolve();
+                }, 200); // to enable further mutations to cancel the resolution
+            });
+
+            console.info('mutation observer starting');
+            observer.observe(targetNode, options);
+
+            timeoutId = setTimeout(() => {
+                console.info('mutation observer timed out');
+                observer.disconnect();
+                reject(new Error(`Timeout: No mutation detected for selector '${settings.selector}' within ${timeoutMs}ms`));
+            }, timeoutMs);
+        });
+    }
+
     // exported API, register globally to enable calling it after
     const exports = window.FOMOcal = window.FOMOcal || {};
 
@@ -122,6 +189,30 @@
                 console.debug(settings.selector, 'already loaded', alreadyLoaded);
                 // should only notifyFound(true) when loading more matches than alreadyLoaded were loaded
                 start(found => alreadyLoaded < found);
+            } else {
+                notifyFound(false);
+            }
+        },
+
+        mutationAfterClickingOn: (selector, options) => {
+            console.info('waitForSelector.mutationAfterClickingOn', selector, options);
+            withOptions(options);
+            const element = document.querySelector(selector);
+            console.info('trying to click', selector, 'found', element);
+
+            if (element !== null) {
+                element.scrollIntoView();
+                element.click();
+
+                waitForMutation().then(() => {
+                    notifyFound(true);
+                }).catch((error) => {
+                    console.error(error);
+                    notifyFound(false);
+                });
+
+                // Click the pagination button
+                element.click();
             } else {
                 notifyFound(false);
             }

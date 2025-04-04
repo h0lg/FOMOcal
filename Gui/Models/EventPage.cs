@@ -79,6 +79,10 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
                 await loader!.ScrollDownToLoadMore();
                 Loading = LoadDocument();
                 break;
+            case Venue.PagingStrategy.ClickElementToLoadDifferent:
+                await loader!.ClickElementToLoadDifferent(venue.Event.NextPageSelector!);
+                Loading = LoadDocument();
+                break;
             default:
                 throw new InvalidOperationException($"{nameof(Venue.PagingStrategy)} {venue.Event.PagingStrategy} is not supported");
         }

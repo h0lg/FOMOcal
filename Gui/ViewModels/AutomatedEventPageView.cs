@@ -66,6 +66,9 @@ public partial class AutomatedEventPageView : WebView
     internal Task ClickElementToLoadMore(string selector)
         => EvaluateJavaScriptAsync($"{waitForSelector}afterClickingOn('{selector}', {GetWaitForSelectorOptions()});");
 
+    internal Task ClickElementToLoadDifferent(string selector)
+        => EvaluateJavaScriptAsync($"{waitForSelector}mutationAfterClickingOn('{selector}', {GetWaitForSelectorOptions()});");
+
     internal Task ScrollDownToLoadMore()
         => EvaluateJavaScriptAsync($"{waitForSelector}afterScrollingDown({GetWaitForSelectorOptions()});");
 
