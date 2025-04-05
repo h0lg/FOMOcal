@@ -1,9 +1,14 @@
-﻿using AngleSharp.Dom;
+﻿using System.Text.RegularExpressions;
+using AngleSharp.Dom;
 
 namespace FomoCal;
 
 public class ScrapeJob
 {
+    internal static Regex XpathSelectorPattern = new("(?<=\\[xpath>\")(.+)(?=\"\\])");
+    internal const string XPathSelectorFormat = "*[xpath>\"{0}\"]";
+    internal static string FormatXpathSelector(string selector) => string.Format(XPathSelectorFormat, selector);
+
     public string? Closest { get; set; }
     public string? Selector { get; set; }
     public bool IgnoreNestedText { get; set; }

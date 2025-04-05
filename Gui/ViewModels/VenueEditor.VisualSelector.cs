@@ -87,7 +87,15 @@ partial class VenueEditor
                         convert: static (bool showSelector) => showSelector ? "⏮ Back to ⛶ picking an element" : "🥢 Choose a selector next ⏭"));
 
             var xPathSyntax = new Switch() // enables switching between CSS and XPath syntax to save space
-                .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: model.selectorOptions);
+                .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: model.selectorOptions)
+                .ToolTip("What's the difference? In most cases you'll want to use CSS for its shorter and simpler syntax." +
+                    "\n\nFor advanced scenarios you may want to try XPath, which has more powerful functions, e.g. for filtering." +
+                    "\n\nMake sure to stick to XPath 1.0 features and " +
+                    $" wrap your {string.Format(FomoCal.ScrapeJob.XPathSelectorFormat, "selector")} as described" +
+                    " here https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use ." +
+                    "\n\nE.g. to select elements with class 'event' that have a 'category' class div with the cleaned text 'concert', you'd write: " +
+                    "\n*[xpath>\"//div[contains(@class, 'event')][.//div[@class='category' and normalize-space(.)='concert']]\"]" +
+                    "\n\nUsing the ➕ append button with apply the wrapper for you.");
 
             var syntax = HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath"));
 
@@ -106,7 +114,8 @@ partial class VenueEditor
 
             View[] appendSelection = [
                 Lbl("Select parts of the selector text and"),
-                Btn("➕ append").TapGesture(AppendSelectedQuery),
+                Btn("➕ append").TapGesture(AppendSelectedQuery)
+                    .ToolTip("Appends to the existing query if it matches the syntax, otherwise replaces it."),
                 Lbl("them to your query to try them out."),
                 Btn("🍜 selector options").BindVisible(showPickedSelector).TapGesture(ToggleSelectorDetail)];
 
@@ -157,7 +166,20 @@ partial class VenueEditor
         private async void PickParent() => await pageView!.PickParent();
         private void TogglePickedSelector() => model.ShowPickedSelector = !model.ShowPickedSelector;
         private void ToggleSelectorDetail() => model.ShowSelectorDetail = !model.ShowSelectorDetail;
-        private void AppendSelectedQuery() => model.visualSelectorHost!.Text += " " + selectedQuery.NormalizeWhitespace();
+
+        private void AppendSelectedQuery()
+        {
+            var xpathMatch = FomoCal.ScrapeJob.XpathSelectorPattern.Match(model.visualSelectorHost!.Text);
+            string normalized = selectedQuery.NormalizeWhitespace();
+
+            if (model.selectorOptions.XPathSyntax)
+            {
+                var selector = xpathMatch.Success ? xpathMatch.Value + normalized : normalized; // discard CSS query
+                model.visualSelectorHost!.Text = FomoCal.ScrapeJob.FormatXpathSelector(selector);
+            }
+            else model.visualSelectorHost!.Text = xpathMatch.Success ? normalized // discard XPath query
+                    : model.visualSelectorHost!.Text + " " + normalized;
+        }
 
         private void Reload()
         {
