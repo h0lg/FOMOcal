@@ -1,13 +1,22 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json;
+using System.Text.RegularExpressions;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FomoCal.Gui.ViewModels;
 
 public partial class AutomatedEventPageView : WebView
 {
     const string interopMessagePrefix = "https://fomocal.",
-        eventsLoaded = interopMessagePrefix + "events.loaded";
+        eventsLoaded = interopMessagePrefix + "events.loaded",
+        scriptApi = "FOMOcal.", waitForSelector = scriptApi + "waitForSelector.";
 
     private readonly Venue venue;
+
+    /* check every 200ms for 25 resetting iterations,
+    * i.e. wait for approx. 5sec for JS rendering or scrolling down to load more before timing out
+    * while a change in the number of matched events resets the iterations (and wait time)
+    * until we time out or load at least 100 events. */
+    private readonly WaitForSelectorOptions waitForSelectorOptions = new() { IntervalDelayMs = 200, MaxTries = 25 };
 
     /// <summary>An event that notifies the subscriber about the DOM from <see cref="Venue.ProgramUrl"/>
     /// being ready for scraping and returning its HTML - or null if it should
@@ -25,6 +34,9 @@ public partial class AutomatedEventPageView : WebView
         Navigating += OnNavigatingAsync;
         Navigated += OnNavigatedAsync;
     }
+
+    private static readonly JsonSerializerOptions jsonOptionSerializerOptions
+        = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     private async void OnNavigatingAsync(object? sender, WebNavigatingEventArgs args)
     {
@@ -60,27 +72,47 @@ public partial class AutomatedEventPageView : WebView
     private async void OnNavigatedAsync(object? sender, WebNavigatedEventArgs args)
     {
         if (args.Result != WebNavigationResult.Success) return;
-        string script = await inlinedScript.Value; // load script with API
+        string script = "";
 
-        // append function call. check every 100ms for 100 times 10sec
-        script += $"waitForSelector('{venue.Event.Selector}', {100}, loaded => {{ location = '{eventsLoaded}?' + loaded; }}, 100);";
+        if (venue.Event.WaitForJsRendering)
+        {
+            script += await waitForSelectorScript.Value; // load script with API
+            script += $"{waitForSelector}init(loaded => {{ {NavigateTo($"'{eventsLoaded}?' + loaded")} }});";
+            script += $"{waitForSelector}withOptions({GetWaitForSelectorOptions()}); {waitForSelector}start();";
+        }
+        else script += NavigateTo($"'{eventsLoaded}?true'"); // if view is used to load URL without waiting, call back immediately
 
         await EvaluateJavaScriptAsync(script);
     }
 
+    private string GetWaitForSelectorOptions()
+    {
+        waitForSelectorOptions.Selector = venue.Event.Selector;
+        return JsonSerializer.Serialize(waitForSelectorOptions, jsonOptionSerializerOptions);
+    }
+
+    private static string NavigateTo(string quotedUrl) => $"location = {quotedUrl};";
+
     /*  Used to cache the loaded and pre-processed script while allowing for a
      *  thread-safe asynchronous lazy initialization that only ever happens once. */
-    private static readonly Lazy<Task<string>> inlinedScript = new(LoadAndInlineScriptAsync);
+    private static readonly Lazy<Task<string>> waitForSelectorScript = new(() => LoadAndInlineScriptAsync("waitForSelector.js"));
 
-    private static async Task<string> LoadAndInlineScriptAsync()
+    private static async Task<string> LoadAndInlineScriptAsync(string fileName)
     {
         // see https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/storage/file-system-helpers#bundled-files
-        await using Stream fileStream = await FileSystem.Current.OpenAppPackageFileAsync("waitForSelector.js");
+        await using Stream fileStream = await FileSystem.Current.OpenAppPackageFileAsync(fileName);
         using StreamReader reader = new(fileStream);
         string script = await reader.ReadToEndAsync();
 
         return script.RemoveJsComments() // so that inline comments don't comment out code during normalization
             .NormalizeWhitespace() // to inline it; multi-line scripts seem to not be supported
             .Replace("\\", "\\\\"); // to escape the JS for EvaluateJavaScriptAsync
+    }
+
+    internal partial class WaitForSelectorOptions : ObservableObject
+    {
+        [ObservableProperty] private string selector;
+        [ObservableProperty] private uint intervalDelayMs;
+        [ObservableProperty] private uint maxTries;
     }
 }
