@@ -202,6 +202,15 @@
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
     </Style>
 
+    <Style TargetType="Span" x:Key="HelpSpan">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Help}, Dark={StaticResource HelpDark}}" />
+    </Style>
+
+    <Style TargetType="Span" x:Key="HelpLinkSpan">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LinkTextLight}, Dark={StaticResource LinkTextDark}}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+    </Style>
+
     <Style TargetType="Label" Class="Headline">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
         <Setter Property="FontSize" Value="20" />

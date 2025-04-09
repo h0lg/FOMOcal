@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
@@ -111,7 +112,13 @@ internal static class Styles
             Demoted = GetName(), VenueRowDetail = GetName();
     }
 
+    internal static class Span
+    {
+        internal static Style HelpSpan = Get(), HelpLinkSpan = Get();
+    }
+
     private static string GetName([CallerMemberName] string key = "") => key;
+    private static Style Get([CallerMemberName] string key = "") => (Style)Application.Current!.Resources[key];
 }
 
 internal static class ViewExtensions
@@ -155,6 +162,44 @@ internal static class ViewExtensions
     {
         label.LineBreakMode = LineBreakMode.WordWrap;
         return label;
+    }
+
+    internal static FormattedString LinkifyMarkdownLinks(this string text)
+    {
+        FormattedString formatted = new();
+        var linkRegex = new Regex(@"\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)", RegexOptions.Compiled);
+
+        int lastIndex = 0;
+
+        foreach (Match match in linkRegex.Matches(text))
+        {
+            // Add text before the link
+            if (match.Index > lastIndex)
+            {
+                formatted.Spans.Add(new Span { Text = text[lastIndex..match.Index], Style = Styles.Span.HelpSpan });
+            }
+
+            string displayText = match.Groups[1].Value;
+            string url = match.Groups[2].Value;
+
+            Span link = new()
+            {
+                Text = displayText,
+                Style = Styles.Span.HelpLinkSpan
+            };
+
+            link.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
+            formatted.Spans.Add(link);
+            lastIndex = match.Index + match.Length;
+        }
+
+        // Add any remaining text
+        if (lastIndex < text.Length)
+        {
+            formatted.Spans.Add(new Span { Text = text[lastIndex..], Style = Styles.Span.HelpSpan });
+        }
+
+        return formatted;
     }
 
     internal static Task AnimateHeightRequest(this VisualElement view, double endValue, uint duration = 300)

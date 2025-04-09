@@ -183,14 +183,12 @@ public partial class ScrapeJobEditor : ObservableObject
 
     private Guid? focusedId; // tracks the child that currently has focus
     [ObservableProperty] private bool hasFocus;
-    [ObservableProperty] private string? help;
 
     internal async ValueTask SetFocusAsync(VisualElement visual, bool focused)
     {
         if (focused)
         {
             HasFocus = true;
-            Help = ToolTipProperties.GetText(visual)?.ToString();
             focusedId = visual.Id; // assign this visual the component's focus token
             return;
         }
@@ -210,7 +208,6 @@ public partial class ScrapeJobEditor : ObservableObject
         {
             HasFocus = false;
             focusedId = null;
-            Help = null;
         }
     }
 
@@ -268,6 +265,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
     public partial class View : VerticalStackLayout
     {
+        private readonly Label help = new();
         private readonly ScrapeJobEditor model;
         private readonly Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry;
 
@@ -278,9 +276,7 @@ public partial class ScrapeJobEditor : ObservableObject
             BindingContext = model;
             Spacing = 5;
 
-            var helper = BndLbl(nameof(Help)).StyleClass(Styles.Label.Help).BindIsVisibleToValueOf(nameof(Help));
             FlexLayout form = new() { Wrap = FlexWrap.Wrap, AlignItems = FlexAlignItems.Center };
-
             (Switch Switch, Grid Wrapper) displayInputs = Swtch(nameof(DisplayInputs));
             (Switch Switch, Grid Wrapper) ignoreNestedText = Swtch(nameof(IgnoreNestedText));
             displayInputs.Switch.ForwardFocusTo(model);
@@ -298,8 +294,8 @@ public partial class ScrapeJobEditor : ObservableObject
                     " like a group that only displays the date once for multiple events on the same day."),
 
                 SelectorEntry("selector", nameof(Selector), () => model.Closest, // for picking descendant, preferrably from Closest
-                    "A CSS selector to the element containing the text of the event detail." +
-                    " See https://www.w3schools.com/cssref/css_selectors.php and https://www.w3schools.com/cssref/css_ref_pseudo_classes.php"),
+                    $"A [CSS](https://www.w3schools.com/cssref/css_selectors.php) or [XPath](https://www.w3schools.com/xml/xpath_syntax.asp) " +
+                    $" selector to the element containing the text of the event detail."),
 
                 LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),
 
@@ -308,14 +304,14 @@ public partial class ScrapeJobEditor : ObservableObject
                 TextEntry("replace", nameof(Replace),
                     "Multiple optional replacements to apply, in the form \"Pattern => Replacement, Pattern2 =>\"." +
                     " You may want to do this e.g. to convert a date string into a valid format." +
-                    " Patterns are Regular Expressions https://en.wikipedia.org/wiki/Regular_expression in .NET flavour, but plain text often works." +
-                    " https://regex101.com/ is great to debug your patterns, learn and find existing patterns." +
+                    " Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour, but plain text often works." +
+                    " [regex101](https://regex101.com/) is great to debug your patterns, learn and find existing patterns." +
                     " If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this."),
 
                 TextEntry("match", nameof(Match),
-                    "A pattern (Regular Expression https://en.wikipedia.org/wiki/Regular_expression in .NET flavour) that matches the part of text to extract." +
+                    "A pattern ([Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour) that matches the part of text to extract." +
                     " You may want to do this to extract text that is not cleanly selectable." +
-                    " https://regex101.com/ is great to debug your RegEx, learn and find existing patterns." +
+                    " [regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns." +
                     " If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.")
             ];
 
@@ -334,7 +330,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 form.Children.Add(child);
             }
 
-            Children.Add(helper);
+            Children.Add(help);
             Children.Add(form);
 
             Children.Add(PreviewOrErrorList(itemsSource: nameof(PreviewResults),
@@ -356,7 +352,11 @@ public partial class ScrapeJobEditor : ObservableObject
             => LbldView(label, HintedInput(view, tooltip));
 
         private T HintedInput<T>(T view, string tooltip) where T : Microsoft.Maui.Controls.View
-            => view.ToolTip(tooltip).ForwardFocusTo(model);
+            => view.ToolTip(tooltip).OnFocusChanged(async (vis, focused) =>
+            {
+                help.FormattedText = focused ? ToolTipProperties.GetText(vis)?.ToString()?.LinkifyMarkdownLinks() : null;
+                await model.SetFocusAsync(vis, focused);
+            });
 
         internal static VerticalStackLayout PreviewOrErrorList(string itemsSource, string hasFocus, string hasError, object source)
         {
