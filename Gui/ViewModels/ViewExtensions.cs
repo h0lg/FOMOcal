@@ -140,6 +140,9 @@ internal static class ViewExtensions
             onFocusChanged?.Invoke(vis, focused);
         });
 
+    internal static FormattedString? FormatTooltip(this VisualElement vis)
+        => ToolTipProperties.GetText(vis)?.ToString()?.LinkifyMarkdownLinks();
+
     internal static T StyleClass<T>(this T styleable, string styleClass) where T : StyleableElement
     {
         if (styleClass != null) styleable.StyleClass = [styleClass];

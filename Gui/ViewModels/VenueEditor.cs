@@ -269,9 +269,17 @@ public partial class VenueEditor : ObservableObject
             static Label FldLbl(string Text) => Lbl(Text).CenterVertical();
         }
 
-        private VerticalStackLayout EventContainerSelector()
+        private Grid EventContainerSelector()
         {
             Label help = new();
+
+            Label scrapeConfigInfo = Lbl("ⓘ").ToolTip("Every web page is made up of" +
+                " 🖽 [boxes inside boxes](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)" +
+                " - kind of like Russian nesting nolls, but often with more than one contained child." +
+                "\nEach box holds different parts of the page with different info." +
+                $" In the following, you can tell {AppInfo.Name} which boxes to pick what kind of info from.");
+
+            scrapeConfigInfo.TapGesture(() => help.FormattedText = scrapeConfigInfo.FormatTooltip());
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
             selectorText.InlineTooltipOnFocus(
@@ -335,18 +343,21 @@ public partial class VenueEditor : ObservableObject
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
                 hasError: nameof(EventSelectorHasError), source: model);
 
-            return VStack(spacing: 5,
+            var controls = HWrap(5,
+                Lbl("Event container").Bold(), containerSelector,
+                Lbl("wait for JS rendering"), waitForJsRendering.Wrapper,
+                Lbl("loading"), pagingStrategy,
+                nextPageSelector,
+                Lbl("Preview events").Bold(),
+                LabeledStepper("skipping", nameof(SkipEvents), max: 100, onValueChanged: () => selectorText.Focus()),
+                LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus()));
+
+            return Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),
-                help,
-                HWrap(5,
-                    Lbl("Event container").Bold(), containerSelector,
-                    Lbl("wait for JS rendering"), waitForJsRendering.Wrapper,
-                    Lbl("loading"), pagingStrategy,
-                    nextPageSelector,
-                    Lbl("Preview events").Bold(),
-                    LabeledStepper("skipping", nameof(SkipEvents), max: 100, onValueChanged: () => selectorText.Focus()),
-                    LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus())).View,
-                previewOrErrors);
+                scrapeConfigInfo.CenterVertical().Column(1),
+                help.Row(1).ColumnSpan(2),
+                controls.View.Row(2).ColumnSpan(2),
+                previewOrErrors.Row(3).ColumnSpan(2));
 
             (Switch Switch, Grid Wrapper) Toggle(string isToggledPropertyPath)
             {
