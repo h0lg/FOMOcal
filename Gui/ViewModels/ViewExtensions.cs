@@ -108,7 +108,7 @@ internal static class Styles
     internal static class Label
     {
         internal static string Headline = GetName(), SubHeadline = GetName(),
-            Clickable = GetName(), Help = GetName(), Error = GetName(), Success = GetName(),
+            Clickable = GetName(), Error = GetName(), Success = GetName(),
             Demoted = GetName(), VenueRowDetail = GetName();
     }
 
@@ -129,6 +129,16 @@ internal static class ViewExtensions
         vis.Unfocused += (_, _) => setFocused(vis, false);
         return vis;
     }
+
+    internal static T InlineTooltipOnFocus<T>(this T vis, string tooltip, Label label,
+        Action<VisualElement, bool>? onFocusChanged = null,
+        Func<VisualElement, bool, bool>? cancelFocusChanged = null) where T : VisualElement
+        => vis.ToolTip(tooltip).OnFocusChanged((vis, focused) =>
+        {
+            if (cancelFocusChanged?.Invoke(vis, focused) == true) return;
+            label.FormattedText = focused ? tooltip.LinkifyMarkdownLinks() : null;
+            onFocusChanged?.Invoke(vis, focused);
+        });
 
     internal static T StyleClass<T>(this T styleable, string styleClass) where T : StyleableElement
     {

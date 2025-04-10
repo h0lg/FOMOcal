@@ -351,12 +351,8 @@ public partial class ScrapeJobEditor : ObservableObject
         private HorizontalStackLayout LabeledInput(string label, Microsoft.Maui.Controls.View view, string tooltip)
             => LbldView(label, HintedInput(view, tooltip));
 
-        private T HintedInput<T>(T view, string tooltip) where T : Microsoft.Maui.Controls.View
-            => view.ToolTip(tooltip).OnFocusChanged(async (vis, focused) =>
-            {
-                help.FormattedText = focused ? ToolTipProperties.GetText(vis)?.ToString()?.LinkifyMarkdownLinks() : null;
-                await model.SetFocusAsync(vis, focused);
-            });
+        private T HintedInput<T>(T vis, string tooltip) where T : VisualElement
+            => vis.InlineTooltipOnFocus(tooltip, help, async (vis, focused) => await model.SetFocusAsync(vis, focused));
 
         internal static VerticalStackLayout PreviewOrErrorList(string itemsSource, string hasFocus, string hasError, object source)
         {

@@ -21,7 +21,6 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] private bool showRequiredEventFields;
     [ObservableProperty] private bool showOptionalEventFields;
 
-    [ObservableProperty] private bool eventSelectorHasFocus;
     [ObservableProperty] private bool eventSelectorRelatedHasFocus; // for when related controls have focus
     [ObservableProperty] private bool eventSelectorHasError;
     [ObservableProperty] private string[]? previewedEventTexts;
@@ -272,32 +271,45 @@ public partial class VenueEditor : ObservableObject
 
         private VerticalStackLayout EventContainerSelector()
         {
+            Label help = new();
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
-            selectorText.OnFocusChanged(async (vis, focused) =>
-            {
-                if (focused)
+            selectorText.InlineTooltipOnFocus(
+                "The selector to the event containers - of which there are probably multiple on the page," +
+                " each containing as many of one event's details as possible - but only of a single event." +
+                "\n\nSome event pages for example display multiple events on the same day in a group." +
+                " If you see it, use skip/take to try it out on such a group and choose a container that contains only one of their details" +
+                " - otherwise only the first event on any given day will be retrieved." +
+                "\nYou'll be able to select the date or other excluded event details from outside your selected container later.",
+                help, async (vis, focused) =>
                 {
-                    model.EventSelectorRelatedHasFocus = focused;
-                    model.EventSelectorHasFocus = focused;
-                }
-                /*  Only propagate the loss of focus to the property
-                    if entry has not currently opened the visualSelector
-                    to keep the help visible while working there */
-                else if (model.visualSelectorHost != vis)
-                {
-                    await Task.Delay(300); // to allow for using the skip/take steppers without flickering
-
-                    if (!selectorText.IsFocused)
+                    if (focused) model.EventSelectorRelatedHasFocus = true;
+                    else
                     {
-                        model.EventSelectorHasFocus = focused;
-                        model.EventSelectorRelatedHasFocus = focused;
+                        await Task.Delay(300); // to allow for using the skip/take steppers without flickering
+                        if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = false;
                     }
-                }
-            });
+                    /*  Only propagate the loss of focus to the property
+                        if entry has not currently opened the visualSelector
+                        to keep the help visible while working there */
+                }, cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis);
 
             var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
             (Switch Switch, Grid Wrapper) waitForJsRendering = Toggle(nameof(WaitForJsRendering));
+
+            waitForJsRendering.Switch.InlineTooltipOnFocus(
+                "You may want to try this option if your event selector doesn't match anything without it even though it should*." +
+                "\nIt will load the page and wait for an element matching your selector to become available," +
+                " return when it does and time out if it doesn't after 10s." +
+                "\n\nThis works around pages that lazy-load events." +
+                " Some web servers only return an empty template of a page on the first request to improve the response time," +
+                " then fetch more data asynchronously and render it into the placeholders using a script running in your browser." +
+                "\n\n* To test selectors, load the page in your browser and start up a" +
+                " [developer console](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools#the_javascript_console)." +
+                " In there, use [document.querySelectorAll('.css-selector')](https://www.w3schools.com/jsref/met_document_queryselectorall.asp)" +
+                " or [document.evaluate('//xpath/selector', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)" +
+                " depending on your chosen selector syntax.",
+                help);
 
             Picker pagingStrategy = new()
             {
@@ -311,7 +323,10 @@ public partial class VenueEditor : ObservableObject
                     model.venue.Event.PagingStrategy = model.PagingStrategies[pagingStrategy.SelectedIndex];
             };
 
-            var nextPageSelector = SelectorEntry(Entr(nameof(NextEventPageSelector)).Placeholder("next page"),
+            var nextPageSelector = SelectorEntry(
+                Entr(nameof(NextEventPageSelector)).Placeholder("next page")
+                    .InlineTooltipOnFocus("The selector of the element to click or link to navigate to load more or different events.", help,
+                        cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis),
                 pickRelativeTo: () => (selector: "body", pickDescendant: true))
                 .BindVisible(nameof(Picker.SelectedIndex), pagingStrategy,
                     Converters.Func<int>(i => model.PagingStrategies[i].RequiresNextPageSelector()));
@@ -322,20 +337,7 @@ public partial class VenueEditor : ObservableObject
 
             return VStack(spacing: 5,
                 Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),
-                Lbl("The CSS selector to the event containers - of which there are probably multiple on the page," +
-                    " each containing as many of the event details as possible - but only of a single event." +
-                    " If you see that the event page groups multiple events on the same day into a group, try it out on those" +
-                    " and choose a container that contains only one of their details." +
-                    " You'll be able to select the date or other excluded event details from outside the container later.")
-                    .BindVisible(nameof(EventSelectorHasFocus)) // display if entry is focused
-                    .StyleClass(Styles.Label.Help),
-                Lbl("You may want to try this option if your event selector doesn't match anything without it." +
-                    " It will load the page and wait for an element matching your selector to become available," +
-                    " return when it does and time out if it doesn't after 10s. This works around pages that lazy-load events." +
-                    " Some web servers only return an empty template of a page on the first request to improve the response time," +
-                    " then fetch more data asynchronously and render it into the placeholders using a script running in your browser.")
-                    .BindVisible(nameof(IsFocused), source: waitForJsRendering.Switch) // display if checkbox is focused
-                    .StyleClass(Styles.Label.Help),
+                help,
                 HWrap(5,
                     Lbl("Event container").Bold(), containerSelector,
                     Lbl("wait for JS rendering"), waitForJsRendering.Wrapper,

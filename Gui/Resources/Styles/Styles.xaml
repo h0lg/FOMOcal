@@ -241,10 +241,6 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
     </Style>
 
-    <Style TargetType="Label" Class="Help">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Help}, Dark={StaticResource HelpDark}}" />
-    </Style>
-
     <Style TargetType="Label" Class="Error">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
     </Style>
