@@ -1,17 +1,28 @@
 ﻿(() => {
     const settings = {
         selector: null,
+        isXpathSelector: false,
         intervalDelayMs: 200,
         maxMatches: 100,
         maxTries: 25
     };
 
     const triggerScroll = () => { dispatchEvent(new Event('scroll')); },
-        getMatches = () => document.querySelectorAll(settings.selector),
+        getMatches = () => settings.isXpathSelector ? queryXPathAll(settings.selector, document) : document.querySelectorAll(settings.selector),
         getMatchCount = () => getMatches().length,
         withOptions = options => { Object.assign(settings, options); };
 
     let notifyFound;
+
+    function queryXPathAll(xpath, context = document) {
+        const result = document.evaluate(xpath, context, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null),
+            nodes = [];
+
+        for (let i = 0; i < result.snapshotLength; i++)
+            nodes.push(result.snapshotItem(i));
+
+        return nodes;
+    }
 
     function scrollDown() {
         /*  scroll to the bottom, delay to allow scroll position to update,
