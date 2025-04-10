@@ -161,61 +161,84 @@ public partial class EventList : ObservableObject
                 ExportButton("📆 iCal", nameof(ExportToIcsCommand)),
                 ExportButton("▦ CSV", nameof(ExportToCsvCommand)));
 
+            bool UseVerticalEventLayout() => Width < 800; // whether to stack image on top of event details
+            var useVerticalEventLayout = UseVerticalEventLayout(); // caches the last result
+
+            DataTemplate eventTemplate = new(() =>
+            {
+                var image = new Image()
+                    .Bind(Image.SourceProperty, nameof(Event.ImageUrl),
+                        convert: static (string? url) => url.IsNullOrWhiteSpace() ? null
+                            : new UriImageSource { Uri = new Uri(url!), CacheValidity = TimeSpan.FromDays(30) })
+                    .BindIsVisibleToValueOf(nameof(Event.ImageUrl));
+
+                var header = VStack(5,
+                    BndLbl(nameof(Event.Name)).Wrap().Bold().FontSize(16),
+                    OptionalTextLabel(nameof(Event.SubTitle)).Bold().Wrap(),
+                    OptionalTextLabel(nameof(Event.Genres), "🎶 {0}").Wrap());
+
+                var times = VStack(5,
+                    BndLbl(nameof(Event.Date), stringFormat: "📆 {0:ddd d MMM yy}").Bold(),
+                    OptionalTextLabel(nameof(Event.DoorsTime), "🚪 {0}"),
+                    OptionalTextLabel(nameof(Event.StartTime), "🎼 {0}"));
+
+                var details = VStack(5,
+                    OptionalTextLabel(nameof(Event.Description)).Wrap(),
+                    OpenUrlButton("📰 more 📡", nameof(Event.Url), model).End());
+
+                var location = HStack(5,
+                    BndLbl(nameof(Event.Venue), stringFormat: "🏟 {0}"),
+                    OptionalTextLabel(nameof(Event.Stage), "🏛 {0}"),
+                    BndLbl(nameof(Event.Scraped), stringFormat: "⛏ {0:g}")
+                        .StyleClass(Styles.Label.Demoted));
+
+                var tickets = VStack(5,
+                    OptionalTextLabel(nameof(Event.PresalePrice), "💳 {0}"),
+                    OptionalTextLabel(nameof(Event.DoorsPrice), "💵 {0}"),
+                    OpenUrlButton("🎫 Tickets 📡", nameof(Event.TicketUrl), model));
+
+                Grid eventLayout = useVerticalEventLayout
+                    ? Grd(cols: [Star, Auto], rows: [200, Auto, Auto, Auto], spacing: 5,
+                        image.ColumnSpan(2),
+                        header.Row(1), times.Row(1).Column(1),
+                        details.Row(2).ColumnSpan(2),
+                        location.Bottom().Row(3), tickets.Row(3).Column(1))
+                    : Grd(cols: [200, Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
+                        image.RowSpan(3),
+                        header.Column(1), times.Column(2),
+                        details.Row(1).Column(1).ColumnSpan(2),
+                        location.Bottom().Row(2).Column(1), tickets.Row(2).Column(2));
+
+                return new Border
+                {
+                    StyleClass = ["list-event"],
+                    Content = eventLayout
+                }
+                .Bind(OpacityProperty, nameof(Event.IsPast),
+                    convert: static (bool isPast) => isPast ? 0.5 : 1.0);
+            });
+
             var list = new CollectionView
             {
                 ItemsSource = model.FilteredEvents,
                 SelectionMode = SelectionMode.Multiple,
                 ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset, // Prevents flickering
-                ItemTemplate = new DataTemplate(() =>
-                {
-                    var image = new Image { MaximumHeightRequest = 200 }
-                        .Bind(Image.SourceProperty, nameof(Event.ImageUrl),
-                            convert: static (string? url) => url.IsNullOrWhiteSpace() ? null
-                                : new UriImageSource { Uri = new Uri(url!), CacheValidity = TimeSpan.FromDays(30) })
-                        .BindIsVisibleToValueOf(nameof(Event.ImageUrl));
-
-                    var header = VStack(5,
-                        BndLbl(nameof(Event.Name)).Wrap().Bold().FontSize(16),
-                        OptionalTextLabel(nameof(Event.SubTitle)).Bold().Wrap(),
-                        OptionalTextLabel(nameof(Event.Genres), "🎶 {0}").Wrap());
-
-                    var times = VStack(5,
-                        BndLbl(nameof(Event.Date), stringFormat: "📆 {0:ddd d MMM yy}").Bold(),
-                        OptionalTextLabel(nameof(Event.DoorsTime), "🚪 {0}"),
-                        OptionalTextLabel(nameof(Event.StartTime), "🎼 {0}"));
-
-                    var details = VStack(5,
-                        OptionalTextLabel(nameof(Event.Description)).Wrap(),
-                        OpenUrlButton("📰 more 📡", nameof(Event.Url), model).End());
-
-                    var location = HStack(5,
-                        BndLbl(nameof(Event.Venue), stringFormat: "🏟 {0}"),
-                        OptionalTextLabel(nameof(Event.Stage), "🏛 {0}"),
-                        BndLbl(nameof(Event.Scraped), stringFormat: "⛏ {0:g}")
-                            .StyleClass(Styles.Label.Demoted));
-
-                    var tickets = VStack(5,
-                        OptionalTextLabel(nameof(Event.PresalePrice), "💳 {0}"),
-                        OptionalTextLabel(nameof(Event.DoorsPrice), "💵 {0}"),
-                        OpenUrlButton("🎫 Tickets 📡", nameof(Event.TicketUrl), model));
-
-                    return new Border
-                    {
-                        StyleClass = ["list-event"],
-
-                        Content = Grd(cols: [Auto, Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
-                            image.RowSpan(3),
-                            header.Column(1), times.Column(2),
-                            details.Row(1).Column(1).ColumnSpan(2),
-                            location.Bottom().Row(2).Column(1), tickets.Row(2).Column(2))
-                    }
-                    .Bind(OpacityProperty, nameof(Event.IsPast),
-                        convert: static (bool isPast) => isPast ? 0.5 : 1.0);
-                })
+                ItemTemplate = eventTemplate
             }
                 .Bind(SelectableItemsView.SelectedItemsProperty, nameof(SelectedEvents));
 
             list.SelectionChanged += (o, e) => model.HasSelection = e.CurrentSelection.Count > 0;
+
+            SizeChanged += (o, e) =>
+            {
+                // skip expensive template reset if it wouldn't change anything
+                if (useVerticalEventLayout == UseVerticalEventLayout()) return;
+                useVerticalEventLayout = !useVerticalEventLayout;
+
+                // re-apply ItemTemplate to update layout of existing items
+                list.ItemTemplate = null;
+                list.ItemTemplate = eventTemplate;
+            };
 
             Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5,
                 HWrap(new Thickness(0, 0, right: 5, 0), pastEvents,
