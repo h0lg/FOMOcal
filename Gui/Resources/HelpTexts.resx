@@ -185,4 +185,19 @@ E.g. to select elements with class 'event' that have a 'category' class div with
   <data name="NextEventPageSelector" xml:space="preserve">
     <value>The selector of the element to click or link to navigate to load more or different events.</value>
   </data>
+  <data name="PagingStrategyAllOnOne" xml:space="preserve">
+    <value>All events are loaded into the first page - no paging required.</value>
+  </data>
+  <data name="PagingStrategyClickElementToLoadMore" xml:space="preserve">
+    <value>More events are loaded into the same page after clicking an element.</value>
+  </data>
+  <data name="PagingStrategyNavigateLinkToLoadMore" xml:space="preserve">
+    <value>Different events are loaded on the next page after navigating a hyperlink.</value>
+  </data>
+  <data name="PagingStrategyScrollDownToLoadMore" xml:space="preserve">
+    <value>More events are loaded into the same page by scrolling it down.</value>
+  </data>
+  <data name="PagingStrategyClickElementToLoadDifferent" xml:space="preserve">
+    <value>Different events are loaded into the same page after clicking an element.</value>
+  </data>
 </root>

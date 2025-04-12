@@ -118,6 +118,51 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All events are loaded into the first page - no paging required..
+        /// </summary>
+        internal static string PagingStrategyAllOnOne {
+            get {
+                return ResourceManager.GetString("PagingStrategyAllOnOne", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Different events are loaded into the same page after clicking an element..
+        /// </summary>
+        internal static string PagingStrategyClickElementToLoadDifferent {
+            get {
+                return ResourceManager.GetString("PagingStrategyClickElementToLoadDifferent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to More events are loaded into the same page after clicking an element..
+        /// </summary>
+        internal static string PagingStrategyClickElementToLoadMore {
+            get {
+                return ResourceManager.GetString("PagingStrategyClickElementToLoadMore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Different events are loaded on the next page after navigating a hyperlink..
+        /// </summary>
+        internal static string PagingStrategyNavigateLinkToLoadMore {
+            get {
+                return ResourceManager.GetString("PagingStrategyNavigateLinkToLoadMore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to More events are loaded into the same page by scrolling it down..
+        /// </summary>
+        internal static string PagingStrategyScrollDownToLoadMore {
+            get {
+                return ResourceManager.GetString("PagingStrategyScrollDownToLoadMore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You need some part of the selector in the last line - it selects the element you chose. Parts from the ancestor path in the above lines may help to narrow down your selection if just using the selector from the last line matches too much..
         /// </summary>
         internal static string PickedSelectorDisplay {

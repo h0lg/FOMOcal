@@ -302,10 +302,16 @@ public partial class VenueEditor : ObservableObject
                 SelectedIndex = model.PagingStrategies.IndexOf(model.venue.Event.PagingStrategy)
             };
 
+            pagingStrategy.OnFocusChanged((_, focused) => SyncPagingStrategyHelp(focused));
+
             pagingStrategy.SelectedIndexChanged += (s, e) =>
             {
                 if (pagingStrategy.SelectedIndex >= 0)
+                {
                     model.venue.Event.PagingStrategy = model.PagingStrategies[pagingStrategy.SelectedIndex];
+                    SyncPagingStrategyHelp(true);
+                }
+                else SyncPagingStrategyHelp(false);
             };
 
             var nextPageSelector = SelectorEntry(
@@ -352,6 +358,9 @@ public partial class VenueEditor : ObservableObject
 
                 return toggle;
             }
+
+            void SyncPagingStrategyHelp(bool focused) =>
+                help.FormattedText = focused ? model.venue.Event.PagingStrategy.GetHelp()?.LinkifyMarkdownLinks() : null;
         }
 
         private VerticalStackLayout OptionalEventFields()

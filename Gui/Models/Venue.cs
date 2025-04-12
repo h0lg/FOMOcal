@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json;
+using FomoCal.Gui.Resources;
 using static FomoCal.Venue;
 
 namespace FomoCal;
@@ -136,4 +137,7 @@ internal static class VenueExtensions
     internal static bool ClicksElementToLoad(this PagingStrategy strategy)
         => strategy == PagingStrategy.ClickElementToLoadMore
         || strategy == PagingStrategy.ClickElementToLoadDifferent;
+
+    internal static string? GetHelp(this PagingStrategy strategy)
+        => HelpTexts.ResourceManager.GetString(nameof(PagingStrategy) + strategy.ToString());
 }
