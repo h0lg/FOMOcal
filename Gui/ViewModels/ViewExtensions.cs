@@ -20,7 +20,7 @@ internal static class Widgets
     internal static HorizontalStackLayout LbldView(string label, View view, string? tooltip = null)
     {
         HorizontalStackLayout wrapper = HStack(5, Lbl(label), view);
-        if (tooltip.IsSignificant()) wrapper.ToolTip(tooltip!);
+        if (tooltip.IsSignificant()) wrapper.ToolTip(tooltip);
         return wrapper;
     }
 
@@ -137,6 +137,7 @@ internal static class ViewExtensions
         {
             if (cancelFocusChanged?.Invoke(vis, focused) == true) return;
             label.FormattedText = focused ? tooltip.LinkifyMarkdownLinks() : null;
+            vis.ToolTip(focused ? null : tooltip); // prevent tooltip from overlaying help on focus
             onFocusChanged?.Invoke(vis, focused);
         });
 
@@ -149,9 +150,9 @@ internal static class ViewExtensions
         return styleable;
     }
 
-    internal static T ToolTip<T>(this T bindable, string text) where T : BindableObject
+    internal static T ToolTip<T>(this T bindable, string? text) where T : BindableObject
     {
-        ToolTipProperties.SetText(bindable, text);
+        ToolTipProperties.SetText(bindable, text!);
         return bindable;
     }
 
