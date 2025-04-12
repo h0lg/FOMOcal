@@ -94,23 +94,25 @@ partial class VenueEditor
 
             View[] selectorDetails = [syntax,
                 Lbl("detail").Bold(),
-                LbldView("ancestor path", Check(nameof(IncludePickedSelectorPath))),
-                SelectorOption("tag name", nameof(SelectorOptions.TagName)),
-                SelectorOption("id", nameof(SelectorOptions.Ids)),
+                LbldView("ancestor path", Check(nameof(IncludePickedSelectorPath))
+                    .InlineTooltipOnFocus(HelpTexts.IncludePickedSelectorPath, help)),
+                SelectorOption("tag name", nameof(SelectorOptions.TagName), HelpTexts.TagName),
+                SelectorOption("id", nameof(SelectorOptions.Ids), HelpTexts.ElementId),
                 Lbl("classes").Bold(),
-                SelectorOption("with style", nameof(SelectorOptions.LayoutClasses)),
-                SelectorOption("without", nameof(SelectorOptions.SemanticClasses)),
+                SelectorOption("with style", nameof(SelectorOptions.LayoutClasses), string.Format(HelpTexts.ClassesWith_Style, "")),
+                SelectorOption("without", nameof(SelectorOptions.SemanticClasses), string.Format(HelpTexts.ClassesWith_Style, " no")),
                 Lbl("other attibutes").Bold(),
-                SelectorOption("names", nameof(SelectorOptions.OtherAttributes)),
-                SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues)),
-                SelectorOption("position", nameof(SelectorOptions.Position))];
+                SelectorOption("names", nameof(SelectorOptions.OtherAttributes), HelpTexts.OtherAttributes),
+                SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues), HelpTexts.OtherAttributeValues),
+                SelectorOption("position", nameof(SelectorOptions.Position), HelpTexts.ElementPosition)];
 
             View[] appendSelection = [
                 Lbl("Select parts of the selector text and"),
                 Btn("➕ append").TapGesture(AppendSelectedQuery)
                     .InlineTooltipOnFocus(HelpTexts.AppendSelectedQuery, help),
                 Lbl("them to your query to try them out."),
-                Btn("🍜 selector options").BindVisible(showPickedSelector).TapGesture(ToggleSelectorDetail)];
+                Btn("🍜 selector options").BindVisible(showPickedSelector).TapGesture(ToggleSelectorDetail)
+                    .InlineTooltipOnFocus(HelpTexts.ToggleSelectorDetail, help)];
 
             foreach (var view in appendSelection)
                 controlsAndInstructions.AddChild(view.BindVisible(showPickedSelector));
@@ -123,7 +125,7 @@ partial class VenueEditor
             Editor selectorDisplay = SelectorDisplay(displayedSelector).BindVisible(showPickedSelector)
                 .InlineTooltipOnFocus(HelpTexts.PickedSelectorDisplay, help);
 
-            SetupAutoSizing(controlsAndInstructions.View, selectorDisplay);
+            SetupAutoSizing(controlsAndInstructions.View, help, selectorDisplay);
 
             return new()
             {
@@ -140,10 +142,10 @@ partial class VenueEditor
                         .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, autosized
                 }
             };
-        }
 
-        private HorizontalStackLayout SelectorOption(string label, string isCheckedPropertyPath)
-            => LbldView(label, Check(isCheckedPropertyPath, source: model.selectorOptions));
+            HorizontalStackLayout SelectorOption(string label, string isCheckedPropertyPath, string helpText)
+                => LbldView(label, Check(isCheckedPropertyPath, source: model.selectorOptions).InlineTooltipOnFocus(helpText, help));
+        }
 
         private Editor SelectorDisplay(string propertyPath)
         {

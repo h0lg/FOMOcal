@@ -70,6 +70,19 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Classes that have{0} visual styles attached. This may be a hint they are or are not good selectors, depending on the page.
+        ///
+        ///If the semantics of a class name match what you&apos;re selecting for, it&apos;s probably a good fit.
+        ///
+        ///Classes are used for reoccurring elements and can be combined to increase specificity..
+        /// </summary>
+        internal static string ClassesWith_Style {
+            get {
+                return ResourceManager.GetString("ClassesWith_Style", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The [language/country code](https://en.wikipedia.org/wiki/Language_code) used to parse the date in ISO 639 (en) or ISO 3166 format (en-US)..
         /// </summary>
         internal static string DateScrapeJobCulture {
@@ -84,6 +97,24 @@ namespace FomoCal.Gui.Resources {
         internal static string DateScrapeJobFormat {
             get {
                 return ResourceManager.GetString("DateScrapeJobFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The ID of the picked node. Should be unique in the document according to HTML spec - but may not be. Potentially a selector detail with very high specificity - too high if they are unique and you want to select a re-occurring element..
+        /// </summary>
+        internal static string ElementId {
+            get {
+                return ResourceManager.GetString("ElementId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The (1-based) position of the picked element relative to its siblings (of the same tag/element name) in their parent. This is quite a fragile selector detail - only use this if you have no other alternatives..
+        /// </summary>
+        internal static string ElementPosition {
+            get {
+                return ResourceManager.GetString("ElementPosition", resourceCulture);
             }
         }
         
@@ -109,11 +140,38 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The ancestor path or parts of it can help increase the specificity of your selector if the picked element itself doesn&apos;t offer enough, e.g. doesn&apos;t have classes..
+        /// </summary>
+        internal static string IncludePickedSelectorPath {
+            get {
+                return ResourceManager.GetString("IncludePickedSelectorPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The selector of the element to click or link to navigate to load more or different events..
         /// </summary>
         internal static string NextEventPageSelector {
             get {
                 return ResourceManager.GetString("NextEventPageSelector", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Existance of attributes other than id or class. Some depend on the element tag/name - so not/having different attributes will have varying specificity..
+        /// </summary>
+        internal static string OtherAttributes {
+            get {
+                return ResourceManager.GetString("OtherAttributes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The values of attributes other than id or class. Depending on the attribute, this may be a useful selector or too specific..
+        /// </summary>
+        internal static string OtherAttributeValues {
+            get {
+                return ResourceManager.GetString("OtherAttributeValues", resourceCulture);
             }
         }
         
@@ -163,7 +221,7 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You need some part of the selector in the last line - it selects the element you chose. Parts from the ancestor path in the above lines may help to narrow down your selection if just using the selector from the last line matches too much..
+        ///   Looks up a localized string similar to You need some part of the selector in the last line - it selects the element you picked. Select the part you want and use append..
         /// </summary>
         internal static string PickedSelectorDisplay {
             get {
@@ -251,6 +309,24 @@ namespace FomoCal.Gui.Resources {
         internal static string SelectorSyntaxFormat {
             get {
                 return ResourceManager.GetString("SelectorSyntaxFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of the HTML tag of the element you picked. It doesn&apos;t have much specificity on its own, because a page usually contains many elements with the same tag name - but it can add to that of your selector and is better than choosing just any element..
+        /// </summary>
+        internal static string TagName {
+            get {
+                return ResourceManager.GetString("TagName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toggle selector details for your picked element. More detail means more specificity - but beware that every moving part also increases the fragility of your selector. You&apos;ll want to find the sweet spot..
+        /// </summary>
+        internal static string ToggleSelectorDetail {
+            get {
+                return ResourceManager.GetString("ToggleSelectorDetail", resourceCulture);
             }
         }
         

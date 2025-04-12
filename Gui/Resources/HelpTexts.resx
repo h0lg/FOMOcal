@@ -177,7 +177,7 @@ E.g. to select elements with class 'event' that have a 'category' class div with
     <value>Appends to the existing query if it matches the syntax, otherwise replaces it.</value>
   </data>
   <data name="PickedSelectorDisplay" xml:space="preserve">
-    <value>You need some part of the selector in the last line - it selects the element you chose. Parts from the ancestor path in the above lines may help to narrow down your selection if just using the selector from the last line matches too much.</value>
+    <value>You need some part of the selector in the last line - it selects the element you picked. Select the part you want and use append.</value>
   </data>
   <data name="ScrapeJobSelector" xml:space="preserve">
     <value>A selector to the element containing the text of the event detail.</value>
@@ -199,5 +199,33 @@ E.g. to select elements with class 'event' that have a 'category' class div with
   </data>
   <data name="PagingStrategyClickElementToLoadDifferent" xml:space="preserve">
     <value>Different events are loaded into the same page after clicking an element.</value>
+  </data>
+  <data name="IncludePickedSelectorPath" xml:space="preserve">
+    <value>The ancestor path or parts of it can help increase the specificity of your selector if the picked element itself doesn't offer enough, e.g. doesn't have classes.</value>
+  </data>
+  <data name="TagName" xml:space="preserve">
+    <value>The name of the HTML tag of the element you picked. It doesn't have much specificity on its own, because a page usually contains many elements with the same tag name - but it can add to that of your selector and is better than choosing just any element.</value>
+  </data>
+  <data name="ElementId" xml:space="preserve">
+    <value>The ID of the picked node. Should be unique in the document according to HTML spec - but may not be. Potentially a selector detail with very high specificity - too high if they are unique and you want to select a re-occurring element.</value>
+  </data>
+  <data name="ClassesWith_Style" xml:space="preserve">
+    <value>Classes that have{0} visual styles attached. This may be a hint they are or are not good selectors, depending on the page.
+
+If the semantics of a class name match what you're selecting for, it's probably a good fit.
+
+Classes are used for reoccurring elements and can be combined to increase specificity.</value>
+  </data>
+  <data name="OtherAttributes" xml:space="preserve">
+    <value>Existence of attributes other than id or class. Some depend on the element tag/name - so not/having different attributes will have varying specificity.</value>
+  </data>
+  <data name="OtherAttributeValues" xml:space="preserve">
+    <value>The values of attributes other than id or class. Depending on the attribute, this may be a useful selector or too specific.</value>
+  </data>
+  <data name="ElementPosition" xml:space="preserve">
+    <value>The (1-based) position of the picked element relative to its siblings (of the same tag/element name) in their parent. This is quite a fragile selector detail - only use this if you have no other alternatives.</value>
+  </data>
+  <data name="ToggleSelectorDetail" xml:space="preserve">
+    <value>Toggle selector details for your picked element. More detail means more specificity - but beware that every moving part also increases the fragility of your selector. You'll want to find the sweet spot.</value>
   </data>
 </root>
