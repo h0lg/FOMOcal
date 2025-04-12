@@ -163,9 +163,9 @@ This and following steps are applied after normalizing consecutive whitespace in
     <value>The [language/country code](https://en.wikipedia.org/wiki/Language_code) used to parse the date in ISO 639 (en) or ISO 3166 format (en-US).</value>
   </data>
   <data name="SelectorSyntaxFormat" xml:space="preserve">
-    <value>What's the difference? In most cases you'll want to use CSS for its shorter and simpler syntax.
+    <value>What's the difference? In most cases you'll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler syntax.
 
-For advanced scenarios you may want to try XPath, which has more powerful functions, e.g. for filtering.
+For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
 Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for you.
 E.g. to select elements with class 'event' that have a 'category' class div with the cleaned text 'concert', you'd write: 
 *[xpath&gt;"//div[contains(@class, 'event')][.//div[@class='category' and normalize-space(.)='concert']]"]</value>
@@ -180,7 +180,7 @@ E.g. to select elements with class 'event' that have a 'category' class div with
     <value>You need some part of the selector in the last line - it selects the element you chose. Parts from the ancestor path in the above lines may help to narrow down your selection if just using the selector from the last line matches too much.</value>
   </data>
   <data name="ScrapeJobSelector" xml:space="preserve">
-    <value>A [CSS](https://www.w3schools.com/cssref/css_selectors.php) or [XPath](https://www.w3schools.com/xml/xpath_syntax.asp) selector to the element containing the text of the event detail.</value>
+    <value>A selector to the element containing the text of the event detail.</value>
   </data>
   <data name="NextEventPageSelector" xml:space="preserve">
     <value>The selector of the element to click or link to navigate to load more or different events.</value>

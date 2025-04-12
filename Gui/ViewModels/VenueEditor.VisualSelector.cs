@@ -68,10 +68,12 @@ partial class VenueEditor
             const string displayedSelector = nameof(DisplayedSelector),
                 showPickedSelector = nameof(ShowPickedSelector);
 
+            Label help = new();
+
             var controlsAndInstructions = HWrap(5,
                 Swtch(nameof(EnablePicking)).Wrapper
                     .BindVisible(showPickedSelector, converter: Converters.Not)
-                    .ToolTip(HelpTexts.EnablePicking),
+                    .InlineTooltipOnFocus(HelpTexts.EnablePicking, help),
                 Lbl("Tap a page element to pick it.").TapGesture(TogglePicking)
                     .BindVisible(showPickedSelector, converter: Converters.Not),
                 Btn("⿴ Pick its container").TapGesture(PickParent)
@@ -86,7 +88,7 @@ partial class VenueEditor
 
             var xPathSyntax = new Switch() // enables switching between CSS and XPath syntax to save space
                 .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: model.selectorOptions)
-                .ToolTip(string.Format(HelpTexts.SelectorSyntaxFormat, string.Format(FomoCal.ScrapeJob.XPathSelectorFormat, "selector")));
+                .InlineTooltipOnFocus(string.Format(HelpTexts.SelectorSyntaxFormat, string.Format(FomoCal.ScrapeJob.XPathSelectorFormat, "selector")), help);
 
             var syntax = HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath"));
 
@@ -105,7 +107,8 @@ partial class VenueEditor
 
             View[] appendSelection = [
                 Lbl("Select parts of the selector text and"),
-                Btn("➕ append").TapGesture(AppendSelectedQuery).ToolTip(HelpTexts.AppendSelectedQuery),
+                Btn("➕ append").TapGesture(AppendSelectedQuery)
+                    .InlineTooltipOnFocus(HelpTexts.AppendSelectedQuery, help),
                 Lbl("them to your query to try them out."),
                 Btn("🍜 selector options").BindVisible(showPickedSelector).TapGesture(ToggleSelectorDetail)];
 
@@ -117,7 +120,9 @@ partial class VenueEditor
                     view.BindVisible(new Binding(showPickedSelector),
                         Converters.And, new Binding(nameof(ShowSelectorDetail))));
 
-            Editor selectorDisplay = SelectorDisplay(displayedSelector).BindVisible(showPickedSelector);
+            Editor selectorDisplay = SelectorDisplay(displayedSelector).BindVisible(showPickedSelector)
+                .InlineTooltipOnFocus(HelpTexts.PickedSelectorDisplay, help);
+
             SetupAutoSizing(controlsAndInstructions.View, selectorDisplay);
 
             return new()
@@ -126,10 +131,11 @@ partial class VenueEditor
                 StyleClass = ["VisualSelector"],
                 HeightRequest = 0, // to initialize it collapsed and fix first opening animation
                 Children = {
-                    Grd(cols: [Star], rows: [Auto, Auto, Star], spacing: 0,
+                    Grd(cols: [Star], rows: [Auto, Auto, Auto, Star], spacing: 0,
                         controlsAndInstructions.View,
-                        selectorDisplay.Row(1).ColumnSpan(2),
-                        pageView.BindVisible(showPickedSelector, converter: Converters.Not).Row(2)).LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
+                        help.Row(1),
+                        selectorDisplay.Row(2).ColumnSpan(2),
+                        pageView.BindVisible(showPickedSelector, converter: Converters.Not).Row(3)).LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
                     Btn("🗙").TapGesture(HideVisualSelector).Size(30, 30).TranslationY(-35) // float half above upper boundary
                         .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, autosized
                 }
@@ -142,7 +148,6 @@ partial class VenueEditor
         private Editor SelectorDisplay(string propertyPath)
         {
             var editor = new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }
-                .ToolTip(HelpTexts.PickedSelectorDisplay)
                 .Bind(Editor.TextProperty, propertyPath, BindingMode.OneWay);
 
             // save selected part of selector query for AppendSelectedQuery

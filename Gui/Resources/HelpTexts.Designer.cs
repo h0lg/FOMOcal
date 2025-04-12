@@ -233,7 +233,7 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A [CSS](https://www.w3schools.com/cssref/css_selectors.php) or [XPath](https://www.w3schools.com/xml/xpath_syntax.asp) selector to the element containing the text of the event detail..
+        ///   Looks up a localized string similar to A selector to the element containing the text of the event detail..
         /// </summary>
         internal static string ScrapeJobSelector {
             get {
@@ -242,11 +242,11 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to What&apos;s the difference? In most cases you&apos;ll want to use CSS for its shorter and simpler syntax.
+        ///   Looks up a localized string similar to What&apos;s the difference? In most cases you&apos;ll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler syntax.
         ///
-        ///For advanced scenarios you may want to try XPath, which has more powerful functions, e.g. for filtering.
+        ///For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
         ///Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for you.
-        ///E.g. to select elements with class &apos;event&apos; that have a &apos;category&apos; class div with the cleaned text &apos;concert&apos;, you&apos;d writ [rest of string was truncated]&quot;;.
+        ///E.g. to select  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SelectorSyntaxFormat {
             get {
