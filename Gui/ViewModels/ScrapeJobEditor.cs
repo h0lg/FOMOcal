@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FomoCal.Gui.Resources;
 using Microsoft.Maui.Layouts;
 using static FomoCal.Gui.ViewModels.Widgets;
 
@@ -280,49 +281,26 @@ public partial class ScrapeJobEditor : ObservableObject
             (Switch Switch, Grid Wrapper) displayInputs = Swtch(nameof(DisplayInputs));
             (Switch Switch, Grid Wrapper) ignoreNestedText = Swtch(nameof(IgnoreNestedText));
             displayInputs.Switch.ForwardFocusTo(model);
-
-            HintedInput(ignoreNestedText.Switch,
-                "Whether to ignore the text of nested elements and only extract direct text nodes from the HTML." +
-                " Does not apply if an attribute is set.");
+            HintedInput(ignoreNestedText.Switch, HelpTexts.ScrapeJobIgnoreNestedText);
 
             List<IView> children = [
                 HStack(5, Lbl(model.label).Bold(), displayInputs.Wrapper.BindVisible(nameof(IsEmpty))),
 
                 SelectorEntry("closest", nameof(Closest), null, // for picking common ancestor
-                    "An optional CSS selector to a common ancestor of the event container an the event detail" +
-                    " - for when the event detail has to be selected from outside of the event container," +
-                    " like a group that only displays the date once for multiple events on the same day."),
+                    HelpTexts.ScrapeJobClosest),
 
                 SelectorEntry("selector", nameof(Selector), () => model.Closest, // for picking descendant, preferrably from Closest
-                    $"A [CSS](https://www.w3schools.com/cssref/css_selectors.php) or [XPath](https://www.w3schools.com/xml/xpath_syntax.asp) " +
-                    $" selector to the element containing the text of the event detail."),
+                    HelpTexts.ScrapeJobSelector),
 
                 LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),
-
-                TextEntry("attribute", nameof(Attribute), "The name of the attribute of the selected element to extract the text from."),
-
-                TextEntry("replace", nameof(Replace),
-                    "Multiple optional replacements to apply, in the form \"Pattern => Replacement, Pattern2 =>\"." +
-                    " You may want to do this e.g. to convert a date string into a valid format." +
-                    " Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour, but plain text often works." +
-                    " [regex101](https://regex101.com/) is great to debug your patterns, learn and find existing patterns." +
-                    " If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this."),
-
-                TextEntry("match", nameof(Match),
-                    "A pattern ([Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour) that matches the part of text to extract." +
-                    " You may want to do this to extract text that is not cleanly selectable." +
-                    " [regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns." +
-                    " If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.")
+                TextEntry("attribute", nameof(Attribute), HelpTexts.ScrapeJobAttribute),
+                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace),
+                TextEntry("match", nameof(Match), HelpTexts.ScrapeJobMatch)
             ];
 
             if (model.DateScrapeJob is not null) children.AddRange(
-                TextEntry("date format", nameof(Format),
-                    "The .NET date format used to parse the date." +
-                    " See https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings"),
-
-                TextEntry("culture", nameof(Culture),
-                    "The language/country code used to parse the date in ISO 639 (en) or ISO 3166 format (en-US)." +
-                    " See https://en.wikipedia.org/wiki/Language_code"));
+                TextEntry("date format", nameof(Format), HelpTexts.DateScrapeJobFormat),
+                TextEntry("culture", nameof(Culture), HelpTexts.DateScrapeJobCulture));
 
             foreach (Microsoft.Maui.Controls.View child in children)
             {

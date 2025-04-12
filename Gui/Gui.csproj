@@ -64,6 +64,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Resources\HelpTexts.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>HelpTexts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <Compile Update="Resources\HelpTexts.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>HelpTexts.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AngleSharp" Version="1.2.0" />
     <PackageReference Include="AngleSharp.XPath" Version="2.0.5" />
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="5.1.0" />

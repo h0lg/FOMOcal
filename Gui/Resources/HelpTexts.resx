@@ -1,0 +1,188 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ScrapeJobClosest" xml:space="preserve">
+    <value>An optional selector to a common ancestor of the event container and the event detail - for when the event detail has to be selected from outside of the event container, like a group that only displays the date once for multiple events on the same day.</value>
+  </data>
+  <data name="EventContainerSelector" xml:space="preserve">
+    <value>The selector to the event containers - of which there are probably multiple on the page, each containing as many of one event's details as possible - but only of a single event.
+
+Some event pages for example display multiple events on the same day in a group. If you see it, use skip/take to try it out on such a group and choose a container that contains only one of their details - otherwise only the first event on any given day will be retrieved.
+You'll be able to select the date or other excluded event details from outside your selected container later.</value>
+  </data>
+  <data name="ScrapeJobIgnoreNestedText" xml:space="preserve">
+    <value>Whether to ignore the text of nested elements and only extract direct text nodes from the HTML. Does not apply if an attribute is set.</value>
+  </data>
+  <data name="ScrapeConfigInfoFormat" xml:space="preserve">
+    <value>Every web page is made up of 🖽 [boxes inside boxes](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure) - kind of like Russian nesting dolls, but often with more than one contained child.
+Each box holds different parts of the page with different info. In the following, you can tell {0} which boxes to pick what kind of info from.</value>
+  </data>
+  <data name="WaitForJsRendering" xml:space="preserve">
+    <value>You may want to try this option if your event selector doesn't match anything without it even though it should*.
+It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn't after 10s.
+
+This works around pages that lazy-load events. Some web servers only return an empty template of a page on the first request to improve the response time, then fetch more data asynchronously and render it into the placeholders using a script running in your browser.
+
+* To test selectors, load the page in your browser and start up a [developer console](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools#the_javascript_console). In there, use [document.querySelectorAll('.css-selector')](https://www.w3schools.com/jsref/met_document_queryselectorall.asp) or [document.evaluate('//xpath/selector', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate) depending on your chosen selector syntax.</value>
+  </data>
+  <data name="ScrapeJobAttribute" xml:space="preserve">
+    <value>The name of the attribute of the selected element to extract the text from.</value>
+  </data>
+  <data name="ScrapeJobReplace" xml:space="preserve">
+    <value>Multiple optional replacements to apply, in the form "Pattern =&gt; Replacement, Pattern2 =&gt;". You may want to do this e.g. to convert a date string into a valid format. Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour, but plain text often works.
+
+[regex101](https://regex101.com/) is great to debug your patterns, learn and find existing patterns. If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.
+
+This and following steps are applied after normalizing consecutive whitespace in the selected text to a single space.</value>
+  </data>
+  <data name="ScrapeJobMatch" xml:space="preserve">
+    <value>A pattern ([Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour) that matches the part of text to extract. You may want to do this to extract text that is not cleanly selectable.
+
+[regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns. If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.</value>
+  </data>
+  <data name="DateScrapeJobFormat" xml:space="preserve">
+    <value>The .NET [custom](https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings) or [standard](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings) date format used to parse the date.</value>
+  </data>
+  <data name="DateScrapeJobCulture" xml:space="preserve">
+    <value>The [language/country code](https://en.wikipedia.org/wiki/Language_code) used to parse the date in ISO 639 (en) or ISO 3166 format (en-US).</value>
+  </data>
+  <data name="SelectorSyntaxFormat" xml:space="preserve">
+    <value>What's the difference? In most cases you'll want to use CSS for its shorter and simpler syntax.
+
+For advanced scenarios you may want to try XPath, which has more powerful functions, e.g. for filtering.
+Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for you.
+E.g. to select elements with class 'event' that have a 'category' class div with the cleaned text 'concert', you'd write: 
+*[xpath&gt;"//div[contains(@class, 'event')][.//div[@class='category' and normalize-space(.)='concert']]"]</value>
+  </data>
+  <data name="EnablePicking" xml:space="preserve">
+    <value>Toggle picking mode. You may want to disable this to interact with the page as you would in a normal browser, e.g. to close popups and overlays - or play with those eye-opening 🍪 cookie reminders sponsored by the EU if you're lucky enough to be browsing from there.</value>
+  </data>
+  <data name="AppendSelectedQuery" xml:space="preserve">
+    <value>Appends to the existing query if it matches the syntax, otherwise replaces it.</value>
+  </data>
+  <data name="PickedSelectorDisplay" xml:space="preserve">
+    <value>You need some part of the selector in the last line - it selects the element you chose. Parts from the ancestor path in the above lines may help to narrow down your selection if just using the selector from the last line matches too much.</value>
+  </data>
+  <data name="ScrapeJobSelector" xml:space="preserve">
+    <value>A [CSS](https://www.w3schools.com/cssref/css_selectors.php) or [XPath](https://www.w3schools.com/xml/xpath_syntax.asp) selector to the element containing the text of the event detail.</value>
+  </data>
+  <data name="NextEventPageSelector" xml:space="preserve">
+    <value>The selector of the element to click or link to navigate to load more or different events.</value>
+  </data>
+</root>

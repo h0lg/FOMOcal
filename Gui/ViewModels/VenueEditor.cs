@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FomoCal.Gui.Resources;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
 
@@ -273,51 +274,27 @@ public partial class VenueEditor : ObservableObject
         {
             Label help = new();
 
-            Label scrapeConfigInfo = Lbl("ⓘ").ToolTip("Every web page is made up of" +
-                " 🖽 [boxes inside boxes](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)" +
-                " - kind of like Russian nesting nolls, but often with more than one contained child." +
-                "\nEach box holds different parts of the page with different info." +
-                $" In the following, you can tell {AppInfo.Name} which boxes to pick what kind of info from.");
+            Label scrapeConfigInfo = Lbl("ⓘ").ToolTip(string.Format(HelpTexts.ScrapeConfigInfoFormat, AppInfo.Name));
 
             scrapeConfigInfo.TapGesture(() => help.FormattedText = scrapeConfigInfo.FormatTooltip());
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
-            selectorText.InlineTooltipOnFocus(
-                "The selector to the event containers - of which there are probably multiple on the page," +
-                " each containing as many of one event's details as possible - but only of a single event." +
-                "\n\nSome event pages for example display multiple events on the same day in a group." +
-                " If you see it, use skip/take to try it out on such a group and choose a container that contains only one of their details" +
-                " - otherwise only the first event on any given day will be retrieved." +
-                "\nYou'll be able to select the date or other excluded event details from outside your selected container later.",
-                help, async (vis, focused) =>
+            selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help, async (vis, focused) =>
+            {
+                if (focused) model.EventSelectorRelatedHasFocus = true;
+                else
                 {
-                    if (focused) model.EventSelectorRelatedHasFocus = true;
-                    else
-                    {
-                        await Task.Delay(300); // to allow for using the skip/take steppers without flickering
-                        if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = false;
-                    }
-                    /*  Only propagate the loss of focus to the property
-                        if entry has not currently opened the visualSelector
-                        to keep the help visible while working there */
-                }, cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis);
+                    await Task.Delay(300); // to allow for using the skip/take steppers without flickering
+                    if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = false;
+                }
+                /*  Only propagate the loss of focus to the property
+                    if entry has not currently opened the visualSelector
+                    to keep the help visible while working there */
+            }, cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis);
 
             var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
             (Switch Switch, Grid Wrapper) waitForJsRendering = Toggle(nameof(WaitForJsRendering));
-
-            waitForJsRendering.Switch.InlineTooltipOnFocus(
-                "You may want to try this option if your event selector doesn't match anything without it even though it should*." +
-                "\nIt will load the page and wait for an element matching your selector to become available," +
-                " return when it does and time out if it doesn't after 10s." +
-                "\n\nThis works around pages that lazy-load events." +
-                " Some web servers only return an empty template of a page on the first request to improve the response time," +
-                " then fetch more data asynchronously and render it into the placeholders using a script running in your browser." +
-                "\n\n* To test selectors, load the page in your browser and start up a" +
-                " [developer console](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools#the_javascript_console)." +
-                " In there, use [document.querySelectorAll('.css-selector')](https://www.w3schools.com/jsref/met_document_queryselectorall.asp)" +
-                " or [document.evaluate('//xpath/selector', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)" +
-                " depending on your chosen selector syntax.",
-                help);
+            waitForJsRendering.Switch.InlineTooltipOnFocus(HelpTexts.WaitForJsRendering, help);
 
             Picker pagingStrategy = new()
             {
@@ -333,7 +310,7 @@ public partial class VenueEditor : ObservableObject
 
             var nextPageSelector = SelectorEntry(
                 Entr(nameof(NextEventPageSelector)).Placeholder("next page")
-                    .InlineTooltipOnFocus("The selector of the element to click or link to navigate to load more or different events.", help,
+                    .InlineTooltipOnFocus(HelpTexts.NextEventPageSelector, help,
                         cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis),
                 pickRelativeTo: () => (selector: "body", pickDescendant: true))
                 .BindVisible(nameof(Picker.SelectedIndex), pagingStrategy,

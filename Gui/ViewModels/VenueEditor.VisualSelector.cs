@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FomoCal.Gui.Resources;
 using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
@@ -70,10 +71,7 @@ partial class VenueEditor
             var controlsAndInstructions = HWrap(5,
                 Swtch(nameof(EnablePicking)).Wrapper
                     .BindVisible(showPickedSelector, converter: Converters.Not)
-                    .ToolTip("Toggle picking mode. You may want to disable this to interact with the page" +
-                        " as you would in a normal browser, e.g. to close popups and overlays" +
-                        " - or play with those eye-opening 🍪 cookie reminders sponsored by" +
-                        " the EU if you're lucky enough to be browsing from there."),
+                    .ToolTip(HelpTexts.EnablePicking),
                 Lbl("Tap a page element to pick it.").TapGesture(TogglePicking)
                     .BindVisible(showPickedSelector, converter: Converters.Not),
                 Btn("⿴ Pick its container").TapGesture(PickParent)
@@ -88,14 +86,7 @@ partial class VenueEditor
 
             var xPathSyntax = new Switch() // enables switching between CSS and XPath syntax to save space
                 .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: model.selectorOptions)
-                .ToolTip("What's the difference? In most cases you'll want to use CSS for its shorter and simpler syntax." +
-                    "\n\nFor advanced scenarios you may want to try XPath, which has more powerful functions, e.g. for filtering." +
-                    "\n\nMake sure to stick to XPath 1.0 features and " +
-                    $" wrap your {string.Format(FomoCal.ScrapeJob.XPathSelectorFormat, "selector")} as described" +
-                    " here https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use ." +
-                    "\n\nE.g. to select elements with class 'event' that have a 'category' class div with the cleaned text 'concert', you'd write: " +
-                    "\n*[xpath>\"//div[contains(@class, 'event')][.//div[@class='category' and normalize-space(.)='concert']]\"]" +
-                    "\n\nUsing the ➕ append button with apply the wrapper for you.");
+                .ToolTip(string.Format(HelpTexts.SelectorSyntaxFormat, string.Format(FomoCal.ScrapeJob.XPathSelectorFormat, "selector")));
 
             var syntax = HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath"));
 
@@ -114,8 +105,7 @@ partial class VenueEditor
 
             View[] appendSelection = [
                 Lbl("Select parts of the selector text and"),
-                Btn("➕ append").TapGesture(AppendSelectedQuery)
-                    .ToolTip("Appends to the existing query if it matches the syntax, otherwise replaces it."),
+                Btn("➕ append").TapGesture(AppendSelectedQuery).ToolTip(HelpTexts.AppendSelectedQuery),
                 Lbl("them to your query to try them out."),
                 Btn("🍜 selector options").BindVisible(showPickedSelector).TapGesture(ToggleSelectorDetail)];
 
@@ -152,9 +142,7 @@ partial class VenueEditor
         private Editor SelectorDisplay(string propertyPath)
         {
             var editor = new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }
-                .ToolTip("You need some part of the selector in the last line - it selects the element you chose." +
-                    " Parts from the ancestor path in the above lines may help to narrow down your selection" +
-                    " if just using the selector from the last line matches too much.")
+                .ToolTip(HelpTexts.PickedSelectorDisplay)
                 .Bind(Editor.TextProperty, propertyPath, BindingMode.OneWay);
 
             // save selected part of selector query for AppendSelectedQuery
