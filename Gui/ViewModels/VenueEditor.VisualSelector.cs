@@ -125,7 +125,14 @@ partial class VenueEditor
             Editor selectorDisplay = SelectorDisplay(displayedSelector).BindVisible(showPickedSelector)
                 .InlineTooltipOnFocus(HelpTexts.PickedSelectorDisplay, help);
 
-            SetupAutoSizing(controlsAndInstructions.View, help, selectorDisplay);
+            pickedSelectorScroller = new()
+            {
+                Content = Grd(cols: [Star], rows: [Auto, Auto, Auto], spacing: 0,
+                controlsAndInstructions.View,
+                help.BindVisible(showPickedSelector).Row(1), selectorDisplay.Row(2))
+            };
+
+            SetupAutoSizing();
 
             return new()
             {
@@ -133,10 +140,8 @@ partial class VenueEditor
                 StyleClass = ["VisualSelector"],
                 HeightRequest = 0, // to initialize it collapsed and fix first opening animation
                 Children = {
-                    Grd(cols: [Star], rows: [Auto, Auto, Auto, Star], spacing: 0,
-                        controlsAndInstructions.View,
-                        help.Row(1),
-                        selectorDisplay.Row(2).ColumnSpan(2),
+                    Grd(cols: [Star], rows: [Auto, Star], spacing: 0,
+                        pickedSelectorScroller,
                         pageView.BindVisible(showPickedSelector, converter: Converters.Not).Row(3)).LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
                     Btn("🗙").TapGesture(HideVisualSelector).Size(30, 30).TranslationY(-35) // float half above upper boundary
                         .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, autosized
@@ -212,50 +217,68 @@ partial class VenueEditor
         }
 
         #region Sizing
-        private readonly SemaphoreSlim heightUpdate = new(1, 1);
-        private VisualElement[]? selectorControls; // used to measure required size of container when ShowPickedSelector
+        private CancellationTokenSource? sizeChangedCts;
+        private ScrollView? pickedSelectorScroller;
 
-        private void SetupAutoSizing(params VisualElement[] selectorControls)
+        private void SetupAutoSizing()
         {
-            this.selectorControls = selectorControls;
-
             /* eagerly subscribe to the SizeChanged of visuals influencing the required container height
              * for when ShowPickedSelector is true and it has dynamic height, see UpdateHeightAsync */
-            foreach (var vis in (VisualElement[])[.. selectorControls, this])
-                vis.SizeChanged += async (object? sender, EventArgs e) =>
-                {
-                    // exit handler early if height update is unnecessary
-                    if (!visualSelector.IsVisible) return;
-                    await UpdateHeightAsync();
-                };
+            pickedSelectorScroller!.Content.SizeChanged += async (object? sender, EventArgs e) =>
+            {
+                // exit handler early if height update is unnecessary
+                if (!visualSelector.IsVisible) return;
+                await UpdateHeightAsync();
+            };
         }
 
-        private async Task UpdateHeightAsync()
+        private Task UpdateHeightAsync()
         {
-            if (heightUpdate.CurrentCount == 0) return; // drop parallel update requests
-            heightUpdate.Wait();
-            double height = 0;
+            sizeChangedCts?.Cancel(); // cancel any previous waiting task
+            sizeChangedCts = new CancellationTokenSource();
+            var token = sizeChangedCts.Token;
 
-            if (model.ShowPickedSelector) // calculate dynamic height based on measured selectorControls sizes
-                foreach (var child in selectorControls!)
-                {
-                    var measuredSize = child.Measure(Width, double.PositiveInfinity);
-                    height += measuredSize.Height;
-                }
-            else height = Height - 100;
-
-            await visualSelector.AnimateHeightRequest(height);
-
-            if (model.visualSelectorHost != null)
+            return Task.Run(async () =>
             {
-                form.HeightRequest = Height - height; // shrink form so End is visible to scroll there
+                try
+                {
+                    await Task.Delay(100, token); // debounce delay
 
-                // scroll entry to end so that Help above is visible
-                await form.ScrollToAsync(model.visualSelectorHost, ScrollToPosition.End, animated: true);
-            }
-            else form.HeightRequest = -1; // reset form height
+                    if (!token.IsCancellationRequested)
+                    {
+                        MainThread.BeginInvokeOnMainThread(async () =>
+                        {
+                            var maxHeight = Height - 100;
+                            double height = 0;
 
-            heightUpdate.Release();
+                            if (model.ShowPickedSelector) // calculate dynamic height based on measured selectorControls sizes
+                            {
+                                height = pickedSelectorScroller!.Content.Height;
+
+                                if (maxHeight < height)
+                                {
+                                    pickedSelectorScroller.HeightRequest = maxHeight;
+                                    height = maxHeight;
+                                }
+                                else pickedSelectorScroller.HeightRequest = -1;
+                            }
+                            else height = maxHeight;
+
+                            await visualSelector.AnimateHeightRequest(height);
+
+                            if (model.visualSelectorHost != null)
+                            {
+                                form.HeightRequest = Height - height; // shrink form so End is visible to scroll there
+
+                                // scroll entry to end so that Help above is visible
+                                await form.ScrollToAsync(model.visualSelectorHost, ScrollToPosition.End, animated: true);
+                            }
+                            else form.HeightRequest = -1; // reset form height
+                        });
+                    }
+                }
+                catch (TaskCanceledException) { } // ignore cancellation
+            });
         }
         #endregion
     }
