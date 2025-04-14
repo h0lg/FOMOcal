@@ -2,7 +2,8 @@
 <?xaml-comp compile="true" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:FomoCal.Gui.ViewModels">
 
     <Style TargetType="ActivityIndicator">
         <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
@@ -210,6 +211,16 @@
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LinkTextLight}, Dark={StaticResource LinkTextDark}}" />
         <Setter Property="TextDecorations" Value="Underline" />
     </Style>
+
+    <Style TargetType="Span" x:Key="HelpHeaderSpan" BasedOn="{StaticResource HelpSpan}">
+        <Setter Property="FontSize" Value="16" />
+    </Style>
+
+    <Style TargetType="Span" x:Key="HelpFooterSpan" BasedOn="{StaticResource HelpSpan}">
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <Style TargetType="Span" x:Key="HelpFooterLinkSpan" BasedOn="{vm:MergedStyle {StaticResource HelpFooterSpan}, {StaticResource HelpLinkSpan}}" />
 
     <Style TargetType="Label" Class="Headline">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />

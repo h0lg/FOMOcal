@@ -360,7 +360,7 @@ public partial class VenueEditor : ObservableObject
             }
 
             void SyncPagingStrategyHelp(bool focused) =>
-                help.FormattedText = focused ? model.venue.Event.PagingStrategy.GetHelp()?.LinkifyMarkdownLinks() : null;
+                help.FormattedText = focused ? model.venue.Event.PagingStrategy.GetHelp()?.ParseMarkdown() : null;
         }
 
         private VerticalStackLayout OptionalEventFields()

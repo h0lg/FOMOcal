@@ -123,8 +123,8 @@
   <data name="EventContainerSelector" xml:space="preserve">
     <value>The selector to the event containers - of which there are probably multiple on the page, each containing as many of one event's details as possible - but only of a single event.
 
-Some event pages for example display multiple events on the same day in a group. If you see it, use skip/take to try it out on such a group and choose a container that contains only one of their details - otherwise only the first event on any given day will be retrieved.
-You'll be able to select the date or other excluded event details from outside your selected container later.</value>
+^^Some event pages for example display multiple events on the same day in a group. If you see it, use skip/take to try it out on such a group and choose a container that contains only one of their details - otherwise only the first event on any given day will be retrieved.
+^^You'll be able to select the date or other excluded event details from outside your selected container later.</value>
   </data>
   <data name="ScrapeJobIgnoreNestedText" xml:space="preserve">
     <value>Whether to ignore the text of nested elements and only extract direct text nodes from the HTML. Does not apply if an attribute is set.</value>
@@ -137,24 +137,25 @@ Each box holds different parts of the page with different info. In the following
     <value>You may want to try this option if your event selector doesn't match anything without it even though it should*.
 It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn't after 10s.
 
-This works around pages that lazy-load events. Some web servers only return an empty template of a page on the first request to improve the response time, then fetch more data asynchronously and render it into the placeholders using a script running in your browser.
-
-* To test selectors, load the page in your browser and start up a [developer console](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools#the_javascript_console). In there, use [document.querySelectorAll('.css-selector')](https://www.w3schools.com/jsref/met_document_queryselectorall.asp) or [document.evaluate('//xpath/selector', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate) depending on your chosen selector syntax.</value>
+^^This works around pages that lazy-load events. Some web servers only return an empty template of a page on the first request to improve the response time, then fetch more data asynchronously and render it into the placeholders using a script running in your browser.
+^^
+^^* To test selectors, load the page in your browser and start up a [developer console](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools#the_javascript_console). In there, use [document.querySelectorAll('.css-selector')](https://www.w3schools.com/jsref/met_document_queryselectorall.asp) or [document.evaluate('//xpath/selector', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate) depending on your chosen selector syntax.</value>
   </data>
   <data name="ScrapeJobAttribute" xml:space="preserve">
     <value>The name of the attribute of the selected element to extract the text from.</value>
   </data>
   <data name="ScrapeJobReplace" xml:space="preserve">
-    <value>Multiple optional replacements to apply, in the form "Pattern =&gt; Replacement, Pattern2 =&gt;". You may want to do this e.g. to convert a date string into a valid format. Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour, but plain text often works.
+    <value>Multiple optional replacements to apply, in the form "Pattern =&gt; Replacement, Pattern2 =&gt;".
+You may want to do this e.g. to convert a date string into a valid format. Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour, but plain text often works.
 
-[regex101](https://regex101.com/) is great to debug your patterns, learn and find existing patterns. If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.
-
-This and following steps are applied after normalizing consecutive whitespace in the selected text to a single space.</value>
+^^[regex101](https://regex101.com/) is great to debug your patterns, learn and find existing patterns. If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.
+^^
+^^This and following steps are applied after normalizing consecutive whitespace in the selected text to a single space.</value>
   </data>
   <data name="ScrapeJobMatch" xml:space="preserve">
     <value>A pattern ([Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour) that matches the part of text to extract. You may want to do this to extract text that is not cleanly selectable.
 
-[regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns. If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.</value>
+^^[regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns. If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.</value>
   </data>
   <data name="DateScrapeJobFormat" xml:space="preserve">
     <value>The .NET [custom](https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings) or [standard](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings) date format used to parse the date.</value>
@@ -165,13 +166,16 @@ This and following steps are applied after normalizing consecutive whitespace in
   <data name="SelectorSyntaxFormat" xml:space="preserve">
     <value>What's the difference? In most cases you'll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler syntax.
 
+# XPath
 For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
-Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for you.
-E.g. to select elements with class 'event' that have a 'category' class div with the cleaned text 'concert', you'd write: 
-*[xpath&gt;"//div[contains(@class, 'event')][.//div[@class='category' and normalize-space(.)='concert']]"]</value>
+^^Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for you.
+^^E.g. to select elements with class 'event' that have a 'category' class div with the cleaned text 'concert', you'd write:
+^^*[xpath&gt;"//div[contains(@class, 'event')][.//div[@class='category' and normalize-space(.)='concert']]"]</value>
   </data>
   <data name="EnablePicking" xml:space="preserve">
-    <value>Toggle picking mode. You may want to disable this to interact with the page as you would in a normal browser, e.g. to close popups and overlays - or play with those eye-opening 🍪 cookie reminders sponsored by the EU if you're lucky enough to be browsing from there.</value>
+    <value>Toggle picking mode.
+You may want to disable this to interact with the page as you would in a normal browser, e.g. to close popups and overlays
+- or play with those eye-opening 🍪 cookie reminders sponsored by the EU if you're lucky enough to be browsing from there.</value>
   </data>
   <data name="AppendSelectedQuery" xml:space="preserve">
     <value>Appends to the existing query if it matches the syntax, otherwise replaces it.</value>
@@ -207,14 +211,17 @@ E.g. to select elements with class 'event' that have a 'category' class div with
     <value>The name of the HTML tag of the element you picked. It doesn't have much specificity on its own, because a page usually contains many elements with the same tag name - but it can add to that of your selector and is better than choosing just any element.</value>
   </data>
   <data name="ElementId" xml:space="preserve">
-    <value>The ID of the picked node. Should be unique in the document according to HTML spec - but may not be. Potentially a selector detail with very high specificity - too high if they are unique and you want to select a re-occurring element.</value>
+    <value>The ID of the picked node. Should be unique in the document according to HTML spec - but may not be.
+
+^^Potentially a selector detail with very high specificity - too high if they are unique and you want to select a re-occurring element.</value>
   </data>
   <data name="ClassesWith_Style" xml:space="preserve">
-    <value>Classes that have{0} visual styles attached. This may be a hint they are or are not good selectors, depending on the page.
+    <value>Classes that have{0} visual styles attached.
+This may be a hint they are or are not good selectors, depending on the page.
 
-If the semantics of a class name match what you're selecting for, it's probably a good fit.
-
-Classes are used for reoccurring elements and can be combined to increase specificity.</value>
+^^Classes are used for reoccurring elements and can be combined to increase specificity.
+^^
+^^If the semantics of a class name match what you're selecting for, it's probably a good fit.</value>
   </data>
   <data name="OtherAttributes" xml:space="preserve">
     <value>Existence of attributes other than id or class. Some depend on the element tag/name - so not/having different attributes will have varying specificity.</value>

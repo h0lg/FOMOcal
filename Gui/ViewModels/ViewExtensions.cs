@@ -114,7 +114,8 @@ internal static class Styles
 
     internal static class Span
     {
-        internal static Style HelpSpan = Get(), HelpLinkSpan = Get();
+        internal static Style HelpHeaderSpan = Get(), HelpSpan = Get(),
+            HelpLinkSpan = Get(), HelpFooterSpan = Get(), HelpFooterLinkSpan = Get();
     }
 
     private static string GetName([CallerMemberName] string key = "") => key;
@@ -136,13 +137,13 @@ internal static class ViewExtensions
         => vis.ToolTip(tooltip).OnFocusChanged((vis, focused) =>
         {
             if (cancelFocusChanged?.Invoke(vis, focused) == true) return;
-            label.FormattedText = focused ? tooltip.LinkifyMarkdownLinks() : null;
+            label.FormattedText = focused ? tooltip.ParseMarkdown() : null;
             vis.ToolTip(focused ? null : tooltip); // prevent tooltip from overlaying help on focus
             onFocusChanged?.Invoke(vis, focused);
         });
 
     internal static FormattedString? FormatTooltip(this VisualElement vis)
-        => ToolTipProperties.GetText(vis)?.ToString()?.LinkifyMarkdownLinks();
+        => ToolTipProperties.GetText(vis)?.ToString()?.ParseMarkdown();
 
     internal static T StyleClass<T>(this T styleable, string styleClass) where T : StyleableElement
     {
@@ -178,42 +179,86 @@ internal static class ViewExtensions
         return label;
     }
 
-    internal static FormattedString LinkifyMarkdownLinks(this string text)
+    private static readonly Regex linkRegex = new(@"\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)", RegexOptions.Compiled),
+        headerRegex = new(@"^(#+)\s+(.*)", RegexOptions.Compiled); // e.g. # Heading
+
+    private const string footerPrefix = "^^";
+
+    internal static FormattedString ParseMarkdown(this string text)
     {
         FormattedString formatted = new();
-        var linkRegex = new Regex(@"\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)", RegexOptions.Compiled);
 
-        int lastIndex = 0;
-
-        foreach (Match match in linkRegex.Matches(text))
+        foreach (var line in text.Split('\n'))
         {
-            // Add text before the link
-            if (match.Index > lastIndex)
+            var trimmedLine = line.Trim();
+
+            if (trimmedLine.IsNullOrWhiteSpace())
             {
-                formatted.Spans.Add(new Span { Text = text[lastIndex..match.Index], Style = Styles.Span.HelpSpan });
+                formatted.Spans.Add(new Span { Text = Environment.NewLine });
+                continue;
             }
 
-            string displayText = match.Groups[1].Value;
-            string url = match.Groups[2].Value;
-
-            Span link = new()
+            // Detect footer
+            if (trimmedLine.StartsWith(footerPrefix))
             {
-                Text = displayText,
-                Style = Styles.Span.HelpLinkSpan
-            };
+                var footerText = trimmedLine[footerPrefix.Length..].TrimStart();
+                AppendWithLinks(formatted, footerText, Styles.Span.HelpFooterLinkSpan, Styles.Span.HelpFooterSpan);
+                formatted.Spans.Add(new Span { Text = Environment.NewLine });
+                continue;
+            }
 
-            link.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
-            formatted.Spans.Add(link);
-            lastIndex = match.Index + match.Length;
-        }
+            // Detect headers
+            var headerMatch = headerRegex.Match(trimmedLine);
 
-        // Add any remaining text
-        if (lastIndex < text.Length)
-        {
-            formatted.Spans.Add(new Span { Text = text[lastIndex..], Style = Styles.Span.HelpSpan });
+            if (headerMatch.Success)
+            {
+                int level = headerMatch.Groups[1].Value.Length;
+                string headerText = headerMatch.Groups[2].Value;
+
+                formatted.Spans.Add(new Span
+                {
+                    Text = headerText + Environment.NewLine,
+                    Style = Styles.Span.HelpHeaderSpan
+                });
+
+                continue;
+            }
+
+            // Default: normal paragraph with possible links
+            AppendWithLinks(formatted, trimmedLine, Styles.Span.HelpLinkSpan, Styles.Span.HelpSpan);
+            formatted.Spans.Add(new Span { Text = Environment.NewLine });
         }
 
         return formatted;
+
+        static void AppendWithLinks(FormattedString target, string text, Style linkStyle, Style normalStyle)
+        {
+            int lastIndex = 0;
+
+            foreach (Match match in linkRegex.Matches(text))
+            {
+                // Text before link
+                if (match.Index > lastIndex) target.Spans.Add(new Span
+                {
+                    Text = text[lastIndex..match.Index],
+                    Style = normalStyle
+                });
+
+                string displayText = match.Groups[1].Value;
+                string url = match.Groups[2].Value;
+                Span link = new() { Text = displayText, Style = linkStyle };
+                link.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
+                target.Spans.Add(link);
+                lastIndex = match.Index + match.Length;
+            }
+
+            // Remainder
+            if (lastIndex < text.Length) target.Spans.Add(new Span
+            {
+                Text = text[lastIndex..],
+                Style = normalStyle
+            });
+        }
     }
 
     internal static Task AnimateHeightRequest(this VisualElement view, double endValue, uint duration = 300)

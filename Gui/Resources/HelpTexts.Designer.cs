@@ -70,11 +70,12 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Classes that have{0} visual styles attached. This may be a hint they are or are not good selectors, depending on the page.
+        ///   Looks up a localized string similar to Classes that have{0} visual styles attached.
+        ///This may be a hint they are or are not good selectors, depending on the page.
         ///
-        ///If the semantics of a class name match what you&apos;re selecting for, it&apos;s probably a good fit.
-        ///
-        ///Classes are used for reoccurring elements and can be combined to increase specificity..
+        ///^^Classes are used for reoccurring elements and can be combined to increase specificity.
+        ///^^
+        ///^^If the semantics of a class name match what you&apos;re selecting for, it&apos;s probably a good fit..
         /// </summary>
         internal static string ClassesWith_Style {
             get {
@@ -101,7 +102,9 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The ID of the picked node. Should be unique in the document according to HTML spec - but may not be. Potentially a selector detail with very high specificity - too high if they are unique and you want to select a re-occurring element..
+        ///   Looks up a localized string similar to The ID of the picked node. Should be unique in the document according to HTML spec - but may not be.
+        ///
+        ///^^Potentially a selector detail with very high specificity - too high if they are unique and you want to select a re-occurring element..
         /// </summary>
         internal static string ElementId {
             get {
@@ -119,7 +122,9 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Toggle picking mode. You may want to disable this to interact with the page as you would in a normal browser, e.g. to close popups and overlays - or play with those eye-opening 🍪 cookie reminders sponsored by the EU if you&apos;re lucky enough to be browsing from there..
+        ///   Looks up a localized string similar to Toggle picking mode.
+        ///You may want to disable this to interact with the page as you would in a normal browser, e.g. to close popups and overlays
+        ///- or play with those eye-opening 🍪 cookie reminders sponsored by the EU if you&apos;re lucky enough to be browsing from there..
         /// </summary>
         internal static string EnablePicking {
             get {
@@ -130,8 +135,8 @@ namespace FomoCal.Gui.Resources {
         /// <summary>
         ///   Looks up a localized string similar to The selector to the event containers - of which there are probably multiple on the page, each containing as many of one event&apos;s details as possible - but only of a single event.
         ///
-        ///Some event pages for example display multiple events on the same day in a group. If you see it, use skip/take to try it out on such a group and choose a container that contains only one of their details - otherwise only the first event on any given day will be retrieved.
-        ///You&apos;ll be able to select the date or other excluded event  [rest of string was truncated]&quot;;.
+        ///^^Some event pages for example display multiple events on the same day in a group. If you see it, use skip/take to try it out on such a group and choose a container that contains only one of their details - otherwise only the first event on any given day will be retrieved.
+        ///^^You&apos;ll be able to select the date or other excluded ev [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string EventContainerSelector {
             get {
@@ -158,7 +163,7 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Existance of attributes other than id or class. Some depend on the element tag/name - so not/having different attributes will have varying specificity..
+        ///   Looks up a localized string similar to Existence of attributes other than id or class. Some depend on the element tag/name - so not/having different attributes will have varying specificity..
         /// </summary>
         internal static string OtherAttributes {
             get {
@@ -269,7 +274,7 @@ namespace FomoCal.Gui.Resources {
         /// <summary>
         ///   Looks up a localized string similar to A pattern ([Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour) that matches the part of text to extract. You may want to do this to extract text that is not cleanly selectable.
         ///
-        ///[regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns. If you can&apos;t be bothered or are struggling - ask a chat bot for help, they&apos;re pretty good at this..
+        ///^^[regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns. If you can&apos;t be bothered or are struggling - ask a chat bot for help, they&apos;re pretty good at this..
         /// </summary>
         internal static string ScrapeJobMatch {
             get {
@@ -278,11 +283,12 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple optional replacements to apply, in the form &quot;Pattern =&gt; Replacement, Pattern2 =&gt;&quot;. You may want to do this e.g. to convert a date string into a valid format. Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour, but plain text often works.
+        ///   Looks up a localized string similar to Multiple optional replacements to apply, in the form &quot;Pattern =&gt; Replacement, Pattern2 =&gt;&quot;.
+        ///You may want to do this e.g. to convert a date string into a valid format. Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour, but plain text often works.
         ///
-        ///[regex101](https://regex101.com/) is great to debug your patterns, learn and find existing patterns. If you can&apos;t be bothered or are struggling - ask a chat bot for help, they&apos;re pretty good at this.
-        ///
-        ///This and  [rest of string was truncated]&quot;;.
+        ///^^[regex101](https://regex101.com/) is great to debug your patterns, learn and find existing patterns. If you can&apos;t be bothered or are struggling - ask a chat bot for help, they&apos;re pretty good at this.
+        ///^^
+        ///^^Th [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ScrapeJobReplace {
             get {
@@ -302,9 +308,10 @@ namespace FomoCal.Gui.Resources {
         /// <summary>
         ///   Looks up a localized string similar to What&apos;s the difference? In most cases you&apos;ll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler syntax.
         ///
+        ///# XPath
         ///For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
-        ///Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for you.
-        ///E.g. to select  [rest of string was truncated]&quot;;.
+        ///^^Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for you.
+        ///^^E. [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SelectorSyntaxFormat {
             get {
@@ -334,7 +341,7 @@ namespace FomoCal.Gui.Resources {
         ///   Looks up a localized string similar to You may want to try this option if your event selector doesn&apos;t match anything without it even though it should*.
         ///It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn&apos;t after 10s.
         ///
-        ///This works around pages that lazy-load events. Some web servers only return an empty template of a page on the first request to improve the response time, then fetch more data asynchronously and render it into the placeholders using a script runni [rest of string was truncated]&quot;;.
+        ///^^This works around pages that lazy-load events. Some web servers only return an empty template of a page on the first request to improve the response time, then fetch more data asynchronously and render it into the placeholders using a script run [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string WaitForJsRendering {
             get {
