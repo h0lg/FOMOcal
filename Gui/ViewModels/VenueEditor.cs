@@ -219,8 +219,8 @@ public partial class VenueEditor : ObservableObject
 
             // Step 3: Event Details (Name, Date)
             var requiredEventFields = VStack(0,
-                new ScrapeJobEditor.View(model.eventName, RelativeSelectorEntry),
-                new ScrapeJobEditor.View(model.eventDate, RelativeSelectorEntry))
+                new ScrapeJobEditor.View(model.eventName, RelativeSelectorEntry, () => model.visualSelectorHost),
+                new ScrapeJobEditor.View(model.eventDate, RelativeSelectorEntry, () => model.visualSelectorHost))
                 .BindVisible(nameof(ShowRequiredEventFields));
 
             // Step 4: Additional Event Details
@@ -381,7 +381,8 @@ public partial class VenueEditor : ObservableObject
                 OptionalScrapeJob("🎫 Tickets 📡", evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href"));
 
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
-               => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute), RelativeSelectorEntry);
+               => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute),
+                    RelativeSelectorEntry, () => model.visualSelectorHost);
         }
 
         private static HorizontalStackLayout LabeledStepper(string label, string valueProperty, int max, Action onValueChanged)

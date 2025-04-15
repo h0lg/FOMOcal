@@ -269,11 +269,15 @@ public partial class ScrapeJobEditor : ObservableObject
         private readonly Label help = new();
         private readonly ScrapeJobEditor model;
         private readonly Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry;
+        private readonly Func<Entry?> getVisualSelectoHost;
 
-        public View(ScrapeJobEditor model, Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry)
+        public View(ScrapeJobEditor model,
+            Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry,
+            Func<Entry?> getVisualSelectoHost)
         {
             this.model = model;
             this.createVisualSelectorEntry = createVisualSelectorEntry;
+            this.getVisualSelectoHost = getVisualSelectoHost;
             BindingContext = model;
             Spacing = 5;
 
@@ -319,7 +323,10 @@ public partial class ScrapeJobEditor : ObservableObject
 
         private HorizontalStackLayout SelectorEntry(string label, string property, Func<string?>? maybeGetDescendantOfClosest, string tooltip)
         {
-            var input = createVisualSelectorEntry(HintedInput(Entr(property), tooltip), maybeGetDescendantOfClosest);
+            var input = createVisualSelectorEntry(HintedInput(Entr(property), tooltip,
+                cancelFocusChanged: (vis, focused) => !focused && getVisualSelectoHost() == vis),
+                maybeGetDescendantOfClosest);
+
             return LbldView(label, input).DisplayWithSignificant(property);
         }
 
@@ -329,8 +336,9 @@ public partial class ScrapeJobEditor : ObservableObject
         private HorizontalStackLayout LabeledInput(string label, Microsoft.Maui.Controls.View view, string tooltip)
             => LbldView(label, HintedInput(view, tooltip));
 
-        private T HintedInput<T>(T vis, string tooltip) where T : VisualElement
-            => vis.InlineTooltipOnFocus(tooltip, help, async (vis, focused) => await model.SetFocusAsync(vis, focused));
+        private T HintedInput<T>(T vis, string tooltip,
+            Func<VisualElement, bool, bool>? cancelFocusChanged = null) where T : VisualElement
+            => vis.InlineTooltipOnFocus(tooltip, help, async (vis, focused) => await model.SetFocusAsync(vis, focused), cancelFocusChanged);
 
         internal static VerticalStackLayout PreviewOrErrorList(string itemsSource, string hasFocus, string hasError, object source)
         {
