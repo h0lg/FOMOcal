@@ -11,11 +11,11 @@ namespace FomoCal.Gui.ViewModels;
 partial class VenueEditor
 {
     private readonly SelectorOptions selectorOptions = new() { SemanticClasses = true, LayoutClasses = true };
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] private string? pickedSelector;
-    [ObservableProperty] private bool enablePicking = true;
-    [ObservableProperty] private bool showPickedSelector;
-    [ObservableProperty] private bool showSelectorDetail;
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] private bool includePickedSelectorPath;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial string? PickedSelector { get; set; }
+    [ObservableProperty] public partial bool EnablePicking { get; set; } = true;
+    [ObservableProperty] public partial bool ShowPickedSelector { get; set; }
+    [ObservableProperty] public partial bool ShowSelectorDetail { get; set; }
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial bool IncludePickedSelectorPath { get; set; }
 
     public string? DisplayedSelector
     {

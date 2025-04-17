@@ -12,12 +12,12 @@ public partial class EventList : ObservableObject
     private readonly EventRepository eventRepo;
     private HashSet<Event>? allEvents;
 
-    [ObservableProperty] private bool showPastEvents;
-    [ObservableProperty] private bool canDeletePastEvents;
-    [ObservableProperty] private string searchText = string.Empty;
-    [ObservableProperty] private ObservableCollection<Event> filteredEvents = [];
-    [ObservableProperty] private IList<object> selectedEvents = [];
-    [ObservableProperty] private bool hasSelection;
+    [ObservableProperty] public partial bool ShowPastEvents { get; set; }
+    [ObservableProperty] public partial bool CanDeletePastEvents { get; set; }
+    [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
+    [ObservableProperty] public partial ObservableCollection<Event> FilteredEvents { get; set; } = [];
+    [ObservableProperty] public partial IList<object> SelectedEvents { get; set; } = [];
+    [ObservableProperty] public partial bool HasSelection { get; set; }
 
     public EventList(EventRepository eventRepo)
     {

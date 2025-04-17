@@ -20,6 +20,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
+    <!--for partial property support-->
+    <LangVersion>preview</LangVersion>
+
     <!-- Display name -->
     <ApplicationTitle>FOMOcal</ApplicationTitle>
 

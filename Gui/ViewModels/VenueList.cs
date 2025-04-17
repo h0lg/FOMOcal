@@ -13,7 +13,7 @@ public partial class VenueList : ObservableObject
     private readonly Scraper scraper;
     private readonly INavigation navigation;
 
-    [ObservableProperty] private bool isLoading;
+    [ObservableProperty] public partial bool IsLoading { get; set; }
 
     public ObservableCollection<Venue> Venues { get; } = [];
 

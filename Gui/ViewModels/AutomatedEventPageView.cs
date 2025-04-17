@@ -170,22 +170,22 @@ public partial class AutomatedEventPageView : WebView
 
     internal partial class WaitForSelectorOptions : ObservableObject
     {
-        [ObservableProperty] private string selector;
-        [ObservableProperty] private bool isXpathSelector;
-        [ObservableProperty] private uint intervalDelayMs;
-        [ObservableProperty] private uint maxMatches;
-        [ObservableProperty] private uint maxTries;
+        [ObservableProperty] public partial string Selector { get; set; }
+        [ObservableProperty] public partial bool IsXpathSelector { get; set; }
+        [ObservableProperty] public partial uint IntervalDelayMs { get; set; }
+        [ObservableProperty] public partial uint MaxMatches { get; set; }
+        [ObservableProperty] public partial uint MaxTries { get; set; }
     }
 
     internal partial class PickedSelectorOptions : ObservableObject
     {
-        [ObservableProperty] private bool xPathSyntax;
-        [ObservableProperty] private bool tagName;
-        [ObservableProperty] private bool ids;
-        [ObservableProperty] private bool semanticClasses;
-        [ObservableProperty] private bool layoutClasses;
-        [ObservableProperty] private bool otherAttributes;
-        [ObservableProperty] private bool otherAttributeValues;
-        [ObservableProperty] private bool position;
+        [ObservableProperty] public partial bool XPathSyntax { get; set; }
+        [ObservableProperty] public partial bool TagName { get; set; }
+        [ObservableProperty] public partial bool Ids { get; set; }
+        [ObservableProperty] public partial bool SemanticClasses { get; set; }
+        [ObservableProperty] public partial bool LayoutClasses { get; set; }
+        [ObservableProperty] public partial bool OtherAttributes { get; set; }
+        [ObservableProperty] public partial bool OtherAttributeValues { get; set; }
+        [ObservableProperty] public partial bool Position { get; set; }
     }
 }

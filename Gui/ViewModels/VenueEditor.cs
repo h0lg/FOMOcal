@@ -17,16 +17,16 @@ public partial class VenueEditor : ObservableObject
     private readonly SemaphoreSlim revealingMore = new(1, 1);
     private Entry? visualSelectorHost;
 
-    [ObservableProperty] private bool isEventPageLoading = true;
-    [ObservableProperty] private bool showEventContainer;
-    [ObservableProperty] private bool showRequiredEventFields;
-    [ObservableProperty] private bool showOptionalEventFields;
+    [ObservableProperty] public partial bool IsEventPageLoading { get; set; } = true;
+    [ObservableProperty] public partial bool ShowEventContainer { get; set; }
+    [ObservableProperty] public partial bool ShowRequiredEventFields { get; set; }
+    [ObservableProperty] public partial bool ShowOptionalEventFields { get; set; }
 
-    [ObservableProperty] private bool eventSelectorRelatedHasFocus; // for when related controls have focus
-    [ObservableProperty] private bool eventSelectorHasError;
-    [ObservableProperty] private string[]? previewedEventTexts;
-    [ObservableProperty] private int skipEvents;
-    [ObservableProperty] private int takeEvents = 5;
+    [ObservableProperty] public partial bool EventSelectorRelatedHasFocus { get; set; } // for when related controls have focus
+    [ObservableProperty] public partial bool EventSelectorHasError { get; set; }
+    [ObservableProperty] public partial string[]? PreviewedEventTexts { get; set; }
+    [ObservableProperty] public partial int SkipEvents { get; set; }
+    [ObservableProperty] public partial int TakeEvents { get; set; } = 5;
 
     private AngleSharp.Dom.IDocument? programDocument;
     private AngleSharp.Dom.IElement[]? previewedEvents;

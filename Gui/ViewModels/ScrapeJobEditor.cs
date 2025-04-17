@@ -19,9 +19,9 @@ public partial class ScrapeJobEditor : ObservableObject
     internal DateScrapeJob? DateScrapeJob => ScrapeJob as DateScrapeJob;
     public string EventProperty { get; }
 
-    [ObservableProperty] private string?[]? previewResults;
-    [ObservableProperty] private bool hasErrors;
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayInputs))] private bool isEmpty;
+    [ObservableProperty] public partial string?[]? PreviewResults { get; set; }
+    [ObservableProperty] public partial bool HasErrors { get; set; }
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayInputs))] public partial bool IsEmpty { get; set; }
 
     #region ScrapeJob proxy properties
     private static readonly string[] scrapeJobStringPropertyNames = [nameof(Closest), nameof(Selector), nameof(Attribute), nameof(Replace), nameof(Match)];
@@ -183,7 +183,7 @@ public partial class ScrapeJobEditor : ObservableObject
     private void Validate() => IsValid = !HasErrors && PreviewResults?.Length == getEventsForPreview()?.Length;
 
     private Guid? focusedId; // tracks the child that currently has focus
-    [ObservableProperty] private bool hasFocus;
+    [ObservableProperty] public partial bool HasFocus { get; set; }
 
     internal async ValueTask SetFocusAsync(VisualElement visual, bool focused)
     {
