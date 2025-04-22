@@ -115,7 +115,8 @@ internal static class Styles
     internal static class Span
     {
         internal static Style HelpHeaderSpan = Get(), HelpSpan = Get(),
-            HelpLinkSpan = Get(), HelpFooterSpan = Get(), HelpFooterLinkSpan = Get();
+            HelpLinkSpan = Get(), HelpFooterSpan = Get(),
+            HelpFooterLinkSpan = MergedStyle.Combine(HelpFooterSpan, HelpLinkSpan)!;
     }
 
     private static string GetName([CallerMemberName] string key = "") => key;

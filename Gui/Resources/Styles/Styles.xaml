@@ -220,17 +220,6 @@
         <Setter Property="FontSize" Value="12" />
     </Style>
 
-    <Style TargetType="Span" x:Key="HelpFooterLinkSpan" />
-        <Style.BasedOn>
-            <vm:MergedStyle>
-                <vm:MergedStyle.Styles>
-                    <StaticResource Key="HelpFooterSpan" />
-                    <StaticResource Key="HelpLinkSpan" />
-                </vm:MergedStyle.Styles>
-            </vm:MergedStyle>
-        </Style.BasedOn>
-    </Style>
-
     <Style TargetType="Label" Class="Headline">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
         <Setter Property="FontSize" Value="20" />

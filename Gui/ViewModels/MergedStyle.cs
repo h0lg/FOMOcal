@@ -1,30 +1,14 @@
 ﻿namespace FomoCal.Gui.ViewModels;
 
-/// <summary>Extension that allows to merge multiple styles into one.
-/// See https://learn.microsoft.com/en-us/dotnet/maui/xaml/markup-extensions/create?view=net-maui-9.0.
-/// Inspired by https://github.com/Epsil0neR/Epsiloner-libs/blob/develop/src/Epsiloner.Wpf.Core/Extensions/MultiStyleExtension.cs</summary>
-[ContentProperty(nameof(Styles))]
-[RequireService([typeof(IProvideValueTarget)])]
-public class MergedStyleExtension : IMarkupExtension<Style?>
+internal static class MergedStyle
 {
-    public IList<Style> Styles { get; set; } = new List<Style>();
-
-    public MergedStyleExtension() { }
-
-    public MergedStyleExtension(params Style[] styles)
+    /// <summary>Allows merging multiple <paramref name="styles"/> into a newly added one.
+    /// Inspired by https://github.com/Epsil0neR/Epsiloner-libs/blob/develop/src/Epsiloner.Wpf.Core/Extensions/MultiStyleExtension.cs</summary>
+    internal static Style? Combine(params Style[] styles)
     {
-        Styles = styles?.ToList() ?? new List<Style>();
-    }
-
-    public Style? ProvideValue(IServiceProvider serviceProvider)
-    {
-        if (Styles == null || Styles.Count == 0) return null;
-        var service = serviceProvider.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget;
-        if (service?.TargetObject is not Style) return null;
-
         Style? mergedStyle = null;
 
-        foreach (var style in Styles)
+        foreach (var style in styles)
         {
             mergedStyle ??= new Style(style.TargetType);
             Merge(mergedStyle, style);
@@ -41,6 +25,4 @@ public class MergedStyleExtension : IMarkupExtension<Style?>
         foreach (var setter in style2.Setters) style1.Setters.Add(setter);
         foreach (TriggerBase currentTrigger in style2.Triggers) style1.Triggers.Add(currentTrigger);
     }
-
-    object? IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
 }
