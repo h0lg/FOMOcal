@@ -19,6 +19,7 @@
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 
     <!--for partial property support-->
     <LangVersion>preview</LangVersion>
