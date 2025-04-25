@@ -226,7 +226,7 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You need some part of the selector in the last line - it selects the element you picked. Select the part you want and use append..
+        ///   Looks up a localized string similar to You need some part of the selector in the last line - it selects the element you picked. Select the part you want and use ➕ append..
         /// </summary>
         internal static string PickedSelectorDisplay {
             get {
@@ -272,7 +272,7 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A pattern ([Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour) that matches the part of text to extract. You may want to do this to extract text that is not cleanly selectable.
+        ///   Looks up a localized string similar to A pattern ([Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavor) that matches the part of text to extract. You may want to do this to extract text that is not cleanly selectable.
         ///
         ///^^[regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns. If you can&apos;t be bothered or are struggling - ask a chat bot for help, they&apos;re pretty good at this..
         /// </summary>
@@ -306,12 +306,11 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to What&apos;s the difference? In most cases you&apos;ll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler syntax.
+        ///   Looks up a localized string similar to What&apos;s the difference? In most cases you&apos;ll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler selector syntax.
         ///
         ///# XPath
         ///For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
-        ///^^Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for you.
-        ///^^E. [rest of string was truncated]&quot;;.
+        ///^^Make sure to stick to XPath 1.0 features and [wrap your {0}](https://github.com/AngleSharp/AngleSharp.XPath?tab=readme-ov-file#basic-use). Using the ➕ append button will do that for y [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SelectorSyntaxFormat {
             get {

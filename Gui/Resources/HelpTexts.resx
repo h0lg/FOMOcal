@@ -153,7 +153,7 @@ You may want to do this e.g. to convert a date string into a valid format. Patte
 ^^This and following steps are applied after normalizing consecutive whitespace in the selected text to a single space.</value>
   </data>
   <data name="ScrapeJobMatch" xml:space="preserve">
-    <value>A pattern ([Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour) that matches the part of text to extract. You may want to do this to extract text that is not cleanly selectable.
+    <value>A pattern ([Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavor) that matches the part of text to extract. You may want to do this to extract text that is not cleanly selectable.
 
 ^^[regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns. If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.</value>
   </data>
@@ -164,7 +164,7 @@ You may want to do this e.g. to convert a date string into a valid format. Patte
     <value>The [language/country code](https://en.wikipedia.org/wiki/Language_code) used to parse the date in ISO 639 (en) or ISO 3166 format (en-US).</value>
   </data>
   <data name="SelectorSyntaxFormat" xml:space="preserve">
-    <value>What's the difference? In most cases you'll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler syntax.
+    <value>What's the difference? In most cases you'll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler selector syntax.
 
 # XPath
 For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
@@ -181,7 +181,7 @@ You may want to disable this to interact with the page as you would in a normal 
     <value>Appends to the existing query if it matches the syntax, otherwise replaces it.</value>
   </data>
   <data name="PickedSelectorDisplay" xml:space="preserve">
-    <value>You need some part of the selector in the last line - it selects the element you picked. Select the part you want and use append.</value>
+    <value>You need some part of the selector in the last line - it selects the element you picked. Select the part you want and use ➕ append.</value>
   </data>
   <data name="ScrapeJobSelector" xml:space="preserve">
     <value>A selector to the element containing the text of the event detail.</value>
