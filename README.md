@@ -36,11 +36,11 @@ an 📰 *Event page* and 🎫 *Tickets* links 📡 - and an 🖼 *Image*.
 
 ### Scrape Job
 Every [event detail](#event-details) is represented as a *Scrape Job*, in which you tell FOMOcal how to
-- 🥢 [Pick the element](#selecting-elements) holding the text to extract - from within the event container by default,
+- 🥢 [Pick the element](#-selecting-elements) holding the text to extract - from within the event container by default,
 though selecting from the outside is possible
-- ⚗ [Extract text from it](#extracting-text)
-- 🧹 [Clean it up](#cleaning-up-extracted-text) and
-- ♻ [Convert it into a different type](#converting-extracted-text) if necessary.
+- ⚗ [Extract text from it](#-extracting-text)
+- 🧹 [Clean it up](#-cleaning-up-extracted-text) and
+- ♻ [Convert it into a different type](#-converting-extracted-text) if necessary.
 
 ### 🥢 Selecting elements
 Tell FOMOcal which element to pick using either a [CSS](https://en.wikipedia.org/wiki/CSS#Selector)
@@ -78,7 +78,7 @@ or [`document.evaluate('//xpath/selector', document, null, XPathResult.ORDERED_N
 depending on your chosen selector syntax.
 
 ### ⚗ Extracting text
-You can get the text of a [selected element](#selecting-elements) from either
+You can get the text of a [selected element](#-selecting-elements) from either
 - an [**Attribute**](https://en.wikipedia.org/wiki/HTML_attribute) you specify,
 - the full text content (including that of child nodes) by default - or
 - the text content of only the selected node **ignoring nested text**, i.e. without text of
