@@ -48,14 +48,14 @@ public class ScrapeJob
             if (Selector.IsSignificant()) node = node?.QuerySelector(Selector!);
             if (node == null) return null;
 
-            var value = Attribute.IsSignificant() ? node.GetAttribute(Attribute!)
+            var text = Attribute.IsSignificant() ? node.GetAttribute(Attribute!)
                 : IgnoreNestedText ? node.ChildNodes.Where(n => n.NodeType == NodeType.Text).Select(n => n.TextContent.Trim()).LineJoin()
                 : node.TextContent.Trim();
 
-            if (value.IsNullOrWhiteSpace()) return null;
-            value = value.NormalizeWhitespace();
-            if (Replace.IsSignificant()) value = value.ApplyReplacements(Replacements);
-            return Match.IsSignificant() ? ApplyRegex(value!, Match!) : value;
+            if (text.IsNullOrWhiteSpace()) return null;
+            text = text.NormalizeWhitespace();
+            if (Replace.IsSignificant()) text = text.ApplyReplacements(Replacements);
+            return Match.IsSignificant() ? ApplyRegex(text!, Match!) : text;
         }
         catch (Exception ex)
         {
