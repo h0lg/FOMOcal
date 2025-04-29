@@ -123,7 +123,7 @@ Event details may be of a data type other than text.
 Currently, the only one where this matters and is used is the event 📆 *Date*.
 
 > This is necessary because FOMOcal uses it to sort the event list and decide which events are past and hide them.
-For that purpose, the text representations different program pages use need to be converted into a `date` type
+For that purpose, the text representations different program pages use, need to be converted into a `date` type
 to be comparable to other `date`s. Otherwise, only alphabetic sorting would be supported -
 and you wouldn't like the result of that when mixing formats from different pages like `Sa, 26. April` and `26. April`.
 
@@ -136,7 +136,10 @@ date format and [culture](https://en.wikipedia.org/wiki/Language_code) to conver
 ## What do I need?
 
 To run FOMOcal, make sure you have [.NET 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0/runtime) installed.
+On Windows 10+, chances are you have it already. Try installing it if FOMOcal doesn't run without.
 
+Look for the latest build for your Operating System in the Assets of the [latest release](https://github.com/h0lg/FOMOcal/releases/latest).
+E.g. If you're on Windows 10 or higher, try the `*.win10-x64.zip` download.
 
 ## What's this about?
 
