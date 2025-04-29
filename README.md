@@ -158,7 +158,7 @@ This app is **intended for you, the patron of the fringe side of music** - to pi
 Lend those cool little local spots a hand by promoting their events - that way keeping them and your scene alive,
 bringing people together for some good music and hopefully more great bands into your town in the future.
 
-With FOMOcal you can help to carry your scene by **sharing relevant venues and their events in easily digestable formats**.
+With FOMOcal you can support different scenes by **sharing relevant venues and their events in easily digestable formats**.
 Go figure out how to get event info from the web page of a concert location and share it.
 Or curate a list of shows over the next few months for the fine lads and lasses yourself.
 FOMOcal assumes you have no clue how web pages are built and tries to give you the tools -
