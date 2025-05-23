@@ -91,13 +91,14 @@ public class ScrapeJob
 
     public bool Equals(ScrapeJob? other) =>
         other is not null &&
-        Selector == other.Selector &&
-        Attribute == other.Attribute &&
         Closest == other.Closest &&
-        Match == other.Match &&
-        IgnoreNestedText == other.IgnoreNestedText;
+        Selector == other.Selector &&
+        IgnoreNestedText == other.IgnoreNestedText &&
+        Attribute == other.Attribute &&
+        Replace == other.Replace &&
+        Match == other.Match;
 
-    public override int GetHashCode() => HashCode.Combine(Selector, Closest, IgnoreNestedText, Attribute, Match);
+    public override int GetHashCode() => HashCode.Combine(Closest, Selector, IgnoreNestedText, Attribute, Replace, Match);
 
     public class Error : Exception
     {
