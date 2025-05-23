@@ -10,6 +10,7 @@ public partial class AutomatedEventPageView : WebView
     const string interopMessagePrefix = "https://fomocal.",
         eventsLoaded = interopMessagePrefix + "events.loaded",
         elementPicked = interopMessagePrefix + "element.picked",
+        elementPickedSelector = "selector",
         scriptApi = "FOMOcal.", picking = scriptApi + "picking.", waitForSelector = scriptApi + "waitForSelector.";
 
     private readonly Venue venue;
@@ -104,7 +105,7 @@ public partial class AutomatedEventPageView : WebView
         else if (args.Url.StartsWith(elementPicked))
         {
             var query = HttpUtility.ParseQueryString(args.Url.Split('?')[1]);
-            PickedSelector?.Invoke(query["selector"]!);
+            PickedSelector?.Invoke(query[elementPickedSelector]!);
         }
     }
 
@@ -126,7 +127,9 @@ public partial class AutomatedEventPageView : WebView
         if (PickedSelector != null)
         {
             script += await pickingScript.Value; // load script with API
-            script += $"{picking}init(selector => {{ {NavigateTo($"`{elementPicked}?selector=${{selector}}`")} }});";
+            const string selectorArg = "selector";
+            string navigation = NavigateTo($"`{elementPicked}?{elementPickedSelector}=${{{selectorArg}}}`");
+            script += $"{picking}init({selectorArg} => {{ {navigation} }});";
         }
 
         await EvaluateJavaScriptAsync(script);
