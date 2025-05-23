@@ -318,7 +318,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 TextEntry("date format", nameof(Format), HelpTexts.DateScrapeJobFormat),
                 TextEntry("culture", nameof(Culture), HelpTexts.DateScrapeJobCulture));
 
-            foreach (Microsoft.Maui.Controls.View child in children)
+            foreach (var child in children.Cast<Microsoft.Maui.Controls.View>())
             {
                 child.Margins(left: 10);
                 form.Children.Add(child);
@@ -368,7 +368,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 if (e.PropertyName == hasError)
                 {
                     bool hasErr = HasError(hasErrorProperty, source);
-                    foreach (Label label in list.Children) SetItemClass(label, hasErr);
+                    foreach (var label in list.Children.Cast<Label>()) SetItemClass(label, hasErr);
                 }
             };
 
