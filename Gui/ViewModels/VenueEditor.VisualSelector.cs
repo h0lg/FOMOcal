@@ -169,7 +169,7 @@ partial class VenueEditor
 
         private void AppendSelectedQuery()
         {
-            var xpathMatch = FomoCal.ScrapeJob.XpathSelectorPattern.Match(model.visualSelectorHost!.Text ?? "");
+            var xpathMatch = FomoCal.ScrapeJob.XpathSelectorPattern().Match(model.visualSelectorHost!.Text ?? "");
             string normalized = selectedQuery.NormalizeWhitespace();
 
             if (model.selectorOptions.XPathSyntax)

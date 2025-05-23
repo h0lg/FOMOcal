@@ -123,7 +123,7 @@ internal static class Styles
     private static Style Get([CallerMemberName] string key = "") => (Style)Application.Current!.Resources[key];
 }
 
-internal static class ViewExtensions
+internal static partial class ViewExtensions
 {
     internal static T OnFocusChanged<T>(this T vis, Action<VisualElement, bool> setFocused) where T : VisualElement
     {
@@ -180,9 +180,8 @@ internal static class ViewExtensions
         return label;
     }
 
-    private static readonly Regex linkRegex = new(@"\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)", RegexOptions.Compiled),
-        headerRegex = new(@"^(#+)\s+(.*)", RegexOptions.Compiled); // e.g. # Heading
-
+    [GeneratedRegex(@"\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)")] private static partial Regex LinkRegex();
+    [GeneratedRegex(@"^(#+)\s+(.*)")] private static partial Regex HeaderRegex(); // e.g. # Heading
     private const string footerPrefix = "^^";
 
     internal static FormattedString ParseMarkdown(this string text)
@@ -209,7 +208,7 @@ internal static class ViewExtensions
             }
 
             // Detect headers
-            var headerMatch = headerRegex.Match(trimmedLine);
+            var headerMatch = HeaderRegex().Match(trimmedLine);
 
             if (headerMatch.Success)
             {
@@ -236,7 +235,7 @@ internal static class ViewExtensions
         {
             int lastIndex = 0;
 
-            foreach (Match match in linkRegex.Matches(text))
+            foreach (Match match in LinkRegex().Matches(text))
             {
                 // Text before link
                 if (match.Index > lastIndex) target.Spans.Add(new Span

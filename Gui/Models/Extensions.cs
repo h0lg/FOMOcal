@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace FomoCal;
 
-internal static class StringExtensions
+internal static partial class StringExtensions
 {
     internal static bool IsNullOrWhiteSpace(this string? str) => string.IsNullOrWhiteSpace(str);
     internal static bool IsSignificant(this string? str) => !string.IsNullOrWhiteSpace(str);
@@ -14,12 +14,12 @@ internal static class StringExtensions
     internal static string CsvEscape(this string? value)
         => value.IsNullOrWhiteSpace() ? "" : $"\"{value!.Replace("\"", "\"\"")}\"";
 
-    private static readonly Regex consecutiveWhitespace = new(@"\s+");
+    [GeneratedRegex(@"\s+")] private static partial Regex ConsecutiveWhitespace();
 
     internal static string NormalizeWhitespace(this string? input)
     {
         if (input.IsNullOrWhiteSpace()) return string.Empty;
-        string result = consecutiveWhitespace.Replace(input!, " "); // replace with single space
+        string result = ConsecutiveWhitespace().Replace(input!, " "); // replace with single space
         return result.Trim(); // trim leading/trailing whitespace
     }
 
@@ -32,7 +32,7 @@ internal static class StringExtensions
     }
 
     // Regex pattern to match "Pattern => Replacement, Pattern2 =>" pairs
-    private static readonly Regex inlinedReplacements = new(@"([^=\s]+)\s*=>\s*([^,]*)");
+    [GeneratedRegex(@"([^=\s]+)\s*=>\s*([^,]*)")] private static partial Regex InlinedReplacements();
 
     /// <summary>Explodes the inlined <paramref name="replacements"/> in the form "Pattern => Replacement, Pattern2 =>"
     /// into pairs for <see cref="ApplyReplacements(string, Dictionary{string, string})"/>.</summary>
@@ -42,7 +42,7 @@ internal static class StringExtensions
         Dictionary<string, string> exploded = [];
 
         // Use Regex to find all pattern-replacement pairs
-        foreach (Match match in inlinedReplacements.Matches(replacements))
+        foreach (Match match in InlinedReplacements().Matches(replacements))
         {
             string patternKey = match.Groups[1].Value;
             exploded[patternKey] = match.Groups[2].Value;
@@ -59,20 +59,22 @@ internal static class StringExtensions
 
     internal static string RemoveJsComments(this string code)
     {
-        var pattern = @"
-            (""(?:\\.|[^""\\])*"") |   # Double-quoted string
-            ('(?:\\.|[^'\\])*')    |   # Single-quoted string
-            (`(?:\\.|[^`\\])*`)    |   # Template literal (backticks)
-            (/[*](?s:.*?)?[*]/)    |   # Block comment
-            (//.*)                     # Line comment
-        ";
-
-        return Regex.Replace(code, pattern, m =>
+        return JsComments().Replace(code, m =>
         {
             // Keep strings and template literals, remove comments
             return m.Groups[1].Success || m.Groups[2].Success || m.Groups[3].Success ? m.Value : string.Empty;
-        }, RegexOptions.IgnorePatternWhitespace);
+        });
     }
+
+    private const string jsComments = """
+("(?:\\.|[^"\\])*") | # Double-quoted string
+('(?:\\.|[^'\\])*') | # Single-quoted string
+(`(?:\\.|[^`\\])*`) | # Template literal (backticks)
+(/[*](?s:.*?)?[*]/) | # Block comment
+(//.*)                # Line comment
+""";
+
+    [GeneratedRegex(jsComments, RegexOptions.IgnorePatternWhitespace)] private static partial Regex JsComments();
 }
 
 internal static class EnumerableExtensions

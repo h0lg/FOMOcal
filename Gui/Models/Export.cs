@@ -5,16 +5,16 @@ using FomoCal.Gui;
 
 namespace FomoCal;
 
-internal static class Export
+internal static partial class Export
 {
-    private static readonly Regex TimeRegex = new(@"(\d{1,2})(?::(\d{2}))?", RegexOptions.Compiled);
+    [GeneratedRegex(@"(\d{1,2})(?::(\d{2}))?", RegexOptions.Compiled)] private static partial Regex TimeRegex();
 
     private static bool TryParseStartTime(string? startTimeStr, out TimeSpan time)
     {
         time = default;
         if (startTimeStr.IsNullOrWhiteSpace()) return false;
 
-        var match = TimeRegex.Match(startTimeStr!);
+        var match = TimeRegex().Match(startTimeStr!);
         if (!match.Success) return false;
 
         if (int.TryParse(match.Groups[1].Value, out int hours))

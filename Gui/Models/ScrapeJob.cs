@@ -4,11 +4,11 @@ using AngleSharp.Dom;
 
 namespace FomoCal;
 
-public class ScrapeJob
+public partial class ScrapeJob
 {
-    internal static Regex XpathSelectorPattern = new("(?<=\\[xpath>\")(.+)(?=\"\\])");
     internal const string XPathSelectorFormat = "*[xpath>\"{0}\"]";
     internal static string FormatXpathSelector(string selector) => string.Format(XPathSelectorFormat, selector);
+    [GeneratedRegex("(?<=\\[xpath>\")(.+)(?=\"\\])")] internal static partial Regex XpathSelectorPattern();
 
     public string? Closest { get; set; }
     public string? Selector { get; set; }
