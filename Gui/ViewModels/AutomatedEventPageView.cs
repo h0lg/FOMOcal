@@ -86,7 +86,7 @@ public partial class AutomatedEventPageView : WebView
 
         if (args.Url.StartsWith(eventsLoaded))
         {
-            var loaded = args.Url.Substring(args.Url.IndexOf('?') + 1);
+            var loaded = args.Url[(args.Url.IndexOf('?') + 1)..];
 
             if (bool.TryParse(loaded, out var isLoaded))
             {

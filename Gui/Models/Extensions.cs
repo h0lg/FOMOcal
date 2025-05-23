@@ -58,13 +58,9 @@ internal static partial class StringExtensions
         => terms.Any(t => text.Contains(t, stringComparison));
 
     internal static string RemoveJsComments(this string code)
-    {
-        return JsComments().Replace(code, m =>
-        {
+        => JsComments().Replace(code,
             // Keep strings and template literals, remove comments
-            return m.Groups[1].Success || m.Groups[2].Success || m.Groups[3].Success ? m.Value : string.Empty;
-        });
-    }
+            m => m.Groups[1].Success || m.Groups[2].Success || m.Groups[3].Success ? m.Value : string.Empty);
 
     private const string jsComments = """
 ("(?:\\.|[^"\\])*") | # Double-quoted string
@@ -105,15 +101,8 @@ internal static class FileHelper
     }
 
     internal static void ShareFile(string filePath, string contentType, string title)
-    {
-        MainThread.BeginInvokeOnMainThread(async () =>
-        {
+        => MainThread.BeginInvokeOnMainThread(async () =>
             // see https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/data/share#share-a-file
-            await Share.Default.RequestAsync(new ShareFileRequest
-            {
-                Title = title,
-                File = new ShareFile(filePath, contentType)
-            });
-        });
-    }
+            await Share.Default.RequestAsync(
+                new ShareFileRequest { Title = title, File = new ShareFile(filePath, contentType) }));
 }

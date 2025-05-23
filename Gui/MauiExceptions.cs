@@ -40,7 +40,7 @@
             Android.Runtime.AndroidEnvironment.UnhandledExceptionRaiser += (sender, args) =>
             {
                 args.Handled = true;
-                UnhandledException?.Invoke(sender!, new UnhandledExceptionEventArgs(args.Exception, true));
+                UnhandledException?.Invoke(sender, new UnhandledExceptionEventArgs(args.Exception, true));
             };
 
 #elif WINDOWS

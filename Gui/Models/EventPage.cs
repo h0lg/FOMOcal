@@ -65,9 +65,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
                 var url = nextPage.HyperReference(href!);
 
                 if (browsingContext != null)
-                {
                     Loading = browsingContext.OpenAsync(url)!;
-                }
                 else
                 {
                     loader!.Source = url.ToString();

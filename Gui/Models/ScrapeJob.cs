@@ -85,7 +85,7 @@ public partial class ScrapeJob
 
     protected static string? ApplyRegex(string input, string pattern)
     {
-        var match = System.Text.RegularExpressions.Regex.Match(input, pattern);
+        var match = Regex.Match(input, pattern);
         return match.Success ? match.Value : null;
     }
 
@@ -104,7 +104,7 @@ public partial class ScrapeJob
 
     public class Error : Exception
     {
-        public Error() : base() { }
+        public Error() { }
         public Error(string? message) : base(message) { }
         public Error(string? message, Exception? innerException) : base(message, innerException) { }
     }
