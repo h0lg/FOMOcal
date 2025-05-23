@@ -1,0 +1,10 @@
+﻿[*.cs]
+
+# IDE0011: Add braces
+csharp_prefer_braces = false
+
+# IDE0130: Namespace does not match folder structure - to suppress warnings about files in Models not having the matching namespace for the Gui project
+dotnet_diagnostic.IDE0130.severity = none
+
+# IDE0061: Use block body for local function
+csharp_style_expression_bodied_local_functions = true
