@@ -75,7 +75,7 @@ internal static class Export
         }
 
         sb.AppendLine("END:VCALENDAR");
-        await ExportFile("iCalendar", contents: sb.ToString(), extension: "ical", contentType: "text/calendar");
+        await ExportFile("iCalendar", contents: sb.ToString(), extension: "ics", contentType: "text/calendar");
     }
 
     internal static async Task ExportToCsv(this IEnumerable<Event> events)
