@@ -19,8 +19,8 @@ internal static partial class Export
 
         if (int.TryParse(match.Groups[1].Value, out int hours))
         {
-            int minutes = 0;
-            int.TryParse(match.Groups[2].Value, out minutes);
+            string minutesGroup = match.Groups[2].Value;
+            var minutes = minutesGroup.IsSignificant() && int.TryParse(minutesGroup, out int mins) ? mins : 0;
             time = new TimeSpan(hours, minutes, 0); // Assume full hour if no minutes are given
             return true;
         }
@@ -42,8 +42,9 @@ internal static partial class Export
             sb.AppendLine($"SUMMARY:{evt.Name}");
 
             // construct start time with Date and optional StartTime or DoorsTime, defaulting to midnight
-            TryParseStartTime(evt.StartTime, out TimeSpan startTime);
-            if (startTime == default) TryParseStartTime(evt.DoorsTime, out startTime);
+            var startTime = TryParseStartTime(evt.StartTime, out TimeSpan start) ? start
+                : TryParseStartTime(evt.DoorsTime, out TimeSpan doors) ? doors : default;
+
             var localTime = evt.Date.Date + startTime;
             DateTime.SpecifyKind(localTime, DateTimeKind.Local); // interpret time as local, but export UTC
             sb.AppendLine($"DTSTART:{localTime.ToUniversalTime():yyyyMMddTHHmmssZ}");
