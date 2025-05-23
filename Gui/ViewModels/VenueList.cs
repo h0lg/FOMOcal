@@ -130,7 +130,7 @@ public partial class VenueList : ObservableObject
         var errors = await RefreshEvents(venue);
         RefreshList();
         await SaveVenues();
-        if (errors.Count > 0) await WriteErrorReportAsync(ReportErrors(errors, venue));
+        if (errors.Length > 0) await WriteErrorReportAsync(ReportErrors(errors, venue));
     }
 
     [RelayCommand]
@@ -141,7 +141,7 @@ public partial class VenueList : ObservableObject
         RefreshList();
         await SaveVenues();
 
-        var scrapesWithErrors = refreshs.Where(r => r.task.Result.Count > 0).ToArray();
+        var scrapesWithErrors = refreshs.Where(r => r.task.Result.Length > 0).ToArray();
 
         if (scrapesWithErrors.Length > 0)
         {
@@ -183,9 +183,9 @@ public partial class VenueList : ObservableObject
         }
     }
 
-    private async Task<List<Exception>> RefreshEvents(Venue venue)
+    private async Task<Exception[]> RefreshEvents(Venue venue)
     {
-        (HashSet<Event> events, List<Exception> errors) = await scraper.ScrapeVenueAsync(venue);
+        (HashSet<Event> events, Exception[] errors) = await scraper.ScrapeVenueAsync(venue);
         venue.LastRefreshed = DateTime.Now;
         EventsScraped?.Invoke(venue, events); // notify subscribers
         return errors;
@@ -193,7 +193,7 @@ public partial class VenueList : ObservableObject
 
     private Task SaveVenues() => venueRepo.SaveCompleteAsync(Venues.ToHashSet());
 
-    private static string ReportErrors(List<Exception> errors, Venue venue)
+    private static string ReportErrors(Exception[] errors, Venue venue)
         => errors.Select(ex => ex.ToString())
             .Prepend("Scraping " + venue.Name + " " + venue.ProgramUrl)
             .Join(ErrorReport.OutputSpacing);

@@ -33,7 +33,7 @@ public sealed partial class Scraper : IDisposable
     }
 
     /// <summary>Scrapes <see cref="Event"/>s from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/>.</summary>
-    public async Task<(HashSet<Event> events, List<Exception> errors)> ScrapeVenueAsync(Venue venue)
+    public async Task<(HashSet<Event> events, Exception[] errors)> ScrapeVenueAsync(Venue venue)
     {
         HashSet<Event> events = [];
         List<Exception> errors = [];
@@ -62,7 +62,7 @@ public sealed partial class Scraper : IDisposable
             eventPage.Dispose();
         }
 
-        return (events, errors);
+        return (events, errors.ToArray());
     }
 
     private static bool ScrapeEvents(Venue venue, HashSet<Event> events, List<Exception> errors, DomDoc document)
