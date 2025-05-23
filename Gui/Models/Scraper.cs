@@ -5,7 +5,7 @@ using DomDoc = AngleSharp.Dom.IDocument;
 
 namespace FomoCal;
 
-public sealed class Scraper : IDisposable
+public sealed partial class Scraper : IDisposable
 {
     private readonly IBrowsingContext context;
     private Layout? topLayout;
