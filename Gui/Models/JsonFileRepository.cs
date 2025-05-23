@@ -22,7 +22,7 @@ public class JsonFileStore(string storagePath)
 {
     private static readonly SemaphoreSlim locker = new(1, 1);
 
-    private static readonly JsonSerializerOptions jsonOptions = new()
+    internal static readonly JsonSerializerOptions JsonOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
         WriteIndented = true,
@@ -34,7 +34,7 @@ public class JsonFileStore(string storagePath)
     public async Task SaveAsync<T>(string fileName, T value)
     {
         string filePath = GetFilePath(fileName);
-        var json = JsonSerializer.Serialize(value, jsonOptions);
+        var json = JsonSerializer.Serialize(value, JsonOptions);
         await locker.WaitAsync();
 
         try { await File.WriteAllTextAsync(filePath, json); }
@@ -57,7 +57,7 @@ public class JsonFileStore(string storagePath)
     internal static async Task<T?> DeserializeFrom<T>(string filePath)
     {
         string json = await File.ReadAllTextAsync(filePath);
-        return JsonSerializer.Deserialize<T>(json, jsonOptions);
+        return JsonSerializer.Deserialize<T>(json, JsonOptions);
     }
 
     internal void ShareFile(string fileLabel, string fileName)

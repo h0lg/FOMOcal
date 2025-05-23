@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 
 namespace FomoCal;
@@ -59,7 +60,8 @@ public class ScrapeJob
         }
         catch (Exception ex)
         {
-            var error = new Error($"Failed while extracting value from closest '{Closest}' selector '{Selector}' Attribute '{Attribute}' Match '{Match}'", ex);
+            var jobJson = JsonSerializer.Serialize(this, JsonFileStore.JsonOptions);
+            var error = new Error($"Failed while extracting value from {element} using {jobJson}", ex);
             return AddOrThrow<string?>(errors, error);
         }
     }
