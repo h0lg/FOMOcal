@@ -6,7 +6,7 @@ namespace FomoCal;
 
 public static class ErrorReport
 {
-    public static string OutputSpacing = Environment.NewLine + Environment.NewLine;
+    internal static readonly string OutputSpacing = Environment.NewLine + Environment.NewLine;
 
     /// <summary>Uses <see cref="WriteAsync(string, string?)"/> to write the <paramref name="errorReport"/>
     /// and displays an alert on the current page offering to share or ignore it on success
