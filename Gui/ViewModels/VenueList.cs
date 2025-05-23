@@ -26,12 +26,7 @@ public partial class VenueList : ObservableObject
         this.venueRepo = venueRepo;
         this.scraper = scraper;
         this.navigation = navigation;
-
-        // Fire & forget (no need to await in constructor)
-        _ = LoadVenuesAsync().ContinueWith(async t =>
-        {
-            if (t.Exception != null) await ErrorReport.WriteAsyncAndShare(t.Exception.ToString(), "loading venues");
-        });
+        _ = LoadVenuesAsync(); // Fire & forget (no need to await in constructor)
     }
 
     private async Task LoadVenuesAsync()
@@ -43,6 +38,10 @@ public partial class VenueList : ObservableObject
         {
             var venues = await venueRepo.LoadAllAsync();
             RefreshList(venues);
+        }
+        catch (Exception ex)
+        {
+            await ErrorReport.WriteAsyncAndShare(ex.ToString(), "loading venues");
         }
         finally
         {
