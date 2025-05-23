@@ -185,6 +185,9 @@ public partial class VenueEditor : ObservableObject
             property.SetValue(venue.Event, editor.IsEmpty ? null : editor.ScrapeJob);
         }
 
+        foreach (var editor in scrapeJobEditors.Where(e => e != null))
+            editor.ResetInsignificantValues(); // to reduce noise in serialized JSON
+
         awaiter.SetResult(Actions.Saved);
     }
 

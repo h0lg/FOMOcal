@@ -26,7 +26,7 @@ public class JsonFileStore(string storagePath)
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
         WriteIndented = true,
-        Converters = { new IgnoreInsignificantStringConverter(), new JsonStringEnumConverter() }
+        Converters = { new JsonStringEnumConverter() }
     };
 
     private string GetFilePath(string fileName) => Path.Combine(storagePath, fileName + ".json");
@@ -62,16 +62,4 @@ public class JsonFileStore(string storagePath)
 
     internal void ShareFile(string fileLabel, string fileName)
         => Export.ShareFile(fileLabel, GetFilePath(fileName), MediaTypeNames.Application.Json);
-}
-
-public class IgnoreInsignificantStringConverter : JsonConverter<string>
-{
-    public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        => reader.TokenType == JsonTokenType.String ? reader.GetString() : null;
-
-    public override void Write(Utf8JsonWriter writer, string? value, JsonSerializerOptions options)
-    {
-        if (value.IsSignificant())
-            writer.WriteStringValue(value);
-    }
 }

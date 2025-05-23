@@ -264,6 +264,18 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
+    internal void ResetInsignificantValues()
+    {
+        foreach (var property in scrapeJobStringProperties)
+        {
+            var value = property.GetValue(this, null);
+            if (value == null) continue;
+
+            if (value is string str && !str.IsSignificant())
+                property.SetValue(this, null, null);
+        }
+    }
+
     public partial class View : VerticalStackLayout
     {
         private readonly Label help = new();
