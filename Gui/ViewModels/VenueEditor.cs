@@ -135,20 +135,24 @@ public partial class VenueEditor : ObservableObject
     private async void RevealMore()
     {
         await revealingMore.WaitAsync();
-        bool hasProgramUrl = venue.ProgramUrl.IsSignificant();
-        bool hasName = VenueName.IsSignificant();
 
-        if (programDocument != null && !hasName && programDocument.Title.IsSignificant())
+        try
         {
-            VenueName = programDocument.Title!;
-            hasName = true;
-        }
+            bool hasProgramUrl = venue.ProgramUrl.IsSignificant();
+            bool hasName = VenueName.IsSignificant();
 
-        ShowEventContainer = hasName && hasProgramUrl;
-        ShowRequiredEventFields = ShowEventContainer && EventSelector.IsSignificant();
-        ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValid && eventDate.IsValid;
-        if (ShowRequiredEventFields && previewedEvents == null) UpdateEventSelectorPreview();
-        revealingMore.Release();
+            if (programDocument != null && !hasName && programDocument.Title.IsSignificant())
+            {
+                VenueName = programDocument.Title!;
+                hasName = true;
+            }
+
+            ShowEventContainer = hasName && hasProgramUrl;
+            ShowRequiredEventFields = ShowEventContainer && EventSelector.IsSignificant();
+            ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValid && eventDate.IsValid;
+            if (ShowRequiredEventFields && previewedEvents == null) UpdateEventSelectorPreview();
+        }
+        finally { revealingMore.Release(); }
     }
 
     private void UpdateEventSelectorPreview()
