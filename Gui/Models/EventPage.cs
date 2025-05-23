@@ -48,7 +48,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     }
 
     internal bool HasMore() => venue.Event.LoadsMoreOnScrollDown()
-        || venue.Event.LoadsMoreOnNextPage() && GetNextPageElement() != null;
+        || (venue.Event.LoadsMoreOnNextPage() && GetNextPageElement() != null);
 
     internal async Task<DomDoc?> LoadMoreAsync()
     {
