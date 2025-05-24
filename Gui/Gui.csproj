@@ -31,7 +31,7 @@
     <ApplicationId>h0lg.FOMOcal.gui</ApplicationId>
 
     <!-- Versions -->
-    <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
+    <ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
 
     <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
@@ -87,8 +87,8 @@
     <PackageReference Include="AngleSharp.XPath" Version="2.0.5" />
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.60" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.70" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
   </ItemGroup>
 
   <!-- appends git commit hash to assembly informational version; from https://stackoverflow.com/a/45248069
