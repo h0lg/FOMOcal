@@ -1,5 +1,4 @@
-﻿
-using CommunityToolkit.Maui.Markup;
+﻿using CommunityToolkit.Maui.Markup;
 
 namespace FomoCal.Gui.ViewModels;
 

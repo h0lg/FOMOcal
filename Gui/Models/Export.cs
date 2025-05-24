@@ -110,5 +110,4 @@ internal static partial class Export
     private static string GetExportFilePath(string extension)
         => Path.Combine(MauiProgram.StoragePath, "exports",
             $"{AppInfo.Name} export {DateTime.Now:yyyy-MM-dd HH-mm-ss}.{extension}");
-
 }
