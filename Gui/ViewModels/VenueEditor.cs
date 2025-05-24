@@ -262,7 +262,7 @@ public partial class VenueEditor : ObservableObject
 
             var location = new Entry { Placeholder = "Location, contacts or other helpful info" }
                 .Bind(Entry.TextProperty,
-                    getter: static (VenueEditor vm) => vm.venue.Location,
+                    getter: static vm => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
             var loadingIndicator = new ActivityIndicator { IsRunning = true }

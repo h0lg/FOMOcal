@@ -224,7 +224,7 @@ partial class VenueEditor
         {
             /* eagerly subscribe to the SizeChanged of visuals influencing the required container height
              * for when ShowPickedSelector is true and it has dynamic height, see UpdateHeightAsync */
-            pickedSelectorScroller!.Content.SizeChanged += async (object? sender, EventArgs e) =>
+            pickedSelectorScroller!.Content.SizeChanged += async (sender, e) =>
             {
                 // exit handler early if height update is unnecessary
                 if (!visualSelector.IsVisible) return;

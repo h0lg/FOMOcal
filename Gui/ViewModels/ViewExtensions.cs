@@ -170,7 +170,7 @@ internal static partial class ViewExtensions
 
     internal static T OnTextChanged<T>(this T input, Action<TextChangedEventArgs> handle) where T : InputView
     {
-        input.TextChanged += (object? sender, TextChangedEventArgs e) => handle(e);
+        input.TextChanged += (sender, e) => handle(e);
         return input;
     }
 
