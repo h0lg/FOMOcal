@@ -14,7 +14,7 @@ public partial class VenueEditor : ObservableObject
     private readonly Scraper scraper;
     private readonly TaskCompletionSource<Actions?> awaiter;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
-    private readonly SemaphoreSlim revealingMore = new(1, 1);
+    private readonly Debouncer debouncedRevealMore;
     private Entry? visualSelectorHost;
 
     [ObservableProperty] public partial bool IsEventPageLoading { get; set; } = true;
@@ -106,6 +106,9 @@ public partial class VenueEditor : ObservableObject
         isDeletable = venue.ProgramUrl.IsSignificant();
         originalVenueName = venue.Name;
 
+        debouncedRevealMore = new(TimeSpan.FromMilliseconds(100), UndebouncedRevealMore,
+            async ex => await ErrorReport.WriteAsyncAndShare(ex.ToString(), "revealing more of the venue editor"));
+
         var evt = this.venue.Event;
         eventName = ScrapeJob("❗ Name", evt.Name, nameof(Venue.EventScrapeJob.Name));
         eventDate = ScrapeJob("📆 Date", evt.Date, nameof(Venue.EventScrapeJob.Date));
@@ -132,27 +135,23 @@ public partial class VenueEditor : ObservableObject
         return editor;
     }
 
-    private async void RevealMore()
+    private void RevealMore() => debouncedRevealMore.Run();
+
+    private void UndebouncedRevealMore()
     {
-        await revealingMore.WaitAsync();
+        bool hasProgramUrl = venue.ProgramUrl.IsSignificant();
+        bool hasName = VenueName.IsSignificant();
 
-        try
+        if (programDocument != null && !hasName && programDocument.Title.IsSignificant())
         {
-            bool hasProgramUrl = venue.ProgramUrl.IsSignificant();
-            bool hasName = VenueName.IsSignificant();
-
-            if (programDocument != null && !hasName && programDocument.Title.IsSignificant())
-            {
-                VenueName = programDocument.Title!;
-                hasName = true;
-            }
-
-            ShowEventContainer = hasName && hasProgramUrl;
-            ShowRequiredEventFields = ShowEventContainer && EventSelector.IsSignificant();
-            ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValid && eventDate.IsValid;
-            if (ShowRequiredEventFields && previewedEvents == null) UpdateEventSelectorPreview();
+            VenueName = programDocument.Title!;
+            hasName = true;
         }
-        finally { revealingMore.Release(); }
+
+        ShowEventContainer = hasName && hasProgramUrl;
+        ShowRequiredEventFields = ShowEventContainer && EventSelector.IsSignificant();
+        ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValid && eventDate.IsValid;
+        if (ShowRequiredEventFields && previewedEvents == null) UpdateEventSelectorPreview();
     }
 
     private void UpdateEventSelectorPreview()
