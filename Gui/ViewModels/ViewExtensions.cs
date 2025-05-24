@@ -59,7 +59,7 @@ internal static class Widgets
 
     internal static VerticalStackLayout VStack(double? spacing = null, params IView[] children)
     {
-        VerticalStackLayout layout = new();
+        VerticalStackLayout layout = [];
         if (spacing.HasValue) layout.Spacing = spacing.Value;
 
         foreach (var child in children)
@@ -70,7 +70,7 @@ internal static class Widgets
 
     internal static HorizontalStackLayout HStack(double? spacing = null, params IView[] children)
     {
-        HorizontalStackLayout layout = new();
+        HorizontalStackLayout layout = [];
         if (spacing.HasValue) layout.Spacing = spacing.Value;
 
         foreach (var child in children.Cast<View>())

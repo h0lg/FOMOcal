@@ -165,8 +165,8 @@ public partial class VenueEditor : ObservableObject
 
         try
         {
-            previewedEvents = programDocument.SelectEvents(venue).Skip(SkipEvents).Take(TakeEvents).ToArray();
-            PreviewedEventTexts = previewedEvents.Select(e => e.TextContent.NormalizeWhitespace()).ToArray();
+            previewedEvents = [.. programDocument.SelectEvents(venue).Skip(SkipEvents).Take(TakeEvents)];
+            PreviewedEventTexts = [.. previewedEvents.Select(e => e.TextContent.NormalizeWhitespace())];
             scrapeJobEditors.ForEach(e => e.UpdatePreview());
             EventSelectorHasError = false;
         }

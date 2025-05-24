@@ -53,7 +53,7 @@ public partial class VenueList : ObservableObject
         // Ensure UI updates on the main thread
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            venues ??= Venues.ToArray();
+            venues ??= [.. Venues];
             Venues.Clear();
 
             foreach (var venue in venues.OrderByDescending(v => v.LastRefreshed))

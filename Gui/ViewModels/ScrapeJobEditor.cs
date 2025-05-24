@@ -27,8 +27,8 @@ public partial class ScrapeJobEditor : ObservableObject
     private static readonly string[] scrapeJobStringPropertyNames = [nameof(Closest), nameof(Selector), nameof(Attribute), nameof(Replace), nameof(Match)];
     private static readonly string[] scrapeJobPropertyNames = [.. scrapeJobStringPropertyNames, nameof(IgnoreNestedText), nameof(Format), nameof(Culture)];
 
-    private static readonly PropertyInfo[] scrapeJobStringProperties = typeof(ScrapeJobEditor).GetProperties()
-        .Where(p => scrapeJobStringPropertyNames.Contains(p.Name)).ToArray();
+    private static readonly PropertyInfo[] scrapeJobStringProperties =
+        [.. typeof(ScrapeJobEditor).GetProperties().Where(p => scrapeJobStringPropertyNames.Contains(p.Name))];
 
     public string? Closest
     {
@@ -242,17 +242,17 @@ public partial class ScrapeJobEditor : ObservableObject
                 }
             }).ToArray();
 
-            Exception[] errors = results.Where(r => r.error != null).Select(r => r.error!).Distinct().ToArray();
+            Exception[] errors = [.. results.Where(r => r.error != null).Select(r => r.error!).Distinct()];
 
             if (errors.Length > 0)
             {
-                PreviewResults = errors.Select(ex => ex.Message).ToArray();
+                PreviewResults = [.. errors.Select(ex => ex.Message)];
                 HasErrors = true;
                 Validate();
             }
             else
             {
-                PreviewResults = results.Select(r => r.value).ToArray();
+                PreviewResults = [.. results.Select(r => r.value)];
                 HasErrors = false;
                 Validate();
             }
