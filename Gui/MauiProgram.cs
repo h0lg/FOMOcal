@@ -43,7 +43,7 @@ public static class MauiProgram
         /*  hide tick / check mark shown on Windows for CollectionView with SelectionMode Multiple,
             https://github.com/dotnet/maui/issues/16066#issuecomment-2058487452 */
         Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping(
-            "DisableMultiselectCheckbox", (handler, view) => handler.PlatformView.IsMultiSelectCheckBoxEnabled = false);
+            "DisableMultiselectCheckbox", (handler, _) => handler.PlatformView.IsMultiSelectCheckBoxEnabled = false);
 #endif
 
 #if DEBUG

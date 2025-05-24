@@ -290,7 +290,7 @@ public partial class VenueEditor : ObservableObject
             scrapeConfigInfo.TapGesture(() => help.FormattedText = scrapeConfigInfo.FormatTooltip());
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
-            selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help, async (vis, focused) =>
+            selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help, async (_, focused) =>
             {
                 if (focused) model.EventSelectorRelatedHasFocus = true;
                 else
@@ -357,7 +357,7 @@ public partial class VenueEditor : ObservableObject
             {
                 (Switch Switch, Grid Wrapper) toggle = Swtch(isToggledPropertyPath);
 
-                toggle.Switch.OnFocusChanged(async (vis, focused) =>
+                toggle.Switch.OnFocusChanged(async (_, focused) =>
                 {
                     if (focused) model.EventSelectorRelatedHasFocus = focused;
                     else

@@ -15,7 +15,7 @@ public partial class MainPage : ContentPage
         });
 
         VenueList venueList = new(venueRepo, scraper, Navigation);
-        venueList.EventsScraped += (venue, events) => eventList.RefreshWith(events);
+        venueList.EventsScraped += (_, events) => eventList.RefreshWith(events);
         venueList.VenueRenamed += eventList.RenameVenue;
         venueList.VenueDeleted += eventList.DeleteForVenue;
 

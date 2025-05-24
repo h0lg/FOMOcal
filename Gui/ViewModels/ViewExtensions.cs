@@ -267,7 +267,7 @@ internal static partial class ViewExtensions
         var animation = new Animation(v => view.HeightRequest = v, view.HeightRequest, endValue);
 
         animation.Commit(view, name: nameof(AnimateHeightRequest), length: duration, easing: Easing.CubicOut,
-            finished: (v, c) => tcs.SetResult(true));
+            finished: (_, _) => tcs.SetResult(true));
 
         return tcs.Task; // Await the completion of the animation
     }
