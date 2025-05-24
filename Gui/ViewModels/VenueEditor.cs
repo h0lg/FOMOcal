@@ -188,7 +188,7 @@ public partial class VenueEditor : ObservableObject
         foreach (var editor in scrapeJobEditors.Where(e => e != null))
             editor.ResetInsignificantValues(); // to reduce noise in serialized JSON
 
-        awaiter.SetResult(Actions.Saved);
+        SetActionTaken(Actions.Saved);
     }
 
     [RelayCommand]
@@ -198,7 +198,12 @@ public partial class VenueEditor : ObservableObject
             $"Are you sure you want to delete the venue {venue.Name}?",
             "Yes", "No");
 
-        if (isConfirmed) awaiter.SetResult(Actions.Deleted);
+        if (isConfirmed) SetActionTaken(Actions.Deleted);
+    }
+
+    private void SetActionTaken(Actions? action)
+    {
+        if (!awaiter.Task.IsCompleted) awaiter.SetResult(action);
     }
 
     internal enum Actions { Saved, Deleted }
@@ -421,7 +426,7 @@ public partial class VenueEditor : ObservableObject
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
-            if (!model.awaiter.Task.IsCompleted) model.awaiter.SetResult(null); // to signal cancellation
+            model.SetActionTaken(null); // to signal cancellation
         }
     }
 }
