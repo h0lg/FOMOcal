@@ -50,11 +50,11 @@ public class ScrapeJob
             if (node == null) return null;
 
             var text = Attribute.IsSignificant() ? node.GetAttribute(Attribute!)
-                : IgnoreNestedText ? node.ChildNodes.Where(n => n.NodeType == NodeType.Text).Select(n => n.TextContent.Trim()).LineJoin()
-                : node.TextContent.Trim();
+                : IgnoreNestedText ? node.ChildNodes.Where(n => n.NodeType == NodeType.Text).Select(n => n.TextContent).LineJoin()
+                : node.TextContent;
 
             if (text.IsNullOrWhiteSpace()) return null;
-            text = text.NormalizeWhitespace();
+            text = text.NormalizeWhitespace(); // trims text as well
             if (Replace.IsSignificant()) text = text.ApplyReplacements(Replacements);
             return Match.IsSignificant() ? ApplyRegex(text!, Match!) : text;
         }
