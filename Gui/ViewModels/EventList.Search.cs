@@ -12,7 +12,7 @@ partial class EventList
     private readonly RememberedStrings recentSearches = new("EventList.RecentSearches", "🔍");
 
     [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
-    [ObservableProperty] public partial ObservableCollection<Event> FilteredEvents { get; private set; } = [];
+    [ObservableProperty] public partial ObservableCollection<EventView> FilteredEvents { get; private set; } = [];
     [ObservableProperty] public partial ObservableCollection<string> RecentSearches { get; private set; }
 
     private void ApplyFilter()
