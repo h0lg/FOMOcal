@@ -244,6 +244,7 @@ public partial class VenueList : ObservableObject
         }
     }
 
+    /// <summary>Wraps the <see cref="View"/> in a stand-alone Page for narrow devices that use AppShell.</summary>
     public partial class Page : ContentPage
     {
         public Page(JsonFileRepository<Venue> venueRepo, Scraper scraper, EventRepository eventRepo)
