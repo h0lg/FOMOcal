@@ -184,7 +184,8 @@ public partial class EventList : ObservableObject
 
                 var details = VStack(5,
                     OptionalTextLabel(nameof(Event.Description)).Wrap(),
-                    OpenUrlButton("📰 more 📡", nameof(Event.Url), model).End());
+                    OpenUrlButton("📰 more 📡", nameof(Event.Url), model).End(),
+                    OpenUrlButton("⛏ from 📡", nameof(Event.ScrapedFrom), model).End());
 
                 var location = HStack(5,
                     BndLbl(nameof(Event.Venue), stringFormat: "🏟 {0}"),

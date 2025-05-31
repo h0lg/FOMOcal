@@ -94,6 +94,7 @@ public sealed partial class Scraper : IDisposable
                 TicketUrl = venue.Event.TicketUrl?.GetUrl(eventElement, errors)
             };
 
+            if (scrapedEvent.Url == null) scrapedEvent.ScrapedFrom = venue.ProgramUrl; // for reference
             addedAny = events.Add(scrapedEvent) || addedAny;
         }
 

@@ -24,6 +24,10 @@ public class Event
     /// <summary>The time the event was scraped from the <see cref="Venue"/>.</summary>
     public required DateTime Scraped { get; set; }
 
+    /// <summary>The <see cref="Venue.ProgramUrl"/> the event was scraped from,
+    /// set for reference if <see cref="Url"/> is null.</summary>
+    public string? ScrapedFrom { get; set; }
+
     public string? PresalePrice { get; set; }
     public string? DoorsPrice { get; set; }
     public string? TicketUrl { get; set; }
