@@ -153,7 +153,10 @@ partial class VenueEditor
                 Children = {
                     Grd(cols: [Star], rows: [Auto, Star], spacing: 0,
                         pickedSelectorScroller,
-                        pageView.BindVisible(showPickedSelector, converter: Converters.Not).Row(3)).LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
+                        pageView
+                            .ToolTip("You may find it useful to zoom  the page using [Ctrl] + MouseWheel or try the 'Inspect' tool from the right-click context menu.")
+                            .BindVisible(showPickedSelector, converter: Converters.Not).Row(3))
+                        .LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
                     Btn("🗙").TapGesture(HideVisualSelector).Size(30, 30).TranslationY(-35) // float half above upper boundary
                         .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, autosized
                 }
