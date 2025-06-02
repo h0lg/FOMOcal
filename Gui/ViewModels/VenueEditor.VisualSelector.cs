@@ -13,7 +13,7 @@ partial class VenueEditor
     private readonly SelectorOptions selectorOptions = new() { SemanticClasses = true, LayoutClasses = true };
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial string? PickedSelector { get; set; }
     [ObservableProperty] public partial bool EnablePicking { get; set; } = true;
-    [ObservableProperty] public partial bool ShowPickedSelector { get; set; }
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial bool ShowSelectorOptions { get; set; }
     [ObservableProperty] public partial bool ShowSelectorDetail { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial bool IncludePickedSelectorPath { get; set; }
 
@@ -21,7 +21,8 @@ partial class VenueEditor
     {
         get
         {
-            if (IncludePickedSelectorPath || PickedSelector.IsNullOrWhiteSpace()) return PickedSelector;
+            if (PickedSelector.IsNullOrWhiteSpace()) return null;
+            if (IncludePickedSelectorPath) return ShowSelectorOptions ? PickedSelector : PickedSelector.NormalizeWhitespace();
             return AutomatedEventPageView.GetLeafSelector(PickedSelector!, selectorOptions.XPathSyntax);
         }
     }
@@ -77,24 +78,24 @@ partial class VenueEditor
             };
 
             const string displayedSelector = nameof(DisplayedSelector),
-                showPickedSelector = nameof(ShowPickedSelector);
+                showSelectorOptions = nameof(ShowSelectorOptions);
 
             Label help = new();
 
             var controlsAndInstructions = HWrap(5,
                 Swtch(nameof(EnablePicking)).Wrapper
-                    .BindVisible(showPickedSelector, converter: Converters.Not)
+                    .BindVisible(showSelectorOptions, converter: Converters.Not)
                     .InlineTooltipOnFocus(HelpTexts.EnablePicking, help),
                 Lbl("Tap a page element to pick it.").TapGesture(TogglePicking)
-                    .BindVisible(showPickedSelector, converter: Converters.Not),
+                    .BindVisible(showSelectorOptions, converter: Converters.Not),
                 Btn("⿴ Pick its container").TapGesture(PickParent)
                     .BindVisible(new Binding(displayedSelector, converter: Converters.IsSignificant),
-                        Converters.And, new Binding(showPickedSelector, converter: Converters.Not)),
+                        Converters.And, new Binding(showSelectorOptions, converter: Converters.Not)),
                 Lbl("if you need.")
                     .BindVisible(new Binding(displayedSelector, converter: Converters.IsSignificant),
-                        Converters.And, new Binding(showPickedSelector, converter: Converters.Not)),
+                        Converters.And, new Binding(showSelectorOptions, converter: Converters.Not)),
                 new Button().BindIsVisibleToValueOf(displayedSelector).TapGesture(TogglePickedSelector)
-                    .Bind(Button.TextProperty, showPickedSelector,
+                    .Bind(Button.TextProperty, showSelectorOptions,
                         convert: static (bool showSelector) => showSelector ? "⏮ Back to ⛶ picking an element" : "🥢 Choose a selector next ⏭"));
 
             var xPathSyntax = new Switch() // enables switching between CSS and XPath syntax to save space
@@ -122,25 +123,25 @@ partial class VenueEditor
                 Btn("➕ append").TapGesture(AppendSelectedQuery)
                     .InlineTooltipOnFocus(HelpTexts.AppendSelectedQuery, help),
                 Lbl("them to your query to try them out."),
-                Btn("🍜 selector options").BindVisible(showPickedSelector).TapGesture(ToggleSelectorDetail)
+                Btn("🍜 selector options").BindVisible(showSelectorOptions).TapGesture(ToggleSelectorDetail)
                     .InlineTooltipOnFocus(HelpTexts.ToggleSelectorDetail, help)];
 
             foreach (var view in appendSelection)
-                controlsAndInstructions.AddChild(view.BindVisible(showPickedSelector));
+                controlsAndInstructions.AddChild(view.BindVisible(showSelectorOptions));
 
             foreach (var view in selectorDetails)
                 controlsAndInstructions.AddChild(
-                    view.BindVisible(new Binding(showPickedSelector),
+                    view.BindVisible(new Binding(showSelectorOptions),
                         Converters.And, new Binding(nameof(ShowSelectorDetail))));
 
-            Editor selectorDisplay = SelectorDisplay(displayedSelector).BindVisible(showPickedSelector)
+            Editor selectorDisplay = SelectorDisplay(displayedSelector)
                 .InlineTooltipOnFocus(HelpTexts.PickedSelectorDisplay, help);
 
             pickedSelectorScroller = new()
             {
                 Content = Grd(cols: [Star], rows: [Auto, Auto, Auto], spacing: 0,
                 controlsAndInstructions.View,
-                help.BindVisible(showPickedSelector).Row(1), selectorDisplay.Row(2))
+                help.BindVisible(showSelectorOptions).Row(1), selectorDisplay.Row(2))
             };
 
             SetupAutoSizing();
@@ -155,7 +156,7 @@ partial class VenueEditor
                         pickedSelectorScroller,
                         pageView
                             .ToolTip("You may find it useful to zoom  the page using [Ctrl] + MouseWheel or try the 'Inspect' tool from the right-click context menu.")
-                            .BindVisible(showPickedSelector, converter: Converters.Not).Row(3))
+                            .BindVisible(showSelectorOptions, converter: Converters.Not).Row(3))
                         .LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
                     Btn("🗙").TapGesture(HideVisualSelector).Size(30, 30).TranslationY(-35) // float half above upper boundary
                         .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, autosized
@@ -178,7 +179,7 @@ partial class VenueEditor
 
         private void TogglePicking() => model.EnablePicking = !model.EnablePicking;
         private async void PickParent() => await pageView!.PickParent();
-        private void TogglePickedSelector() => model.ShowPickedSelector = !model.ShowPickedSelector;
+        private void TogglePickedSelector() => model.ShowSelectorOptions = !model.ShowSelectorOptions;
         private void ToggleSelectorDetail() => model.ShowSelectorDetail = !model.ShowSelectorDetail;
 
         private void AppendSelectedQuery()
@@ -204,7 +205,7 @@ partial class VenueEditor
         private async Task ShowVisualSelectorForAsync(Entry entry, string selector, bool descendant)
         {
             // reset UI state to allow picking an element
-            model.ShowPickedSelector = false;
+            model.ShowSelectorOptions = false;
             model.ShowSelectorDetail = false;
             model.EnablePicking = true;
 
@@ -265,7 +266,7 @@ partial class VenueEditor
                             var maxHeight = Height - 100;
                             double height = 0;
 
-                            if (model.ShowPickedSelector) // calculate dynamic height based on measured selectorControls sizes
+                            if (model.ShowSelectorOptions) // calculate dynamic height based on measured selectorControls sizes
                             {
                                 height = pickedSelectorScroller!.Content.Height;
 
