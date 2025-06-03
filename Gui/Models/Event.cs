@@ -51,7 +51,7 @@ internal static class EventExtensions
         => allEvents.RemoveWhere(e => e.Venue == oldName);
 }
 
-public class EventRepository(JsonFileStore store, string fileName) : JsonFileRepository<Event>(store, fileName)
+public class EventRepository(JsonFileStore store, string fileName) : SetJsonFileRepository<Event>(store, fileName)
 {
     internal async Task RenameVenueAsync(string oldName, string newName)
     {

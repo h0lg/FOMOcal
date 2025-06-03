@@ -7,7 +7,7 @@ namespace FomoCal.Gui;
 
 public partial class MainPage : ContentPage
 {
-    public MainPage(JsonFileRepository<Venue> venueRepo, Scraper scraper, EventList eventList)
+    public MainPage(SetJsonFileRepository<Venue> venueRepo, Scraper scraper, EventList eventList)
     {
         _ = eventList.LoadEvents().ContinueWith(async t =>
         {

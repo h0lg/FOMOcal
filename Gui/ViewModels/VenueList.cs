@@ -9,7 +9,7 @@ namespace FomoCal.Gui.ViewModels;
 
 public partial class VenueList : ObservableObject
 {
-    private readonly JsonFileRepository<Venue> venueRepo;
+    private readonly SetJsonFileRepository<Venue> venueRepo;
     private readonly Scraper scraper;
     private readonly INavigation navigation;
 
@@ -21,7 +21,7 @@ public partial class VenueList : ObservableObject
     internal event Action<string, string>? VenueRenamed;
     internal event Action<string>? VenueDeleted;
 
-    public VenueList(JsonFileRepository<Venue> venueRepo, Scraper scraper, INavigation navigation)
+    public VenueList(SetJsonFileRepository<Venue> venueRepo, Scraper scraper, INavigation navigation)
     {
         this.venueRepo = venueRepo;
         this.scraper = scraper;
@@ -247,7 +247,7 @@ public partial class VenueList : ObservableObject
     /// <summary>Wraps the <see cref="View"/> in a stand-alone Page for narrow devices that use AppShell.</summary>
     public partial class Page : ContentPage
     {
-        public Page(JsonFileRepository<Venue> venueRepo, Scraper scraper, EventRepository eventRepo)
+        public Page(SetJsonFileRepository<Venue> venueRepo, Scraper scraper, EventRepository eventRepo)
         {
             Title = "Venues";
             VenueList venueList = new(venueRepo, scraper, Navigation);

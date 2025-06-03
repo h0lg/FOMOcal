@@ -28,7 +28,7 @@ public static class MauiProgram
         JsonFileStore jsonFileStore = new(StoragePath); // handles raw file read/write and de/serialization
 
         // register JSON file Repositories with file name for each type
-        builder.Services.AddSingleton(_ => new JsonFileRepository<Venue>(jsonFileStore, "venues"));
+        builder.Services.AddSingleton(_ => new SetJsonFileRepository<Venue>(jsonFileStore, "venues"));
         builder.Services.AddSingleton(_ => new EventRepository(jsonFileStore, "events"));
 
         builder.Services.AddSingleton<Scraper>(); // just to have it disposed of properly by the service provider

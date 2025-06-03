@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace FomoCal;
 
-public class JsonFileRepository<T>(JsonFileStore store, string fileName) where T : class
+public class SetJsonFileRepository<T>(JsonFileStore store, string fileName) where T : class
 {
     public async Task<HashSet<T>> LoadAllAsync() => await store.LoadAsync<HashSet<T>>(fileName) ?? [];
     public Task SaveCompleteAsync(ISet<T> items) => store.SaveAsync(fileName, items);
