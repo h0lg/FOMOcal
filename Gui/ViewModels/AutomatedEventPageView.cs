@@ -61,10 +61,10 @@ public partial class AutomatedEventPageView : WebView
     private static readonly JsonSerializerOptions jsonOptionSerializerOptions
         = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-    internal void SetPickedSelectorDetail(PickedSelectorOptions selectorDetail)
+    internal Task SetPickedSelectorDetail(PickedSelectorOptions selectorDetail)
     {
         var json = JsonSerializer.Serialize(selectorDetail, jsonOptionSerializerOptions);
-        EvaluateJavaScriptAsync($"{picking}withOptions({json});");
+        return EvaluateJavaScriptAsync($"{picking}withOptions({json});");
     }
 
     internal Task ClickElementToLoadMore(string selector)

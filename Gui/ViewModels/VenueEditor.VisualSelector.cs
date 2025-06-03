@@ -4,9 +4,9 @@ using FomoCal.Gui.Resources;
 using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
-using SelectorOptions = FomoCal.Gui.ViewModels.AutomatedEventPageView.PickedSelectorOptions;
 
 namespace FomoCal.Gui.ViewModels;
+using SelectorOptionsRepo = SingletonJsonFileRepository<VenueEditor.SelectorOptions>;
 
 partial class VenueEditor
 {
@@ -27,16 +27,21 @@ partial class VenueEditor
         }
     }
 
+    internal partial class SelectorOptions : AutomatedEventPageView.PickedSelectorOptions
+    {
+        public bool IncludePickedSelectorPath { get; set; }
+    }
+
     partial class Page
     {
         private readonly AbsoluteLayout visualSelector;
         private AutomatedEventPageView? pageView;
         private string? selectedQuery;
+        private SelectorOptionsRepo? selectorOptionsRepo;
 
         private AbsoluteLayout CreateVisualSelector()
         {
             pageView = new(model.venue);
-            model.selectorOptions.PropertyChanged += (o, e) => pageView.SetPickedSelectorDetail(model.selectorOptions);
 
             pageView.HtmlWithEventsLoaded += async html =>
             {
@@ -66,12 +71,12 @@ partial class VenueEditor
 
             pageView.PickedSelector += selector => model.PickedSelector = selector;
 
-            model.PropertyChanged += (o, e) =>
+            model.PropertyChanged += async (o, e) =>
             {
                 if (e.PropertyName == nameof(ProgramUrl))
                     pageView.Source = model.ProgramUrl;
                 else if (e.PropertyName == nameof(EnablePicking))
-                    pageView.EnablePicking(model.EnablePicking);
+                    await pageView.EnablePicking(model.EnablePicking);
                 else if (e.PropertyName == nameof(WaitForJsRendering)
                     || (e.PropertyName == nameof(EventSelector) && model.WaitForJsRendering))
                     Reload();
@@ -208,6 +213,36 @@ partial class VenueEditor
             model.ShowSelectorOptions = false;
             model.ShowSelectorDetail = false;
             model.EnablePicking = true;
+
+            if (selectorOptionsRepo == null) // load and restore remembered selectorOptions once from JSON file
+            {
+                selectorOptionsRepo = IPlatformApplication.Current!.Services.GetService<SelectorOptionsRepo>();
+                var saved = await selectorOptionsRepo!.LoadAsync();
+
+                if (saved != null)
+                {
+                    model.IncludePickedSelectorPath = saved.IncludePickedSelectorPath;
+
+                    foreach (var prop in typeof(SelectorOptions).GetProperties())
+                        prop.SetValue(model.selectorOptions, prop.GetValue(saved, null));
+                }
+
+                // hook up change handlers saving changes after restoration
+                model.PropertyChanged += async (o, e) =>
+                {
+                    if (e.PropertyName == nameof(IncludePickedSelectorPath))
+                    {
+                        model.selectorOptions.IncludePickedSelectorPath = model.IncludePickedSelectorPath;
+                        await selectorOptionsRepo!.SaveAsync(model.selectorOptions);
+                    }
+                };
+
+                model.selectorOptions.PropertyChanged += async (o, e) =>
+                {
+                    await pageView!.SetPickedSelectorDetail(model.selectorOptions);
+                    await selectorOptionsRepo!.SaveAsync(model.selectorOptions);
+                };
+            }
 
             model.visualSelectorHost = entry;
             entry.Focus(); // to keep its help open

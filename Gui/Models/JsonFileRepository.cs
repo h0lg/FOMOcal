@@ -18,6 +18,12 @@ public class SetJsonFileRepository<T>(JsonFileStore store, string fileName) wher
     }
 }
 
+public class SingletonJsonFileRepository<T>(JsonFileStore store, string fileName) where T : class
+{
+    public async Task<T?> LoadAsync() => await store.LoadAsync<T>(fileName);
+    public Task SaveAsync(T value) => store.SaveAsync(fileName, value);
+}
+
 public class JsonFileStore(string storagePath)
 {
     private static readonly SemaphoreSlim locker = new(1, 1);
