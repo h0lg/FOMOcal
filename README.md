@@ -64,7 +64,7 @@ an item called *Inspect element* or similar - and are encouraged to do so to
 [debug your selectors](#debugging-selectors).
 
 Once you've picked an element, FOMOcal guides you through the choice of selector syntax and -detail
-via **contextual hints** including helpful links that give you enough background to make an informed decicion.
+via **contextual hints** including helpful links that give you enough background to make an informed decision.
 
 Having chosen a selctor, an **event detail preview** will display either what it matches
 or which errors occured for a configurable range of events on the page you're scraping.
