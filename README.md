@@ -91,7 +91,7 @@ Sometimes you have no choice but to extract text that contains noise like labels
 or structures one detail in a weird way.
 For these occasions, a *Scrape Job* offers some options to clean it up.
 > Note that for most *Scrape Jobs*, this is not necessary - if you don't care about the noise in the event list.
-These settings mainly for jobs like 📆 *Date* that require text in a very specific format or for program pages that
+These settings are mainly required for the 📆 *Date* job, which needs text in a very specific format - or for program pages that
 render different event details into the same element.
 
 #### Normalizing whitespace
