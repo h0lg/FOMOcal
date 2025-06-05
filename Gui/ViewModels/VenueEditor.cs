@@ -179,6 +179,10 @@ public partial class VenueEditor : ObservableObject
     }
 
     [RelayCommand]
+    private static async Task OpenUrlAsync(string url)
+        => await WebViewPage.OpenUrlAsync(url);
+
+    [RelayCommand]
     private void Save()
     {
         // reset empty optional scrape jobs
@@ -257,7 +261,8 @@ public partial class VenueEditor : ObservableObject
 
         private Grid VenueFields()
         {
-            var urlEntry = Entr(nameof(ProgramUrl), placeholder: "Program page URL");
+            const string programUrl = nameof(ProgramUrl);
+            var urlEntry = Entr(programUrl, placeholder: "Program page URL");
             var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
 
             var location = new Entry { Placeholder = "Location, contacts or other helpful info" }
@@ -266,17 +271,20 @@ public partial class VenueEditor : ObservableObject
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
             var loadingIndicator = new ActivityIndicator { IsRunning = true }
-                .BindVisible(new Binding(nameof(ProgramUrl), converter: Converters.IsSignificant),
+                .BindVisible(new Binding(programUrl, converter: Converters.IsSignificant),
                     Converters.And, new Binding(nameof(IsEventPageLoading)));
 
             var reload = Btn("⟳").TapGesture(Reload)
-                .BindVisible(new Binding(nameof(ProgramUrl), converter: Converters.IsSignificant),
+                .BindVisible(new Binding(programUrl, converter: Converters.IsSignificant),
                     Converters.And, new Binding(nameof(IsEventPageLoading), converter: Converters.Not));
 
-            return Grd(cols: [Auto, Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
-                FldLbl("🕸"), urlEntry.Column(1), loadingIndicator.Column(2), reload.Column(2),
-                FldLbl("🏷").Row(1), nameEntry.Row(1).Column(1).ColumnSpan(2),
-                FldLbl("📍").Row(2), location.Row(2).Column(1).ColumnSpan(2));
+            var openUrl = Btn("📡", nameof(OpenUrlCommand), source: model, parameterPath: programUrl)
+                .BindIsVisibleToValueOf(programUrl);
+
+            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto], spacing: 5,
+                FldLbl("🕸"), urlEntry.Column(1), loadingIndicator.Column(2), reload.Column(2), openUrl.Column(3),
+                FldLbl("🏷").Row(1), nameEntry.Row(1).Column(1).ColumnSpan(3),
+                FldLbl("📍").Row(2), location.Row(2).Column(1).ColumnSpan(3));
 
             static Label FldLbl(string Text) => Lbl(Text).CenterVertical();
         }
