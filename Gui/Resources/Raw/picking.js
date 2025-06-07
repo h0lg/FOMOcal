@@ -219,9 +219,8 @@
             const style = document.createElement('style');
 
             style.textContent = picked + `{
-    filter: invert(100%);
-    box-shadow: 0 0 10px 4px rgba(0, 128, 255, 0.8); /* Glow effect */
-    outline: 2px solid rgba(0, 128, 255, 0.8); /* Optional outline */
+    box-shadow: 0 0 10px 4px orange; /* Glow effect */
+    outline: 2px solid orange; /* Optional outline */
 }`;
 
             document.head.appendChild(style);
