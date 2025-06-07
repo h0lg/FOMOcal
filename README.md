@@ -59,9 +59,9 @@ Most of the time, you shouldn't even have to type anything.
 First off, you pick the element **visually** like from the
 [inspector](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools#the_inspector_dom_explorer_and_css_editor)
 in your browser's developer tools.
-> You can open the inspector from the right-click context menu of a web page in most browsers via
-an item called *Inspect element* or similar - and are encouraged to do so to
-[debug your selectors](#debugging-selectors).
+> You can open the inspector in most browsers via `Ctrl + Shift + I` (`Cmd + Option + I` on macOS)
+or from the right-click context menu of a web page via an item called *Inspect element* or similar -
+and are encouraged to do so to [debug your selectors](#debugging-selectors).
 
 Once you've picked an element, FOMOcal guides you through the choice of selector syntax and -detail
 via **contextual hints** including helpful links that give you enough background to make an informed decision.
@@ -73,9 +73,29 @@ or which errors occured for a configurable range of events on the page you're sc
 
 To test selectors, load the page in your browser and start up a
 [developer console](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools#the_javascript_console).
-In there, use [`document.querySelectorAll('.css-selector')`](https://www.w3schools.com/jsref/met_document_queryselectorall.asp)
-or [`document.evaluate('//xpath/selector', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength`](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)
-depending on your chosen selector syntax.
+You can do so via `Ctrl + Shift + J` (`Cmd + Option + J` on macOS)
+or find it in the developer tools next to the *Inspector* opened from the context menu as described above.
+
+In there, use either the [$$ short-hand](https://developer.chrome.com/docs/devtools/console/utilities#querySelectorAll-function)
+or [`document.querySelectorAll`](https://www.w3schools.com/jsref/met_document_queryselectorall.asp)
+to debug **CSS** selectors
+
+<!-- this syntax adds a code block with copy to clipboard function, see
+    https://stackoverflow.com/questions/31908564/easy-way-to-add-copy-to-clipboard-to-github-markdown -->
+#####
+    $$('#your > .css selector')
+#####
+    document.querySelectorAll('#your > .css selector')
+
+and either the [$x short-hand](https://developer.chrome.com/docs/devtools/console/utilities#xpath-function)
+or [`document.evaluate`](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)
+for **XPath**.
+#####
+    $x('//your/xpath/selector')
+#####
+    Array.from({ length: (r = document.evaluate('//your/xpath/selector', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)).snapshotLength }, (_, i) => r.snapshotItem(i))
+
+The short-hands are available in most browsers. If they're not, fall back to the standardized alternative.
 
 ### ⚗ Extracting text
 You can get the text of a [selected element](#-selecting-elements) from either
