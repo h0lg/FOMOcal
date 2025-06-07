@@ -2,7 +2,7 @@
     const pickedClass = 'FOMOcal-picked',
         picked = '.' + pickedClass;
 
-    let anchor = document.body,
+    let anchor = 'body',
         pickDescendant = true,
         notifyPicked;
 
@@ -193,8 +193,8 @@
         let selector;
 
         if (pickDescendant) {
-            const root = target.closest(anchor);
             console.info('picking descendant relative to', anchor);
+            const root = target.closest(anchor);
             if (root === null) notifyPicked('');
             selector = selectorDetail.xPathSyntax ? getXPath(root, target) : getCssSelector(root, target);
         } else {
