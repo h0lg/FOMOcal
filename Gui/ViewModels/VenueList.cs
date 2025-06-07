@@ -56,7 +56,8 @@ public partial class VenueList : ObservableObject
             venues ??= [.. Venues];
             Venues.Clear();
 
-            foreach (var venue in venues.OrderByDescending(v => v.LastRefreshed))
+            // order unscraped (new) venues on top, then by latest refresh
+            foreach (var venue in venues.OrderByDescending(v => v.LastRefreshed ?? DateTime.Now))
                 Venues.Add(venue);
         });
 
