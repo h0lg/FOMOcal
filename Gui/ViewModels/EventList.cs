@@ -40,8 +40,7 @@ public partial class EventList : ObservableObject
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             allEvents!.UpdateWith(newEvents);
-            ApplyFilter(); // re-apply filter
-            await eventRepo.SaveCompleteAsync(allEvents!);
+            await OnEventsUpdated();
         });
     }
 
@@ -51,8 +50,7 @@ public partial class EventList : ObservableObject
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             allEvents!.RenameVenue(oldName, newName);
-            ApplyFilter(); // re-apply filter
-            await eventRepo.SaveCompleteAsync(allEvents!);
+            await OnEventsUpdated();
         });
     }
 
@@ -62,8 +60,7 @@ public partial class EventList : ObservableObject
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             allEvents!.RemoveOfVenue(venue);
-            ApplyFilter(); // re-apply filter
-            await eventRepo.SaveCompleteAsync(allEvents!);
+            await OnEventsUpdated();
         });
     }
 
@@ -96,6 +93,12 @@ public partial class EventList : ObservableObject
             FilteredEvents.Add(evt);
     }
 
+    private Task OnEventsUpdated()
+    {
+        ApplyFilter(); // re-apply filter, updates CollectionView
+        return eventRepo.SaveCompleteAsync(allEvents!);
+    }
+
     [RelayCommand]
     private static async Task OpenUrlAsync(string url)
         => await WebViewPage.OpenUrlAsync(url);
@@ -104,8 +107,7 @@ public partial class EventList : ObservableObject
     private async Task CleanUpPastEvents()
     {
         allEvents!.RemoveWhere(e => e.IsPast);
-        ApplyFilter();
-        await eventRepo.SaveCompleteAsync(allEvents);
+        await OnEventsUpdated();
     }
 
     [RelayCommand]
