@@ -17,7 +17,8 @@ public partial class EventList : ObservableObject
     [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
     [ObservableProperty] public partial ObservableCollection<Event> FilteredEvents { get; set; } = [];
     [ObservableProperty] public partial IList<object> SelectedEvents { get; set; } = [];
-    public bool HasSelection => SelectedEvents.Count > 0;
+    public int SelectedEventCount => SelectedEvents.Count;
+    public bool HasSelection => SelectedEventCount > 0;
 
     public EventList(EventRepository eventRepo)
     {
@@ -99,6 +100,7 @@ public partial class EventList : ObservableObject
     private void NotifySelectionChanged(bool forSelectedEvents = true)
     {
         if (forSelectedEvents) OnPropertyChanged(nameof(SelectedEvents)); // to notify CollectionView
+        OnPropertyChanged(nameof(SelectedEventCount));
         OnPropertyChanged(nameof(HasSelection));
     }
 
@@ -168,7 +170,8 @@ public partial class EventList : ObservableObject
 
             var commands = HStack(5,
                 Btn("✨ de/select all", nameof(SelectAllEventsCommand)),
-                Lbl("🥡 export selected as").BindVisible(nameof(HasSelection)),
+                BndLbl(nameof(SelectedEventCount), stringFormat: "{0} selected").BindVisible(nameof(HasSelection)),
+                Lbl("🥡 export as").BindVisible(nameof(HasSelection)),
                 ExportButton("📆 iCal", nameof(ExportToIcsCommand)),
                 ExportButton("▦ CSV", nameof(ExportToCsvCommand)));
 
