@@ -122,6 +122,17 @@ public partial class EventList : ObservableObject
     }
 
     [RelayCommand]
+    private async Task DeleteSelectedEvents()
+    {
+        foreach (var evt in SelectedEvents.Cast<Event>())
+            allEvents!.Remove(evt);
+
+        SelectedEvents.Clear();
+        NotifySelectionChanged();
+        await OnEventsUpdated();
+    }
+
+    [RelayCommand]
     private void SelectAllEvents()
     {
         if (SelectedEvents.Count == FilteredEvents.Count)
@@ -171,6 +182,7 @@ public partial class EventList : ObservableObject
             var commands = HStack(5,
                 Btn("✨ de/select all", nameof(SelectAllEventsCommand)),
                 BndLbl(nameof(SelectedEventCount), stringFormat: "{0} selected").BindVisible(nameof(HasSelection)),
+                Btn("🗑", nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection)),
                 Lbl("🥡 export as").BindVisible(nameof(HasSelection)),
                 ExportButton("📆 iCal", nameof(ExportToIcsCommand)),
                 ExportButton("▦ CSV", nameof(ExportToCsvCommand)));
