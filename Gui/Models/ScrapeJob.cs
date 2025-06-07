@@ -10,6 +10,13 @@ public partial class ScrapeJob
     internal static string FormatXpathSelector(string selector) => string.Format(XPathSelectorFormat, selector);
     [GeneratedRegex("(?<=\\[xpath>\")(.+)(?=\"\\])")] internal static partial Regex XpathSelectorPattern();
 
+    protected static T? AddOrThrow<T>(List<Exception>? errors, Error error)
+    {
+        if (errors == null) throw error;
+        errors.Add(error);
+        return default;
+    }
+
     public string? Closest { get; set; }
     public string? Selector { get; set; }
     public bool IgnoreNestedText { get; set; }
@@ -64,13 +71,6 @@ public partial class ScrapeJob
             var error = new Error($"Failed while extracting value from {element} using {jobJson}", ex);
             return AddOrThrow<string?>(errors, error);
         }
-    }
-
-    protected static T? AddOrThrow<T>(List<Exception>? errors, Error error)
-    {
-        if (errors == null) throw error;
-        errors.Add(error);
-        return default;
     }
 
     /// <summary>Returns an absolute URL for relative or root-relative paths
