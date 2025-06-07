@@ -112,8 +112,8 @@ public partial class VenueEditor : ObservableObject
         var evt = this.venue.Event;
         eventName = ScrapeJob("❗ Name", evt.Name, nameof(Venue.EventScrapeJob.Name));
         eventDate = ScrapeJob("📆 Date", evt.Date, nameof(Venue.EventScrapeJob.Date));
-        eventName.IsValidChanged += (_, _) => RevealMore();
-        eventDate.IsValidChanged += (_, _) => RevealMore();
+        eventName.IsValidAsRequiredChanged += (_, _) => RevealMore();
+        eventDate.IsValidAsRequiredChanged += (_, _) => RevealMore();
 
         PropertyChanged += (o, e) =>
         {
@@ -150,7 +150,7 @@ public partial class VenueEditor : ObservableObject
 
         ShowEventContainer = hasName && hasProgramUrl;
         ShowRequiredEventFields = ShowEventContainer && EventSelector.IsSignificant();
-        ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValid && eventDate.IsValid;
+        ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValidAsRequired && eventDate.IsValidAsRequired;
         if (ShowRequiredEventFields && previewedEvents == null) UpdateEventSelectorPreview();
     }
 

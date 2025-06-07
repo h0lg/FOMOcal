@@ -135,18 +135,22 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
-    internal event EventHandler<bool>? IsValidChanged;
+    internal event EventHandler<bool>? IsValidAsRequiredChanged;
 
-    private bool isValid;
-    internal bool IsValid
+    private bool isValidAsRequired;
+
+    /// <summary>Indicates whether the <see cref="ScrapeJob"/> yields <see cref="PreviewResults"/>
+    /// for each event returned by <see cref="getEventsForPreview"/>,
+    /// which is necessary for <c>required</c> <see cref="FomoCal.ScrapeJob"/>s in <see cref="Venue.EventScrapeJob"/>.</summary>
+    internal bool IsValidAsRequired
     {
-        get => isValid;
+        get => isValidAsRequired;
         private set
         {
-            if (isValid != value)
+            if (isValidAsRequired != value)
             {
-                isValid = value;
-                IsValidChanged?.Invoke(this, isValid);
+                isValidAsRequired = value;
+                IsValidAsRequiredChanged?.Invoke(this, isValidAsRequired);
             }
         }
     }
@@ -180,7 +184,7 @@ public partial class ScrapeJobEditor : ObservableObject
     }
 
     private void UpdateEmpty() => IsEmpty = !scrapeJobStringProperties.Any(p => ((string?)p.GetValue(this, null)).IsSignificant());
-    private void Validate() => IsValid = !HasErrors && PreviewResults?.Length == getEventsForPreview()?.Length;
+    private void ValidateAsRequired() => IsValidAsRequired = !HasErrors && PreviewResults?.Length == getEventsForPreview()?.Length;
 
     private Guid? focusedId; // tracks the child that currently has focus
     [ObservableProperty] public partial bool HasFocus { get; set; }
@@ -224,7 +228,7 @@ public partial class ScrapeJobEditor : ObservableObject
             {
                 PreviewResults = ["Event Selector matched no events for preview."];
                 HasErrors = true;
-                Validate();
+                ValidateAsRequired();
                 return;
             }
 
@@ -248,13 +252,13 @@ public partial class ScrapeJobEditor : ObservableObject
             {
                 PreviewResults = [.. errors.Select(ex => ex.Message)];
                 HasErrors = true;
-                Validate();
+                ValidateAsRequired();
             }
             else
             {
                 PreviewResults = [.. results.Select(r => r.value)];
                 HasErrors = false;
-                Validate();
+                ValidateAsRequired();
             }
         }
         catch (Exception ex)
