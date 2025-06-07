@@ -178,7 +178,7 @@ partial class VenueEditor
                 .Bind(Editor.TextProperty, propertyPath, BindingMode.OneWay);
 
             // save selected part of selector query for AppendSelectedQuery
-            editor.Unfocused += (o, e) => selectedQuery = editor.Text.Substring(editor.CursorPosition, editor.SelectionLength);
+            editor.Unfocused += (o, e) => selectedQuery = editor.Text?.Substring(editor.CursorPosition, editor.SelectionLength);
             return editor;
         }
 
