@@ -88,16 +88,21 @@ public partial class ScrapeJob
                     ? element.SelectSingleNode($"ancestor-or-self::{xPathClosest}[1]")
                     : element.Closest(Closest!);
 
-            if (Selector.IsSignificant() && node is AngleSharp.Dom.IElement selectable)
-                node = TryGetXPathSelector(Selector!, out var xPathSelector)
-                    ? selectable.SelectSingleNode(xPathSelector)
-                    : selectable.QuerySelector(Selector!);
-
             if (node == null) return null;
 
-            var text = Attribute.IsSignificant() && node is AngleSharp.Dom.IElement attributed ? attributed.GetAttribute(Attribute!)
-                : IgnoreNestedText ? node.ChildNodes.Where(n => n.NodeType == NodeType.Text).Select(n => n.TextContent).LineJoin()
-                : node.TextContent;
+            List<INode> nodes = Selector.IsSignificant() && node is AngleSharp.Dom.IElement selectable
+                ? TryGetXPathSelector(Selector!, out var xPathSelector)
+                    ? selectable.SelectNodes(xPathSelector)
+                    : [.. selectable.QuerySelectorAll(Selector!).Cast<INode>()]
+                : [node];
+
+            if (nodes.Count == 0) return null;
+
+            var text = nodes.Select(node =>
+                Attribute.IsSignificant() && node is AngleSharp.Dom.IElement attributed ? attributed.GetAttribute(Attribute!)
+                    : IgnoreNestedText ? node.ChildNodes.Where(n => n.NodeType == NodeType.Text).Select(n => n.TextContent).LineJoin()
+                    : node.TextContent)
+                .LineJoin();
 
             if (text.IsNullOrWhiteSpace()) return null;
             text = text.NormalizeWhitespace(); // trims text as well

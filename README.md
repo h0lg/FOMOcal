@@ -36,7 +36,7 @@ an 📰 *Event page* and 🎫 *Tickets* links 📡 - and an 🖼 *Image*.
 
 ### Scrape Job
 Every [event detail](#event-details) is represented as a *Scrape Job*, in which you tell FOMOcal how to
-- 🥢 [Pick the element](#-selecting-elements) holding the text to extract - from within the event container by default,
+- 🥢 [Pick the element(s)](#-selecting-elements) holding the text to extract - from within the event container by default,
 though selecting from the outside is possible
 - ⚗ [Extract text from it](#-extracting-text)
 - 🧹 [Clean it up](#-cleaning-up-extracted-text) and
@@ -50,13 +50,15 @@ selector.
 What's the difference? In most cases you'll want to use
 [CSS](https://www.w3schools.com/css/css_selectors.asp) for its shorter and simpler selector syntax.
 For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp) -
-which has more powerful functions, e.g. for filtering.
+which has [more powerful functions](https://en.wikipedia.org/wiki/XPath#Functions_and_operators), e.g. for filtering or if you need to select
+[Text nodes](https://en.wikipedia.org/wiki/Document_Object_Model#Text_nodes)
+instead of [HTML elements](https://en.wikipedia.org/wiki/Document_Object_Model#Elements_as_nodes).
 
 Sounds hard? It probably will be the first few times you do this.
 But fear not! FOMOcal comes with the tools to help you along every step of the way.
 Most of the time, you shouldn't even have to type anything.
 
-First off, you pick the element **visually** like from the
+First off, you pick elements **visually** like from the
 [inspector](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools#the_inspector_dom_explorer_and_css_editor)
 in your browser's developer tools.
 > You can open the inspector in most browsers via `Ctrl + Shift + I` (`Cmd + Option + I` on macOS)
@@ -98,7 +100,7 @@ for **XPath**.
 The short-hands are available in most browsers. If they're not, fall back to the standardized alternative.
 
 ### ⚗ Extracting text
-You can get the text of a [selected element](#-selecting-elements) from either
+You can get the text of one or multiple [selected HTML elements or Text nodes](#-selecting-elements) from either
 - an [**Attribute**](https://en.wikipedia.org/wiki/HTML_attribute) you specify,
 - the full text content (including that of child nodes) by default - or
 - the text content of only the selected node **ignoring nested text**, i.e. without text of
