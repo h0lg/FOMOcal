@@ -131,10 +131,7 @@
             if (attributes.length) selector += attributes.join('');
         }
 
-        if (selectorDetail.position) {
-            const position = getPosition(element);
-            if (position > 1) selector += `:nth-child(${position})`;
-        }
+        if (selectorDetail.position) selector += `:nth-child(${getPosition(element)})`;
 
         // make sure to return a valid selector if selectorDetail.tagName is false
         const elementName = selectorDetail.tagName || !selector.length || selector.startsWith(':')
@@ -155,10 +152,7 @@
         if (selectorDetail.otherAttributes)
             conditions.push(...getOtherAttributes(element).map(attr => '@' + getAttributeDetail(attr)));
 
-        if (selectorDetail.position) {
-            let position = getPosition(element);
-            if (position > 1) conditions.push(`position()=${position}`);
-        }
+        if (selectorDetail.position) conditions.push(`position()=${getPosition(element)}`);
 
         const elementName = selectorDetail.tagName ? element.tagName.toLowerCase() : '*',
             joinedConditions = conditions.length ? `[${conditions.join(' and ')}]` : '';
