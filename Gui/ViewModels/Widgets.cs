@@ -28,6 +28,10 @@ internal static class Widgets
     internal static Entry Entr(string path, string? placeholder = null)
         => new Entry { Placeholder = placeholder }.Bind(Entry.TextProperty, path);
 
+    internal static Editor SelectableMultiLineLabel(string textPropertyPath = ".")
+        => new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }
+            .Bind(Editor.TextProperty, textPropertyPath, BindingMode.OneWay);
+
     internal static CheckBox Check(string isCheckedPropertyPath, object? source = null)
         => new CheckBox().Margins(right: -20).Bind(CheckBox.IsCheckedProperty, isCheckedPropertyPath, source: source);
 

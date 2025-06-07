@@ -10,8 +10,12 @@ internal static class Styles
     internal static class Label
     {
         internal static string Headline = GetName(), SubHeadline = GetName(),
-            Clickable = GetName(), Error = GetName(), Success = GetName(),
-            Demoted = GetName(), VenueRowDetail = GetName();
+            Clickable = GetName(), Demoted = GetName(), VenueRowDetail = GetName();
+    }
+
+    internal static class Editor
+    {
+        internal static string Error = GetName(), Success = GetName();
     }
 
     internal static class Span

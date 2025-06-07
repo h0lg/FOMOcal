@@ -179,12 +179,11 @@ partial class VenueEditor
 
         private Editor SelectorDisplay(string propertyPath)
         {
-            var editor = new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }
-                .Bind(Editor.TextProperty, propertyPath, BindingMode.OneWay);
+            var display = SelectableMultiLineLabel(propertyPath);
 
             // save selected part of selector query for AppendSelectedQuery
-            editor.Unfocused += (o, e) => selectedQuery = editor.Text?.Substring(editor.CursorPosition, editor.SelectionLength);
-            return editor;
+            display.Unfocused += (o, e) => selectedQuery = display.Text?.Substring(display.CursorPosition, display.SelectionLength);
+            return display;
         }
 
         private void TogglePicking() => model.EnablePicking = !model.EnablePicking;

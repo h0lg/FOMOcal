@@ -250,12 +250,14 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
     </Style>
 
-    <Style TargetType="Label" Class="Error">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
+    <Style TargetType="Editor" Class="Error">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
+        <Setter Property="TextColor" Value="White" />
     </Style>
 
-    <Style TargetType="Label" Class="Success">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource SuccessDark}}" />
+    <Style TargetType="Editor" Class="Success">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource SuccessDark}}" />
+        <Setter Property="TextColor" Value="White" />
     </Style>
 
     <Style TargetType="ListView">

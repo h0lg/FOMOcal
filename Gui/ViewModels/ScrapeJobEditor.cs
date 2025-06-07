@@ -332,7 +332,7 @@ public partial class ScrapeJobEditor : ObservableObject
             Children.Add(form);
 
             Children.Add(PreviewOrErrorList(itemsSource: nameof(PreviewResults),
-                hasFocus: nameof(HasFocus), hasError: nameof(HasErrors), source: model));
+                hasFocus: nameof(HasFocus), hasError: nameof(HasErrors), source: model, editor: model));
 
             model.UpdatePreview(); // once initially
         }
@@ -356,7 +356,7 @@ public partial class ScrapeJobEditor : ObservableObject
             Func<VisualElement, bool, bool>? cancelFocusChanged = null) where T : VisualElement
             => vis.InlineTooltipOnFocus(tooltip, help, async (vis, focused) => await model.SetFocusAsync(vis, focused), cancelFocusChanged);
 
-        internal static VerticalStackLayout PreviewOrErrorList(string itemsSource, string hasFocus, string hasError, object source)
+        internal static VerticalStackLayout PreviewOrErrorList(string itemsSource, string hasFocus, string hasError, object source, ScrapeJobEditor? editor = null)
         {
             var observable = source as ObservableObject;
             var hasErrorProperty = observable!.GetType().GetProperty(hasError)!;
@@ -364,7 +364,12 @@ public partial class ScrapeJobEditor : ObservableObject
             var list = new VerticalStackLayout { Spacing = 10, Margin = new Thickness(0, verticalSize: 10) }
                 .Bind(BindableLayout.ItemsSourceProperty, itemsSource)
                 .BindVisible(new Binding(hasError), Converters.Or, new Binding(hasFocus)) // display if either has error or focus
-                .ItemTemplate(() => SetItemClass(BndLbl(), HasError(hasErrorProperty, source))); // bind item with correct class on construction
+                .ItemTemplate(() =>
+                {
+                    Editor display = SelectableMultiLineLabel();
+                    if (editor is not null) display.ForwardFocusTo(editor); // to avoid collapsing editor when selecting text from the display
+                    return SetItemClass(display, HasError(hasErrorProperty, source)); // bind item with correct class on construction
+                });
 
             // attaching event handler to set StyleClass on Label children because that property is not bindable
             observable.PropertyChanged += (o, e) =>
@@ -372,14 +377,14 @@ public partial class ScrapeJobEditor : ObservableObject
                 if (e.PropertyName == hasError)
                 {
                     bool hasErr = HasError(hasErrorProperty, source);
-                    foreach (var label in list.Children.Cast<Label>()) SetItemClass(label, hasErr);
+                    foreach (var display in list.Children.Cast<Editor>()) SetItemClass(display, hasErr);
                 }
             };
 
             return list;
 
             static bool HasError(PropertyInfo hasErrorProperty, object source) => (bool)hasErrorProperty.GetValue(source)!;
-            static Label SetItemClass(Label label, bool hasErr) => label.StyleClass(hasErr ? Styles.Label.Error : Styles.Label.Success);
+            static Editor SetItemClass(Editor display, bool hasErr) => display.StyleClass(hasErr ? Styles.Editor.Error : Styles.Editor.Success);
         }
     }
 }
