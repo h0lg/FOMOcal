@@ -17,7 +17,7 @@ public partial class EventList : ObservableObject
     [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
     [ObservableProperty] public partial ObservableCollection<Event> FilteredEvents { get; set; } = [];
     [ObservableProperty] public partial IList<object> SelectedEvents { get; set; } = [];
-    [ObservableProperty] public partial bool HasSelection { get; set; }
+    public bool HasSelection => SelectedEvents.Count > 0;
 
     public EventList(EventRepository eventRepo)
     {
@@ -93,6 +93,15 @@ public partial class EventList : ObservableObject
             FilteredEvents.Add(evt);
     }
 
+    /// <summary>Raises <see cref="System.ComponentModel.INotifyPropertyChanged.PropertyChanged"/>.
+    /// for read-only properties downstream of <see cref="SelectedEvents"/> -
+    /// and for that property itself if <paramref name="forSelectedEvents"/> is true.</summary>
+    private void NotifySelectionChanged(bool forSelectedEvents = true)
+    {
+        if (forSelectedEvents) OnPropertyChanged(nameof(SelectedEvents)); // to notify CollectionView
+        OnPropertyChanged(nameof(HasSelection));
+    }
+
     private Task OnEventsUpdated()
     {
         ApplyFilter(); // re-apply filter, updates CollectionView
@@ -123,7 +132,7 @@ public partial class EventList : ObservableObject
                 SelectedEvents.Add(evt);
         }
 
-        OnPropertyChanged(nameof(SelectedEvents));
+        NotifySelectionChanged();
     }
 
     [RelayCommand]
@@ -230,7 +239,10 @@ public partial class EventList : ObservableObject
             }
                 .Bind(SelectableItemsView.SelectedItemsProperty, nameof(SelectedEvents));
 
-            list.SelectionChanged += (o, e) => model.HasSelection = e.CurrentSelection.Count > 0;
+            /*  Notify model properties downstream from SelectedEvents because setting it as
+             *  SelectedItemsProperty above doesn't raise PropertyChanged for it on selection.
+             *  Don't trigger it for SelectedEvents because we react to the CollectionView here - it doesn't need a call back. */
+            list.SelectionChanged += (o, e) => model.NotifySelectionChanged(forSelectedEvents: false);
 
             SizeChanged += (o, e) =>
             {
