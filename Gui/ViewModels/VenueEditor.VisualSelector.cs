@@ -193,16 +193,18 @@ partial class VenueEditor
 
         private void AppendSelectedQuery()
         {
-            var xpathMatch = FomoCal.ScrapeJob.XpathSelectorPattern().Match(model.visualSelectorHost!.Text ?? "");
+            Entry host = model.visualSelectorHost!;
+            var existing = host.Text ?? "";
+            var xpathMatch = FomoCal.ScrapeJob.XpathSelectorPattern().Match(existing);
             string normalized = selectedQuery.NormalizeWhitespace();
 
             if (model.selectorOptions.XPathSyntax)
             {
                 var selector = xpathMatch.Success ? xpathMatch.Value + normalized : normalized; // discard CSS query
-                model.visualSelectorHost!.Text = FomoCal.ScrapeJob.FormatXpathSelector(selector);
+                host.Text = FomoCal.ScrapeJob.FormatXpathSelector(selector);
             }
-            else model.visualSelectorHost!.Text = xpathMatch.Success ? normalized // discard XPath query
-                    : model.visualSelectorHost!.Text + " " + normalized;
+            else host.Text = xpathMatch.Success ? normalized // discard XPath query
+                : existing + " " + normalized;
         }
 
         private void Reload()
