@@ -112,7 +112,7 @@ public partial class EventList : ObservableObject
     private void SelectAllEvents()
     {
         if (SelectedEvents.Count == FilteredEvents.Count)
-            SelectedEvents.Clear();
+            SelectedEvents.Clear(); // toggle selection, de-selecting all
         else
         {
             SelectedEvents.Clear();

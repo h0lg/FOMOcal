@@ -38,7 +38,7 @@ public sealed partial class Scraper : IDisposable
         HashSet<Event> events = [];
         List<Exception> errors = [];
 
-        var eventPage = GetEventPage(venue);
+        var eventPage = GetEventPage(venue); // async errors are thrown when awaiting Loading below
 
         try
         {

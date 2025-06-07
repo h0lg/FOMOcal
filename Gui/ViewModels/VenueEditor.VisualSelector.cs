@@ -10,7 +10,7 @@ using SelectorOptionsRepo = SingletonJsonFileRepository<VenueEditor.SelectorOpti
 
 partial class VenueEditor
 {
-    private readonly SelectorOptions selectorOptions = new() { SemanticClasses = true, LayoutClasses = true };
+    private readonly SelectorOptions selectorOptions = new() { SemanticClasses = true, LayoutClasses = true }; // initialize with defaults
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial string? PickedSelector { get; set; }
     [ObservableProperty] public partial bool EnablePicking { get; set; } = true;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial bool ShowSelectorOptions { get; set; }
@@ -27,6 +27,7 @@ partial class VenueEditor
         }
     }
 
+    // extends the PickedSelectorOptions with others that need persistence
     internal partial class SelectorOptions : AutomatedEventPageView.PickedSelectorOptions
     {
         public bool IncludeAncestorPath { get; set; }
@@ -200,11 +201,13 @@ partial class VenueEditor
 
             if (model.selectorOptions.XPathSyntax)
             {
-                var selector = xpathMatch.Success ? xpathMatch.Value + normalized : normalized; // discard CSS query
+                var selector = xpathMatch.Success ? xpathMatch.Value + normalized // append to existing XPath
+                    : normalized; // discard CSS query
+
                 host.Text = FomoCal.ScrapeJob.FormatXpathSelector(selector);
             }
             else host.Text = xpathMatch.Success ? normalized // discard XPath query
-                : existing + " " + normalized;
+                : existing + " " + normalized; // append to existing CSS
         }
 
         private void Reload()
