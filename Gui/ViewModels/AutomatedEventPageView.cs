@@ -40,7 +40,10 @@ public partial class AutomatedEventPageView : WebView
     public AutomatedEventPageView(Venue venue)
     {
         this.venue = venue;
-        Source = venue.ProgramUrl;
+
+        // avoid navigation error caused by setting Source to empty string when adding a venue
+        if (venue.ProgramUrl.IsSignificant()) Source = venue.ProgramUrl;
+
         Navigating += OnNavigatingAsync;
         Navigated += OnNavigatedAsync;
     }
