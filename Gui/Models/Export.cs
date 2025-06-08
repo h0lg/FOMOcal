@@ -63,7 +63,7 @@ internal static partial class Export
             if (evt.DoorsTime.IsSignificant()) descriptionParts.Add($"Doors: {evt.DoorsTime}");
             if (evt.StartTime.IsSignificant()) descriptionParts.Add($"Starts: {evt.StartTime}");
             if (evt.TicketUrl.IsSignificant()) descriptionParts.Add($"Tickets: {evt.TicketUrl}");
-            if (evt.PresalePrice.IsSignificant()) descriptionParts.Add($"Presale: {evt.PresalePrice}");
+            if (evt.PresalePrice.IsSignificant()) descriptionParts.Add($"Pre-sale: {evt.PresalePrice}");
             if (evt.DoorsPrice.IsSignificant()) descriptionParts.Add($"At the door: {evt.DoorsPrice}");
 
             if (descriptionParts.Count > 0)

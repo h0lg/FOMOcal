@@ -51,7 +51,7 @@ partial class VenueEditor
                 else
                 {
                     model.programDocument = null;
-                    await App.CurrentPage.DisplayAlert("Event loading timed out.", pageView.EventLoadingTimedOut, "Ok");
+                    await App.CurrentPage.DisplayAlert("Event loading timed out.", pageView.EventLoadingTimedOut, "OK");
                 }
 
                 model.previewedEvents = null;
@@ -71,7 +71,7 @@ partial class VenueEditor
                 if (navigationResult == WebNavigationResult.Failure && !model.ProgramUrl.IsValidHttpUrl())
                     message += $" '{model.ProgramUrl}' is not a valid HTTP URL.";
 
-                await App.CurrentPage.DisplayAlert("Error loading event page.", message, "Ok");
+                await App.CurrentPage.DisplayAlert("Error loading event page.", message, "OK");
                 model.RevealMore();
             };
 
@@ -124,7 +124,7 @@ partial class VenueEditor
                 Lbl("classes").Bold(),
                 SelectorOption("with style", nameof(SelectorOptions.LayoutClasses), string.Format(HelpTexts.ClassesWith_Style, "")),
                 SelectorOption("without", nameof(SelectorOptions.SemanticClasses), string.Format(HelpTexts.ClassesWith_Style, " no")),
-                Lbl("other attibutes").Bold(),
+                Lbl("other attributes").Bold(),
                 SelectorOption("names", nameof(SelectorOptions.OtherAttributes), HelpTexts.OtherAttributes),
                 SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues), HelpTexts.OtherAttributeValues),
                 SelectorOption("position", nameof(SelectorOptions.Position), HelpTexts.ElementPosition)];
@@ -170,7 +170,7 @@ partial class VenueEditor
                             .BindVisible(showSelectorOptions, converter: Converters.Not).Row(3))
                         .LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
                     Btn("🗙").TapGesture(HideVisualSelector).Size(30, 30).TranslationY(-35) // float half above upper boundary
-                        .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, autosized
+                        .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, auto-sized
                 }
             };
 

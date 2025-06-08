@@ -20,7 +20,7 @@ public static class ErrorReport
         {
             if (!App.CurrentPage.IsLoaded) return; // displaying alerts won't work
 
-            if (path == null) await App.CurrentPage.DisplayAlert($"{header} and writing report.", report, "Ok");
+            if (path == null) await App.CurrentPage.DisplayAlert($"{header} and writing report.", report, "OK");
             else
             {
                 var seeReport = await App.CurrentPage.DisplayAlert(header, "A report has been generated.", "To the report", "Ignore");

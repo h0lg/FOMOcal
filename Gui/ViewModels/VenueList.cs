@@ -173,7 +173,7 @@ public partial class VenueList : ObservableObject
             }
             catch (Exception ex)
             {
-                await App.CurrentPage.DisplayAlert("Error importing venues", ex.Message, "Ok");
+                await App.CurrentPage.DisplayAlert("Error importing venues", ex.Message, "OK");
                 return;
             }
 

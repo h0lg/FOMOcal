@@ -40,7 +40,7 @@
                     }
                 }
             } catch (e) {
-                console.error('Error accessing cssRules of stylesheet', sheet, e);
+                console.error('Error accessing cssRules of style sheet', sheet, e);
             }
         }
     }

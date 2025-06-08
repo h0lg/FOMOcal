@@ -41,7 +41,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
 
         AbsoluteLayout wrapper = new() { WidthRequest = 0, HeightRequest = 0 };
         wrapper.Add(loader);
-        layout.Add(wrapper); // to start the loader's lifecycle
+        layout.Add(wrapper); // to start the loader's life cycle
 
         Loading = LoadDocument(throwOnTimeout: true); // first page of events is required
         cleanup = () => layout.Remove(wrapper); // make sure to remove loader again

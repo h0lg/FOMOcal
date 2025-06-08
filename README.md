@@ -68,8 +68,8 @@ and are encouraged to do so to [debug your selectors](#debugging-selectors).
 Once you've picked an element, FOMOcal guides you through the choice of selector syntax and -detail
 via **contextual hints** including helpful links that give you enough background to make an informed decision.
 
-Having chosen a selctor, an **event detail preview** will display either what it matches
-or which errors occured for a configurable range of events on the page you're scraping.
+Having chosen a selector, an **event detail preview** will display either what it matches
+or which errors occurred for a configurable range of events on the page you're scraping.
 
 #### Debugging selectors
 
@@ -109,9 +109,8 @@ You can get the text of one or multiple [selected HTML elements or Text nodes](#
 
 ### 🧹 Cleaning up extracted text
 Not every event detail is cleanly selectable.
-Sometimes you have no choice but to extract text that contains noise like labels or other details
-or structures one detail in a weird way.
-For these occasions, a *Scrape Job* offers some options to clean it up.
+Sometimes you have no choice but to extract text that contains noise like labels or other details - or structures one detail in a weird way.
+For these occasions, a *Scrape Job* offers some options to clean up the extract.
 > Note that for most *Scrape Jobs*, this is not necessary - if you don't care about the noise in the event list.
 These settings are mainly required for the 📆 *Date* job, which needs text in a very specific format - or for program pages that
 render different event details into the same element.
@@ -138,7 +137,7 @@ which may be easier than [writing a RegEx to match](#regex-match) the part you w
 An optional [Regular Expression](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavor
 that matches the part of the extracted text you're interested in.
 
-> [regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns. If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.
+> [regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns. If you can't be bothered or are struggling, ask a chat bot for help - they're pretty good at this.
 
 ### ♻ Converting extracted text
 Event details may be of a data type other than text.
@@ -183,7 +182,7 @@ This app is **intended for you, the patron of the fringe side of music** - to pi
 Lend those cool little local spots a hand by promoting their events - that way keeping them and your scene alive,
 bringing people together for some good music and hopefully more great bands into your town in the future.
 
-With FOMOcal you can support different scenes by **sharing relevant venues and their events in easily digestable formats**.
+With FOMOcal you can support different scenes by **sharing relevant venues and their events in easily digestible formats**.
 Go figure out how to get event info from the web page of a concert location and share it.
 Or curate a list of shows over the next few months for the fine lads and lasses yourself.
 FOMOcal assumes you have no clue how web pages are built and tries to give you the tools -

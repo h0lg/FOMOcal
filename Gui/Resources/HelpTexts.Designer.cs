@@ -284,11 +284,11 @@ namespace FomoCal.Gui.Resources {
         
         /// <summary>
         ///   Looks up a localized string similar to Multiple optional replacements to apply, in the form &quot;Pattern =&gt; Replacement, Pattern2 =&gt;&quot;.
-        ///You may want to do this e.g. to convert a date string into a valid format. Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavour, but plain text often works.
+        ///You may want to do this e.g. to convert a date string into a valid format. Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavor, but plain text often works.
         ///
         ///^^[regex101](https://regex101.com/) is great to debug your patterns, learn and find existing patterns. If you can&apos;t be bothered or are struggling - ask a chat bot for help, they&apos;re pretty good at this.
         ///^^
-        ///^^Th [rest of string was truncated]&quot;;.
+        ///^^Thi [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ScrapeJobReplace {
             get {
@@ -311,7 +311,7 @@ namespace FomoCal.Gui.Resources {
         ///# XPath
         ///For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
         ///^^Make sure to stick to XPath 1.0 features and prefix your selector with &apos;{0}&apos;. Using the ➕ append button will do that for you.
-        ///^^E.g. to select elements with class &apos;event&apos; that have a &apos;categor [rest of string was truncated]&quot;;.
+        ///^^E.g. to select elements with class &apos;event&apos; that have a [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SelectorSyntaxFormat {
             get {

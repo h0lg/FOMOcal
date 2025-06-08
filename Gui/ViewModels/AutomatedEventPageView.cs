@@ -26,7 +26,7 @@ public partial class AutomatedEventPageView : WebView
     /// <see cref="Venue.EventScrapeJob.WaitForJsRendering"/> and that times out.</summary>
     internal event Action<string?>? HtmlWithEventsLoaded;
 
-    /// <summary>An event that notifies the subscriber about ann error loading the <see cref="Venue.ProgramUrl"/>.</summary>
+    /// <summary>An event that notifies the subscriber about an error loading the <see cref="Venue.ProgramUrl"/>.</summary>
     internal event Action<WebNavigationResult>? ErrorLoading;
 
     /// <summary>An event that notifies the subscriber about a DOM node
@@ -81,14 +81,14 @@ public partial class AutomatedEventPageView : WebView
 
     private async void OnNavigatingAsync(object? sender, WebNavigatingEventArgs args)
     {
-        /*  Using Navigating event triggered by setting location to an identifyable fixed URL in JS to call back to the host app.
+        /*  Using Navigating event triggered by setting location to an identifiable fixed URL in JS to call back to the host app.
             Inspired by https://stackoverflow.com/questions/73217992/js-net-interact-on-maui-webview/75182298
             See also https://github.com/dotnet/maui/issues/6446
             https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/webview?view=net-maui-9.0#invoke-javascript
             https://developer.mozilla.org/en-US/docs/Web/API/Window/location#example_1_navigate_to_a_new_page */
         if (!args.Url.StartsWith(interopMessagePrefix)) return;
 
-        args.Cancel = true; // cancelling navigation if it is used as a work-around to interop with the host app
+        args.Cancel = true; // canceling navigation if it is used as a work-around to inter-op with the host app
 
         if (args.Url.StartsWith(eventsLoaded))
         {
@@ -177,8 +177,8 @@ public partial class AutomatedEventPageView : WebView
         using StreamReader reader = new(fileStream);
         string script = await reader.ReadToEndAsync();
 
-        return script.RemoveJsComments() // so that inline comments don't comment out code during normalization
-            .NormalizeWhitespace() // to inline it; multi-line scripts seem to not be supported
+        return script.RemoveJsComments() // so that in-line comments don't comment out code during normalization
+            .NormalizeWhitespace() // to in-line it; multi-line scripts seem to not be supported
             .Replace("\\", "\\\\"); // to escape the JS for EvaluateJavaScriptAsync
     }
 

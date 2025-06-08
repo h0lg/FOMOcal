@@ -289,11 +289,11 @@ public partial class ScrapeJobEditor : ObservableObject
 
         public View(ScrapeJobEditor model,
             Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry,
-            Func<Entry?> getVisualSelectoHost)
+            Func<Entry?> getVisualSelectorHost)
         {
             this.model = model;
             this.createVisualSelectorEntry = createVisualSelectorEntry;
-            this.getVisualSelectoHost = getVisualSelectoHost;
+            this.getVisualSelectoHost = getVisualSelectorHost;
             BindingContext = model;
             Spacing = 5;
 
@@ -309,7 +309,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 SelectorEntry("closest", nameof(Closest), null, // for picking common ancestor
                     HelpTexts.ScrapeJobClosest),
 
-                SelectorEntry("selector", nameof(Selector), () => model.Closest, // for picking descendant, preferrably from Closest
+                SelectorEntry("selector", nameof(Selector), () => model.Closest, // for picking descendant, preferably from Closest
                     HelpTexts.ScrapeJobSelector),
 
                 LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),

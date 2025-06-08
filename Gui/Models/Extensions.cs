@@ -38,7 +38,7 @@ internal static partial class StringExtensions
     // Regex pattern to match "Pattern => Replacement, Pattern2 =>" pairs
     [GeneratedRegex(@"([^=\s]+)\s*=>\s*([^,]*)")] private static partial Regex InlinedReplacements();
 
-    /// <summary>Explodes the inlined <paramref name="replacements"/> in the form "Pattern => Replacement, Pattern2 =>"
+    /// <summary>Explodes the in-lined <paramref name="replacements"/> in the form "Pattern => Replacement, Pattern2 =>"
     /// into pairs for <see cref="ApplyReplacements(string, Dictionary{string, string})"/>.</summary>
     internal static Dictionary<string, string> ExplodeInlinedReplacements(this string replacements)
     {
