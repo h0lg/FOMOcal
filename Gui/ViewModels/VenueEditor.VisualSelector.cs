@@ -225,6 +225,8 @@ partial class VenueEditor
 
                     foreach (var prop in typeof(SelectorOptions).GetProperties())
                         prop.SetValue(model.selectorOptions, prop.GetValue(saved, null));
+
+                    await pageView!.SetPickedSelectorDetail(model.selectorOptions);
                 }
 
                 // hook up change handlers saving changes after restoration
