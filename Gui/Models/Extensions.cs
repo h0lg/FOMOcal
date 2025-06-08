@@ -11,6 +11,10 @@ internal static partial class StringExtensions
     internal static string Join(this IEnumerable<string?> strings, string separator) => string.Join(separator, strings);
     internal static string LineJoin(this IEnumerable<string?> strings) => strings.Join(Environment.NewLine);
 
+    internal static bool IsValidHttpUrl(this string url)
+        => Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+
     internal static string CsvEscape(this string? value)
         => value.IsNullOrWhiteSpace() ? "" : $"\"{value!.Replace("\"", "\"\"")}\"";
 

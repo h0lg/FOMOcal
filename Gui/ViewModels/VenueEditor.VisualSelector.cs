@@ -65,6 +65,11 @@ partial class VenueEditor
                 model.IsEventPageLoading = false;
                 string suffix = navigationResult == WebNavigationResult.Cancel ? "ed" : "";
                 var message = $"Navigation {navigationResult}{suffix}.";
+
+                // using ErrorLoading to give user feedback about an invalid URL instead of validating before
+                if (navigationResult == WebNavigationResult.Failure && !model.ProgramUrl.IsValidHttpUrl())
+                    message += $" '{model.ProgramUrl}' is not a valid HTTP URL.";
+
                 await App.CurrentPage.DisplayAlert("Error loading event page.", message, "Ok");
                 model.RevealMore();
             };
