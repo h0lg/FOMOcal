@@ -29,7 +29,7 @@ partial class VenueEditor
 
     internal partial class SelectorOptions : AutomatedEventPageView.PickedSelectorOptions
     {
-        public bool IncludePickedSelectorPath { get; set; }
+        public bool IncludeAncestorPath { get; set; }
     }
 
     partial class Page
@@ -226,7 +226,7 @@ partial class VenueEditor
 
                 if (saved != null)
                 {
-                    model.IncludePickedSelectorPath = saved.IncludePickedSelectorPath;
+                    model.IncludePickedSelectorPath = saved.IncludeAncestorPath;
 
                     foreach (var prop in typeof(SelectorOptions).GetProperties())
                         prop.SetValue(model.selectorOptions, prop.GetValue(saved, null));
@@ -239,7 +239,7 @@ partial class VenueEditor
                 {
                     if (e.PropertyName == nameof(IncludePickedSelectorPath))
                     {
-                        model.selectorOptions.IncludePickedSelectorPath = model.IncludePickedSelectorPath;
+                        model.selectorOptions.IncludeAncestorPath = model.IncludePickedSelectorPath;
                         await selectorOptionsRepo!.SaveAsync(model.selectorOptions);
                     }
                 };
