@@ -192,7 +192,7 @@ public partial class VenueList : ObservableObject
         return errors;
     }
 
-    private Task SaveVenues() => venueRepo.SaveCompleteAsync(Venues.ToHashSet());
+    private Task SaveVenues() => venueRepo.SaveCompleteAsync(Venues.MigrateSelectors().ToHashSet());
 
     private static string ReportErrors(Exception[] errors, Venue venue)
         => errors.Select(ex => ex.ToString())
