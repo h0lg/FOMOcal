@@ -235,4 +235,14 @@ This may be a hint they are or are not good selectors, depending on the page.
   <data name="ToggleSelectorDetail" xml:space="preserve">
     <value>Toggle selector details for your picked element. More detail means more specificity - but beware that every moving part also increases the fragility of your selector. You'll want to find the sweet spot.</value>
   </data>
+  <data name="Encoding" xml:space="preserve">
+    <value>Re-interpret the extracted text using a specific character set. Try setting this to e.g. "UTF-8" if you notice incorrectly encoded characters in it. This is useful for the rare web page containing text with a different character set from what it (or the webserver that serves it) claims to contain.
+
+You can specify one or two values, separated by a | pipe.
+
+The first will be used for interpreting text directly from the page's HTML, the second to encode HTML passed across the JS bridge by the automated browser. The latter is used here to let you pick selectors and load the event preview - and during scraping, if you choose "wait for JS rendering" or a loading strategy other than "all on the first page" below.
+
+If you specify only one encoding without a pipe, it's used for both flavors.
+To default either value to the encoding the page or server claims, omit it; e.g. "|UTF-8" will only re-interpret the encoding of the HTML received from the automated browser.</value>
+  </data>
 </root>

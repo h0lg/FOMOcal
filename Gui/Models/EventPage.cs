@@ -12,7 +12,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     private readonly Venue venue;
     private readonly IBrowsingContext? browsingContext; // not ours to dispose, just holding on to it
     private readonly AutomatedEventPageView? loader;
-    private readonly Func<string, Task<DomDoc>>? createDocumentFromHtmlAsync;
+    private readonly Func<string, string?, Task<DomDoc>>? createDocumentFromHtmlAsync;
     private readonly Action? cleanup;
 
     internal Task<DomDoc?> Loading { get; private set; }
@@ -21,10 +21,12 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     {
         this.venue = venue;
         this.browsingContext = browsingContext;
-        Loading = browsingContext.OpenAsync(venue.ProgramUrl)!;
+
+        Loading = venue.TryGetDirectHtmlEncoding(out var encoding) ? LoadOverridingEncoding(encoding)
+            : browsingContext.OpenAsync(venue.ProgramUrl) as Task<DomDoc?>;
     }
 
-    internal EventPage(Venue venue, Layout layout, Func<string, Task<DomDoc>> createDocumentFromHtmlAsync)
+    internal EventPage(Venue venue, Layout layout, Func<string, string?, Task<DomDoc>> createDocumentFromHtmlAsync)
     {
         this.venue = venue;
         this.createDocumentFromHtmlAsync = createDocumentFromHtmlAsync;
@@ -100,7 +102,8 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
         {
             if (html.IsSignificant())
             {
-                var doc = await createDocumentFromHtmlAsync!(html!);
+                string? encodingOverride = venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
+                var doc = await createDocumentFromHtmlAsync!(html!, encodingOverride);
                 eventHtmlLoading.TrySetResult(doc);
             }
             else if (throwOnTimeout) eventHtmlLoading.TrySetException(new Exception(loader.EventLoadingTimedOut));
@@ -120,6 +123,20 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
         };
 
         return eventHtmlLoading.Task;
+    }
+
+    /// <summary>Loads the <see cref="Venue.ProgramUrl"/> using the <see cref="Venue.Encoding"/> override
+    /// to re-interpret the character set of the response.</summary>
+    /// <returns>The <see cref="Loading"/> task.</returns>
+    private async Task<DomDoc?> LoadOverridingEncoding(string encoding)
+    {
+        using HttpClient httpClient = new();
+        using var response = await httpClient.GetAsync(venue.ProgramUrl, HttpCompletionOption.ResponseHeadersRead);
+        response.EnsureSuccessStatusCode();
+        await using var stream = await response.Content.ReadAsStreamAsync();
+
+        return await browsingContext!.OpenAsync(response =>
+            response.Content(stream).Address(venue.ProgramUrl).OverrideEncoding(encoding));
     }
 
     private AngleSharp.Dom.IElement? GetNextPageElement() => Loading.Result?.QuerySelector(venue.Event.NextPageSelector!);

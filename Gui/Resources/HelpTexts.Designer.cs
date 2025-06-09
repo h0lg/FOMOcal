@@ -133,6 +133,19 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Re-interpret the extracted text using a specific character set. Try setting this to e.g. &quot;UTF-8&quot; if you notice incorrectly encoded characters in it. This is useful for the rare web page containing text with a different character set from what it (or the webserver that serves it) claims to contain.
+        ///
+        ///You can specify one or two values, separated by a | pipe.
+        ///
+        ///The first will be used for interpreting text directly from the page&apos;s HTML, the second to encode HTML passed across the JS bridge by the automated br [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Encoding {
+            get {
+                return ResourceManager.GetString("Encoding", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The selector to the event containers - of which there are probably multiple on the page, each containing as many of one event&apos;s details as possible - but only of a single event.
         ///
         ///^^Some event pages for example display multiple events on the same day in a group. If you see it, use skip/take to try it out on such a group and choose a container that contains only one of their details - otherwise only the first event on any given day will be retrieved.

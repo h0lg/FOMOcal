@@ -47,7 +47,10 @@ partial class VenueEditor
             pageView.HtmlWithEventsLoaded += async html =>
             {
                 if (html.IsSignificant())
-                    model.programDocument = await model.scraper.CreateDocumentAsync(html!);
+                {
+                    string? encodingOverride = model.venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
+                    model.programDocument = await model.scraper.CreateDocumentAsync(html!, encodingOverride);
+                }
                 else
                 {
                     model.programDocument = null;
@@ -84,6 +87,7 @@ partial class VenueEditor
                 else if (e.PropertyName == nameof(EnablePicking))
                     await pageView.EnablePicking(model.EnablePicking);
                 else if (e.PropertyName == nameof(WaitForJsRendering)
+                    || e.PropertyName == nameof(Encoding)
                     || (e.PropertyName == nameof(EventSelector) && model.WaitForJsRendering))
                     Reload();
             };

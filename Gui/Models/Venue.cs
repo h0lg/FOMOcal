@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using FomoCal.Gui.Resources;
 using static FomoCal.Venue;
@@ -13,6 +14,35 @@ public class Venue
     public required string ProgramUrl { get; set; }
     public required EventScrapeJob Event { get; set; }
     public DateTime? LastRefreshed { get; set; }
+
+    /// <summary>Encoding overrides to use - for when <see cref="ProgramUrl"/>
+    /// returns text in a different encoding than it claims.
+    /// Access via <see cref="TryGetDirectHtmlEncoding(out string?)"/>
+    /// or <see cref="TryGetAutomationHtmlEncoding(out string?)"/></summary>
+    public string? Encoding { get; set; }
+
+    /// <summary>Determines whether to use an <see cref="Encoding"/> override
+    /// for HTML loaded directly from the serverand returns <paramref name="encoding"/> if so.</summary>
+    internal bool TryGetDirectHtmlEncoding([MaybeNullWhen(false)] out string encoding)
+        => TryGetEncodingAtIndex(0, out encoding);
+
+    /// <summary>Determines whether to use an <see cref="Encoding"/> override for HTML passed across the JS bridge
+    /// by an <see cref="Gui.ViewModels.AutomatedEventPageView"/> and returns <paramref name="encoding"/> if so.</summary>
+    internal bool TryGetAutomationHtmlEncoding([MaybeNullWhen(false)] out string encoding)
+        => TryGetEncodingAtIndex(1, out encoding);
+
+    private bool TryGetEncodingAtIndex(int index, [MaybeNullWhen(false)] out string encoding)
+    {
+        if (Encoding.IsNullOrWhiteSpace())
+        {
+            encoding = null;
+            return false;
+        }
+
+        var encondings = Encoding!.Split('|');
+        encoding = encondings.Length == 1 ? Encoding : encondings[index];
+        return true;
+    }
 
     public override bool Equals(object? obj) => obj is Venue other && Equals(other);
     public bool Equals(Venue? other) => other is not null && GetHashCode() == other.GetHashCode();

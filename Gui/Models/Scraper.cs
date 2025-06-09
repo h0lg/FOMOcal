@@ -112,7 +112,12 @@ public sealed partial class Scraper : IDisposable
             ? new EventPage(venue, TopLayout, CreateDocumentAsync)
             : new EventPage(venue, context);
 
-    internal async Task<DomDoc> CreateDocumentAsync(string html) => await context.OpenAsync(req => req.Content(html));
+    internal async Task<DomDoc> CreateDocumentAsync(string html, string? encoding = null)
+        => await context.OpenAsync(response =>
+        {
+            response.Content(html);
+            if (encoding.IsSignificant()) response.OverrideEncoding(encoding);
+        });
 
     public void Dispose() => context.Dispose();
 }
@@ -124,4 +129,13 @@ internal static class ScraperExtensions
             // see https://github.com/AngleSharp/AngleSharp.XPath
             ? document.Body.SelectNodes(xPathSelector).OfType<AngleSharp.Dom.IElement>()
             : document.QuerySelectorAll(venue.Event.Selector);
+
+    /// <summary>Adds a HTTP header to the <paramref name="response"/> that overrides
+    /// e.g. a meta tag in the document source that claims an incorrect encoding
+    /// with the specified <paramref name="encoding"/>,
+    /// avoiding incorrect interpretation of characters when extracting text.
+    /// See https://github.com/AngleSharp/AngleSharp/blob/main/docs/tutorials/06-Questions.md#how-can-i-specify-encoding-for-loading-a-document</summary>
+    /// <returns>The modified <paramref name="response"/>.</returns>
+    internal static AngleSharp.Io.VirtualResponse OverrideEncoding(this AngleSharp.Io.VirtualResponse response, string? encoding)
+        => response.Header("content-type", "text/html; charset=" + encoding);
 }
