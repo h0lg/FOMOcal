@@ -43,7 +43,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
         wrapper.Add(loader);
         layout.Add(wrapper); // to start the loader's life cycle
 
-        Loading = LoadDocument(throwOnTimeout: true); // first page of events is required
+        Loading = LoadAutomated(throwOnTimeout: true); // first page of events is required
         cleanup = () => layout.Remove(wrapper); // make sure to remove loader again
     }
 
@@ -56,7 +56,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
         {
             case Venue.PagingStrategy.ClickElementToLoadMore:
                 await loader!.ClickElementToLoadMore(venue.Event.NextPageSelector!);
-                Loading = LoadDocument();
+                Loading = LoadAutomated();
                 break;
             case Venue.PagingStrategy.NavigateLinkToLoadMore:
                 var nextPage = GetNextPageElement()!;
@@ -69,17 +69,17 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
                 else
                 {
                     loader!.Source = url.ToString();
-                    Loading = LoadDocument();
+                    Loading = LoadAutomated();
                 }
 
                 break;
             case Venue.PagingStrategy.ScrollDownToLoadMore:
                 await loader!.ScrollDownToLoadMore();
-                Loading = LoadDocument();
+                Loading = LoadAutomated();
                 break;
             case Venue.PagingStrategy.ClickElementToLoadDifferent:
                 await loader!.ClickElementToLoadDifferent(venue.Event.NextPageSelector!);
-                Loading = LoadDocument();
+                Loading = LoadAutomated();
                 break;
             default:
                 throw new InvalidOperationException($"{nameof(Venue.PagingStrategy)} {venue.Event.PagingStrategy} is not supported");
@@ -88,7 +88,11 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
         return await Loading;
     }
 
-    private Task<DomDoc?> LoadDocument(bool throwOnTimeout = false)
+    /// <summary>Loads a <see cref="Venue.ProgramUrl"/> that <see cref="Venue.EventScrapeJob.RequiresAutomation"/>
+    /// using an <see cref="AutomatedEventPageView"/>.</summary>
+    /// <param name="throwOnTimeout">Whether to throw an exception on <see cref="Loading"/> timeout.</param>
+    /// <returns>The <see cref="Loading"/> task.</returns>
+    private Task<DomDoc?> LoadAutomated(bool throwOnTimeout = false)
     {
         TaskCompletionSource<DomDoc?> eventHtmlLoading = new();
 

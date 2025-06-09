@@ -5,6 +5,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FomoCal.Gui.ViewModels;
 
+/// <summary>A custom WebView you can load a <see cref="Venue.ProgramUrl"/> into
+/// to either <see cref="EnablePicking(bool)"/> elements from
+/// or automate (if it <see cref="Venue.EventScrapeJob.RequiresAutomation"/>)
+/// in order to load <see cref="Event"/>s from it
+/// e.g. by waiting for JS-rendered ones via <see cref="HtmlWithEventsLoaded"/>
+/// or loading more depending on the <see cref="Venue.EventScrapeJob.PagingStrategy"/>.</summary>
 public partial class AutomatedEventPageView : WebView
 {
     const string interopMessagePrefix = "https://fomocal.",
