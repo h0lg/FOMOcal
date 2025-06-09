@@ -12,6 +12,7 @@ public partial class VenueList : ObservableObject
     private readonly SetJsonFileRepository<Venue> venueRepo;
     private readonly Scraper scraper;
     private readonly INavigation navigation;
+    private readonly HashSet<Venue> refreshingVenues = new();
 
     [ObservableProperty] public partial bool IsLoading { get; set; }
 
@@ -125,7 +126,7 @@ public partial class VenueList : ObservableObject
         await navigation.PopAsync();
     }
 
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true, CanExecute = nameof(CanRefreshVenue))]
     private async Task RefreshVenueAsync(Venue venue)
     {
         var errors = await RefreshEvents(venue);
@@ -136,20 +137,20 @@ public partial class VenueList : ObservableObject
 
     [RelayCommand]
     private async Task RefreshAllVenuesAsync()
-    {
-        var refreshs = Venues.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
-        await Task.WhenAll(refreshs.Select(r => r.task));
-        RefreshList();
-        await SaveVenues();
-
-        var scrapesWithErrors = refreshs.Where(r => r.task.Result.Length > 0).ToArray();
-
-        if (scrapesWithErrors.Length > 0)
         {
+            var refreshs = Venues.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
+            await Task.WhenAll(refreshs.Select(r => r.task));
+            RefreshList();
+            await SaveVenues();
+
+            var scrapesWithErrors = refreshs.Where(r => r.task.Result.Length > 0).ToArray();
+
+            if (scrapesWithErrors.Length > 0)
+            {
             string errorReport = scrapesWithErrors.Select(r => ReportErrors(r.task.Result, r.venue)).Join(ErrorReport.OutputSpacing);
-            await WriteErrorReportAsync(errorReport);
+                await WriteErrorReportAsync(errorReport);
+            }
         }
-    }
 
     [RelayCommand]
     private void ExportVenues() => venueRepo.ShareFile("venues");
@@ -184,12 +185,32 @@ public partial class VenueList : ObservableObject
         }
     }
 
+    private bool CanRefreshVenue(Venue? venue) => venue is not null && !IsRefreshing(venue);
+    private bool IsRefreshing(Venue venue) => refreshingVenues.Contains(venue);
+
+    private void SetVenueRefreshing(Venue venue, bool isRefreshing)
+    {
+        if (isRefreshing) refreshingVenues.Add(venue);
+        else refreshingVenues.Remove(venue);
+
+        RefreshVenueCommand.NotifyCanExecuteChanged();
+    }
+
     private async Task<Exception[]> RefreshEvents(Venue venue)
     {
-        (HashSet<Event> events, Exception[] errors) = await scraper.ScrapeVenueAsync(venue);
-        venue.LastRefreshed = DateTime.Now;
-        EventsScraped?.Invoke(venue, events); // notify subscribers
-        return errors;
+        SetVenueRefreshing(venue, true);
+
+        try
+        {
+            (HashSet<Event> events, Exception[] errors) = await scraper.ScrapeVenueAsync(venue);
+            venue.LastRefreshed = DateTime.Now;
+            EventsScraped?.Invoke(venue, events); // notify subscribers
+            return errors;
+        }
+        finally
+        {
+            SetVenueRefreshing(venue, false);
+        }
     }
 
     private Task SaveVenues() => venueRepo.SaveCompleteAsync(Venues.MigrateSelectors().ToHashSet());
