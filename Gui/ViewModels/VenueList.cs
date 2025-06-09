@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -137,20 +138,20 @@ public partial class VenueList : ObservableObject
 
     [RelayCommand]
     private async Task RefreshAllVenuesAsync()
+    {
+        var refreshs = Venues.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
+        await Task.WhenAll(refreshs.Select(r => r.task));
+        RefreshList();
+        await SaveVenues();
+
+        var scrapesWithErrors = refreshs.Where(r => r.task.Result.Length > 0).ToArray();
+
+        if (scrapesWithErrors.Length > 0)
         {
-            var refreshs = Venues.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
-            await Task.WhenAll(refreshs.Select(r => r.task));
-            RefreshList();
-            await SaveVenues();
-
-            var scrapesWithErrors = refreshs.Where(r => r.task.Result.Length > 0).ToArray();
-
-            if (scrapesWithErrors.Length > 0)
-            {
             string errorReport = scrapesWithErrors.Select(r => ReportErrors(r.task.Result, r.venue)).Join(ErrorReport.OutputSpacing);
-                await WriteErrorReportAsync(errorReport);
-            }
+            await WriteErrorReportAsync(errorReport);
         }
+    }
 
     [RelayCommand]
     private void ExportVenues() => venueRepo.ShareFile("venues");
@@ -241,6 +242,7 @@ public partial class VenueList : ObservableObject
                         .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastRefreshed.HasValue);
 
                     var refresh = Btn("⛏", nameof(RefreshVenueCommand), source: model);
+                    SwingPickaxeDuring(refresh, model.RefreshVenueCommand);
 
                     return new Border
                     {
@@ -263,6 +265,44 @@ public partial class VenueList : ObservableObject
                 title.ColumnSpan(2), importVenues.Column(2), exportVenues.Column(3),
                 list.Row(1).ColumnSpan(4),
                 addVenue.Row(2), refreshAll.Row(2).Column(2).ColumnSpan(2));
+        }
+
+        private void SwingPickaxeDuring(Button btn, ICommand cmd)
+        {
+            /* square up & round up btn, so that its rotation is not noticable
+             * because we cannot access and rotate only its label */
+            btn.HeightRequest = btn.WidthRequest = 46;
+            btn.CornerRadius = 25;
+
+            CancellationTokenSource? cts = null;
+
+            cmd.CanExecuteChanged += async (_, __) =>
+            {
+                // The button command's *own* CanExecute result decides whether to start or stop the animation.
+                if (cmd.CanExecute(btn.CommandParameter))
+                {
+                    cts?.Cancel(); // stop animation
+                    return;
+                }
+
+                // can't execute, i.e. should run
+                if (cts != null) return; // already running
+                cts = new CancellationTokenSource();
+
+                try
+                {
+                    while (!cts.Token.IsCancellationRequested && !cmd.CanExecute(btn.CommandParameter))
+                    {
+                        await btn.RotateTo(90, 1500, Easing.SinInOut); // retract animation
+                        await btn.RotateTo(0, 500, Easing.SpringOut); // hit animation
+                    }
+                }
+                finally
+                {
+                    await btn.RotateTo(0, 500, Easing.SinInOut); // final hit resets
+                    cts = null;
+                }
+            };
         }
     }
 
