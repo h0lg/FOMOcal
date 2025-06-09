@@ -48,7 +48,7 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     <AssemblyName>FOMOcal</AssemblyName>
     <Product>FOMOcal</Product>
-    <AssemblyTitle>Find, sync and share events on the web pages of local venues.</AssemblyTitle>
+    <AssemblyTitle>FOMOcal - Find, sync and share events on the web pages of local venues.</AssemblyTitle>
     <Description>Find, sync and share events on the web pages of local venues.</Description>
     <Authors>Holger Schmidt</Authors>
     <Copyright>Holger Schmidt 2025</Copyright>
