@@ -126,7 +126,7 @@ public partial class VenueList : ObservableObject
     }
 
     [RelayCommand]
-    private async Task RefreshVenue(Venue venue)
+    private async Task RefreshVenueAsync(Venue venue)
     {
         var errors = await RefreshEvents(venue);
         RefreshList();
@@ -135,7 +135,7 @@ public partial class VenueList : ObservableObject
     }
 
     [RelayCommand]
-    private async Task RefreshAllVenues()
+    private async Task RefreshAllVenuesAsync()
     {
         var refreshs = Venues.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
         await Task.WhenAll(refreshs.Select(r => r.task));
