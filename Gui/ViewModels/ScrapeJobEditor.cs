@@ -364,8 +364,8 @@ public partial class ScrapeJobEditor : ObservableObject
             var hasErrorProperty = observable!.GetType().GetProperty(hasError)!;
 
             var list = new VerticalStackLayout { Spacing = 10, Margin = new Thickness(0, verticalSize: 10) }
+                .IsVisible(false) // closed initially, toggled via debouncedUpdateVisibility
                 .Bind(BindableLayout.ItemsSourceProperty, itemsSource)
-                .BindVisible(new Binding(hasError), Converters.Or, new Binding(hasFocus)) // display if either has error or focus
                 .ItemTemplate(() =>
                 {
                     Editor display = SelectableMultiLineLabel();
@@ -373,9 +373,14 @@ public partial class ScrapeJobEditor : ObservableObject
                     return SetItemClass(display, HasError(hasErrorProperty, source)); // bind item with correct class on construction
                 });
 
+            Debouncer debouncedUpdateVisibility = new(TimeSpan.FromMilliseconds(100), UpdateVisibilityUndebouncedAsync,
+                async ex => await ErrorReport.WriteAsyncAndShare(ex.ToString(), "updating visibility of " + nameof(PreviewOrErrorList)));
+
             // attaching event handler to set StyleClass on Label children because that property is not bindable
             observable.PropertyChanged += (o, e) =>
             {
+                if (e.PropertyName == hasError || e.PropertyName == hasFocus) debouncedUpdateVisibility.Run();
+
                 if (e.PropertyName == hasError)
                 {
                     bool hasErr = HasError(hasErrorProperty, source);
@@ -387,6 +392,30 @@ public partial class ScrapeJobEditor : ObservableObject
 
             static bool HasError(PropertyInfo hasErrorProperty, object source) => (bool)hasErrorProperty.GetValue(source)!;
             static Editor SetItemClass(Editor display, bool hasErr) => display.StyleClass(hasErr ? Styles.Editor.Error : Styles.Editor.Success);
+
+            // Animate show/hide when hasError or hasFocus changes
+            async void UpdateVisibilityUndebouncedAsync()
+            {
+                Type type = observable.GetType();
+
+                bool shouldBeVisible = (bool)type.GetProperty(hasError)!.GetValue(source)!
+                    || (bool)type.GetProperty(hasFocus)!.GetValue(source)!;
+
+                if (shouldBeVisible && !list.IsVisible)
+                {
+                    list.IsVisible = true;
+
+                    await Task.WhenAll(list.FadeTo(1, 300),
+                        list.ScaleTo(1, 300, Easing.CubicOut));
+                }
+                else if (!shouldBeVisible && list.IsVisible)
+                {
+                    await Task.WhenAll(list.FadeTo(0, 300),
+                        list.ScaleTo(0, 300, Easing.CubicIn));
+
+                    list.IsVisible = false;
+                }
+            }
         }
     }
 }
