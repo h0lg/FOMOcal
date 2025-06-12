@@ -97,9 +97,14 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     private Task<DomDoc?> LoadAutomated(bool throwOnTimeout = false)
     {
         TaskCompletionSource<DomDoc?> eventHtmlLoading = new();
+        loader!.HtmlWithEventsLoaded += HandleLoaded;
+        loader!.ErrorLoading += HandleError;
+        return eventHtmlLoading.Task;
 
-        loader!.HtmlWithEventsLoaded += async html =>
+        async void HandleLoaded(string? html)
         {
+            Unsub();
+
             if (html.IsSignificant())
             {
                 string? encodingOverride = venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
@@ -108,10 +113,12 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
             }
             else if (throwOnTimeout) eventHtmlLoading.TrySetException(new Exception(loader.EventLoadingTimedOut));
             else eventHtmlLoading.TrySetResult(null);
-        };
+        }
 
-        loader!.ErrorLoading += navigationResult =>
+        void HandleError(WebNavigationResult navigationResult)
         {
+            Unsub();
+
             if (!throwOnTimeout && navigationResult == WebNavigationResult.Timeout)
                 eventHtmlLoading.TrySetResult(null);
             else
@@ -120,9 +127,13 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
                 var message = $"navigation {navigationResult}{suffix}";
                 eventHtmlLoading.TrySetException(new Exception(message));
             }
-        };
+        }
 
-        return eventHtmlLoading.Task;
+        void Unsub()
+        {
+            loader!.HtmlWithEventsLoaded -= HandleLoaded;
+            loader!.ErrorLoading -= HandleError;
+        }
     }
 
     /// <summary>Loads the <see cref="Venue.ProgramUrl"/> using the <see cref="Venue.Encoding"/> override
