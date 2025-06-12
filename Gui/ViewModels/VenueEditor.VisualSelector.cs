@@ -263,7 +263,7 @@ partial class VenueEditor
             entry.Focus(); // to keep its help open
             visualSelector.IsVisible = true;
             await pageView!.PickRelativeTo(selector, descendant);
-            await UpdateHeightAsync();
+            UpdateHeight();
         }
 
         private void HideVisualSelector()
@@ -282,68 +282,54 @@ partial class VenueEditor
         }
 
         #region Sizing
-        private CancellationTokenSource? sizeChangedCts;
         private ScrollView? pickedSelectorScroller;
+        private Debouncer? debouncedUpdateHeight;
 
         private void SetupAutoSizing()
         {
+            debouncedUpdateHeight = new(TimeSpan.FromMilliseconds(100), UndebouncedUpdateHeightAsync,
+                async ex => await ErrorReport.WriteAsyncAndShare(ex.ToString(), "updating visual selector height"));
+
             /* eagerly subscribe to the SizeChanged of visuals influencing the required container height
-             * for when ShowPickedSelector is true and it has dynamic height, see UpdateHeightAsync */
-            pickedSelectorScroller!.Content.SizeChanged += async (sender, e) =>
+             * for when ShowPickedSelector is true and it has dynamic height, see UpdateHeight */
+            pickedSelectorScroller!.Content.SizeChanged += (sender, e) =>
             {
                 // exit handler early if height update is unnecessary
                 if (!visualSelector.IsVisible) return;
-                await UpdateHeightAsync();
+                UpdateHeight();
             };
         }
 
-        private Task UpdateHeightAsync()
+        private void UpdateHeight() => debouncedUpdateHeight!.Run();
+
+        private async Task UndebouncedUpdateHeightAsync()
         {
-            sizeChangedCts?.Cancel(); // cancel any previous waiting task
-            sizeChangedCts = new CancellationTokenSource();
-            var token = sizeChangedCts.Token;
+            var maxHeight = Height - 100;
+            double height = 0;
 
-            return Task.Run(async () =>
+            if (model.ShowSelectorOptions) // calculate dynamic height based on measured selectorControls sizes
             {
-                try
+                height = pickedSelectorScroller!.Content.Height;
+
+                if (maxHeight < height)
                 {
-                    await Task.Delay(100, token); // debounce delay
-
-                    if (!token.IsCancellationRequested)
-                    {
-                        MainThread.BeginInvokeOnMainThread(async () =>
-                        {
-                            var maxHeight = Height - 100;
-                            double height = 0;
-
-                            if (model.ShowSelectorOptions) // calculate dynamic height based on measured selectorControls sizes
-                            {
-                                height = pickedSelectorScroller!.Content.Height;
-
-                                if (maxHeight < height)
-                                {
-                                    pickedSelectorScroller.HeightRequest = maxHeight;
-                                    height = maxHeight;
-                                }
-                                else pickedSelectorScroller.HeightRequest = -1;
-                            }
-                            else height = maxHeight;
-
-                            await visualSelector.AnimateHeightRequest(height);
-
-                            if (model.visualSelectorHost != null)
-                            {
-                                form.HeightRequest = Height - height; // shrink form so End is visible to scroll there
-
-                                // scroll entry to end so that Help above is visible
-                                await form.ScrollToAsync(model.visualSelectorHost, ScrollToPosition.End, animated: true);
-                            }
-                            else form.HeightRequest = -1; // reset form height
-                        });
-                    }
+                    pickedSelectorScroller.HeightRequest = maxHeight;
+                    height = maxHeight;
                 }
-                catch (TaskCanceledException) { } // ignore cancellation
-            });
+                else pickedSelectorScroller.HeightRequest = -1;
+            }
+            else height = maxHeight;
+
+            await visualSelector.AnimateHeightRequest(height);
+
+            if (model.visualSelectorHost != null)
+            {
+                form.HeightRequest = Height - height; // shrink form so End is visible to scroll there
+
+                // scroll entry to end so that Help above is visible
+                await form.ScrollToAsync(model.visualSelectorHost, ScrollToPosition.End, animated: true);
+            }
+            else form.HeightRequest = -1; // reset form height
         }
         #endregion
     }
