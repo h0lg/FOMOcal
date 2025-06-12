@@ -13,7 +13,7 @@ public partial class VenueList : ObservableObject
     private readonly SetJsonFileRepository<Venue> venueRepo;
     private readonly Scraper scraper;
     private readonly INavigation navigation;
-    private readonly HashSet<Venue> refreshingVenues = new();
+    private readonly HashSet<Venue> refreshingVenues = [];
 
     [ObservableProperty] public partial bool IsLoading { get; set; }
 
