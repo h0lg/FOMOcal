@@ -203,13 +203,16 @@
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
     </Style>
 
+    <Style TargetType="Span" x:Key="LinkSpan">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LinkTextLight}, Dark={StaticResource LinkTextDark}}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+    </Style>
+
     <Style TargetType="Span" x:Key="HelpSpan">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Help}, Dark={StaticResource HelpDark}}" />
     </Style>
 
-    <Style TargetType="Span" x:Key="HelpLinkSpan">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LinkTextLight}, Dark={StaticResource LinkTextDark}}" />
-        <Setter Property="TextDecorations" Value="Underline" />
+    <Style TargetType="Span" x:Key="HelpLinkSpan" BasedOn="{StaticResource LinkSpan}">
     </Style>
 
     <Style TargetType="Span" x:Key="HelpHeaderSpan" BasedOn="{StaticResource HelpSpan}">

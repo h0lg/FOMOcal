@@ -208,8 +208,11 @@ public partial class EventList : ObservableObject
                     OptionalTextLabel(nameof(Event.DoorsTime), "🚪 {0}"),
                     OptionalTextLabel(nameof(Event.StartTime), "🎼 {0}"));
 
+                var description = new Label().Bind(Label.FormattedTextProperty, nameof(Event.Description),
+                    convert: (string? text) => text?.LinkifyUrls(Styles.Span.LinkSpan));
+
                 var details = VStack(5,
-                    OptionalTextLabel(nameof(Event.Description)).Wrap(),
+                    description.Wrap(),
                     OpenUrlButton("📰 more 📡", nameof(Event.Url), model).End(),
                     OpenUrlButton("⛏ from 📡", nameof(Event.ScrapedFrom), model).End());
 

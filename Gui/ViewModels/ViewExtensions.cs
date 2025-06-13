@@ -19,7 +19,7 @@ internal static class Styles
 
     internal static class Span
     {
-        internal static Style HelpHeaderSpan = Get(), HelpSpan = Get(),
+        internal static Style LinkSpan = Get(), HelpHeaderSpan = Get(), HelpSpan = Get(),
             HelpLinkSpan = Get(), HelpFooterSpan = Get(),
             HelpFooterLinkSpan = MergedStyle.Combine(HelpFooterSpan, HelpLinkSpan)!;
     }
@@ -103,7 +103,9 @@ internal static partial class ViewExtensions
         return label;
     }
 
-    [GeneratedRegex(@"\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)")] private static partial Regex LinkRegex();
+    [GeneratedRegex(@"\[(?<label>[^\]]+)\]\((?<url>https?:\/\/[^\s)]+)\)|(?<urlonly>https?:\/\/[^\s\[\]()]+)")]
+    private static partial Regex LinkRegex();
+
     [GeneratedRegex(@"^(#+)\s+(.*)")] private static partial Regex HeaderRegex(); // e.g. # Heading
     private const string footerPrefix = "^^";
 
@@ -153,35 +155,63 @@ internal static partial class ViewExtensions
         }
 
         return formatted;
+    }
 
-        static void AppendWithLinks(FormattedString target, string text, Style linkStyle, Style normalStyle)
+    internal static FormattedString LinkifyUrls(this string text, Style linkStyle, Style? normalStyle = null)
+    {
+        FormattedString formatted = new();
+        AppendWithLinks(formatted, text, linkStyle, normalStyle);
+        return formatted;
+    }
+
+    private static void AppendWithLinks(FormattedString target, string text, Style linkStyle, Style? normalStyle)
+    {
+        int lastIndex = 0;
+
+        foreach (Match match in LinkRegex().Matches(text))
         {
-            int lastIndex = 0;
-
-            foreach (Match match in LinkRegex().Matches(text))
+            // Add normal text before this match
+            if (match.Index > lastIndex) target.Spans.Add(new Span
             {
-                // Text before link
-                if (match.Index > lastIndex) target.Spans.Add(new Span
-                {
-                    Text = text[lastIndex..match.Index],
-                    Style = normalStyle
-                });
-
-                string displayText = match.Groups[1].Value;
-                string url = match.Groups[2].Value;
-                Span link = new() { Text = displayText, Style = linkStyle };
-                link.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
-                target.Spans.Add(link);
-                lastIndex = match.Index + match.Length;
-            }
-
-            // Remainder
-            if (lastIndex < text.Length) target.Spans.Add(new Span
-            {
-                Text = text[lastIndex..],
+                Text = text[lastIndex..match.Index],
                 Style = normalStyle
             });
+
+            Span link;
+            string url;
+
+            Group label = match.Groups["label"],
+                urlMatch = match.Groups["url"];
+
+            if (label.Success && urlMatch.Success) // Markdown-style link
+            {
+                string displayText = label.Value;
+                url = urlMatch.Value;
+                link = new() { Text = displayText, Style = linkStyle };
+            }
+            else
+            {
+                Group urlOnly = match.Groups["urlonly"];
+
+                if (urlOnly.Success) // Plain URL
+                {
+                    url = urlOnly.Value;
+                    link = new() { Text = url, Style = linkStyle };
+                }
+                else throw new ArgumentException(nameof(LinkRegex) + " matched something unexpected " + match);
+            }
+
+            link.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
+            target.Spans.Add(link);
+            lastIndex = match.Index + match.Length;
         }
+
+        // Remaining normal text
+        if (lastIndex < text.Length) target.Spans.Add(new Span
+        {
+            Text = text[lastIndex..],
+            Style = normalStyle
+        });
     }
 
     internal static Task AnimateHeightRequest(this VisualElement view, double endValue, uint duration = 300)
