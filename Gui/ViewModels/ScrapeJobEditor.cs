@@ -388,6 +388,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 }
             };
 
+            list.HandlerChanged += HandlerChanged; // hook up disposal of debouncer
             return list;
 
             static bool HasError(PropertyInfo hasErrorProperty, object source) => (bool)hasErrorProperty.GetValue(source)!;
@@ -415,6 +416,13 @@ public partial class ScrapeJobEditor : ObservableObject
 
                     list.IsVisible = false;
                 }
+            }
+
+            void HandlerChanged(object? _, EventArgs __)
+            {
+                if (list.Handler != null) return; // only on navigating away
+                list.HandlerChanged -= HandlerChanged;
+                debouncedUpdateVisibility.Dispose();
             }
         }
     }

@@ -1,12 +1,13 @@
 ﻿namespace FomoCal.Gui.ViewModels;
 
-internal class Debouncer
+internal partial class Debouncer : IDisposable
 {
     private readonly TimeSpan delay;
     private readonly Func<Task>? asyncAction;
     private readonly Action? syncAction;
     private readonly Action<Exception> onError;
     private CancellationTokenSource? cts;
+    private bool disposed;
 
     internal Debouncer(TimeSpan delay, Action syncAction, Action<Exception> onError)
     {
@@ -26,6 +27,8 @@ internal class Debouncer
     {
         cts?.Cancel(); // cancel any previous waiting task
         cts?.Dispose();
+        if (disposed) return;
+
         cts = new CancellationTokenSource();
         var token = cts.Token;
 
@@ -51,5 +54,17 @@ internal class Debouncer
         });
     }
 
-    internal void Cancel() => cts?.Cancel();
+    internal void Cancel()
+    {
+        if (disposed) return;
+        cts?.Cancel();
+    }
+
+    public void Dispose()
+    {
+        if (disposed) return;
+        disposed = true;
+        cts?.Cancel();
+        cts?.Dispose();
+    }
 }

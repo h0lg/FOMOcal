@@ -331,6 +331,12 @@ partial class VenueEditor
             }
             else form.HeightRequest = -1; // reset form height
         }
+
+        protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+        {
+            base.OnNavigatedFrom(args);
+            debouncedUpdateHeight?.Dispose();
+        }
         #endregion
     }
 }

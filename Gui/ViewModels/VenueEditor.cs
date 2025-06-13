@@ -7,8 +7,9 @@ using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
 
-public partial class VenueEditor : ObservableObject
+public partial class VenueEditor : ObservableObject, IDisposable
 {
+    private bool disposed;
     private readonly bool isDeletable;
     private readonly string originalVenueName;
     private readonly Scraper scraper;
@@ -222,6 +223,13 @@ public partial class VenueEditor : ObservableObject
     private void SetActionTaken(Actions? action)
     {
         if (!awaiter.Task.IsCompleted) awaiter.SetResult(action);
+    }
+
+    public void Dispose()
+    {
+        if (disposed) return;
+        disposed = true;
+        debouncedRevealMore.Dispose();
     }
 
     internal enum Actions { Saved, Deleted }
