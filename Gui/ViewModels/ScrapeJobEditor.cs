@@ -285,7 +285,7 @@ public partial class ScrapeJobEditor : ObservableObject
         private readonly Label help = new();
         private readonly ScrapeJobEditor model;
         private readonly Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry;
-        private readonly Func<Entry?> getVisualSelectoHost;
+        private readonly Func<Entry?> getVisualSelectorHost;
 
         public View(ScrapeJobEditor model,
             Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry,
@@ -293,7 +293,7 @@ public partial class ScrapeJobEditor : ObservableObject
         {
             this.model = model;
             this.createVisualSelectorEntry = createVisualSelectorEntry;
-            this.getVisualSelectoHost = getVisualSelectorHost;
+            this.getVisualSelectorHost = getVisualSelectorHost;
             BindingContext = model;
             Spacing = 5;
 
@@ -342,7 +342,7 @@ public partial class ScrapeJobEditor : ObservableObject
         private HorizontalStackLayout SelectorEntry(string label, string property, Func<string?>? maybeGetDescendantOfClosest, string tooltip)
         {
             var input = createVisualSelectorEntry(HintedInput(Entr(property), tooltip,
-                cancelFocusChanged: (vis, focused) => !focused && getVisualSelectoHost() == vis),
+                cancelFocusChanged: (vis, focused) => !focused && getVisualSelectorHost() == vis),
                 maybeGetDescendantOfClosest);
 
             return LbldView(label, input).DisplayWithSignificant(property);
