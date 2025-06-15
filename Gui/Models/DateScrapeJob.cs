@@ -7,7 +7,7 @@ public class DateScrapeJob : ScrapeJob
     private string culture = "en";
     private CultureInfo? cultureInfo;
 
-    public string Format { get; set; } = "dd MMM yyyy";
+    public string Format { get; set; } = "ddd dd MMM yyyy";
 
     public string Culture
     {
