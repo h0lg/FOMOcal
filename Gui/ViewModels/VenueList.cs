@@ -299,6 +299,7 @@ public partial class VenueList : ObservableObject
                 }
                 finally
                 {
+                    cts.Dispose();
                     await btn.RotateTo(0, 500, Easing.SinInOut); // final hit resets
                     cts = null;
                 }
