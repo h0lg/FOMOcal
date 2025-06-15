@@ -56,7 +56,6 @@ public class Venue
         public bool WaitForJsRendering { get; set; }
         public PagingStrategy PagingStrategy { get; set; }
         public string? NextPageSelector { get; set; }
-        public int? MaxEvents { get; set; }
         public required ScrapeJob Name { get; set; }
         public required DateScrapeJob Date { get; set; }
 

@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Markup;
-using Microsoft.Maui.Layouts;
 
 namespace FomoCal.Gui.ViewModels;
 
