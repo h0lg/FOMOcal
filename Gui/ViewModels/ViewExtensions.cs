@@ -37,16 +37,34 @@ internal static partial class ViewExtensions
         return vis;
     }
 
-    internal static T InlineTooltipOnFocus<T>(this T vis, string tooltip, Label label,
+    internal static T InlineTooltipOnFocus<T>(this T host, string tooltip, Label label,
         Action<VisualElement, bool>? onFocusChanged = null,
         Func<VisualElement, bool, bool>? cancelFocusChanged = null) where T : VisualElement
-        => vis.ToolTip(tooltip).OnFocusChanged((vis, focused) =>
+        => host.ToolTip(tooltip).OnFocusChanged(async (vis, focused) =>
         {
             if (cancelFocusChanged?.Invoke(vis, focused) == true) return;
-            label.FormattedText = focused ? tooltip.ParseMarkdown() : null;
-            vis.ToolTip(focused ? null : tooltip); // prevent tooltip from overlaying help on focus
             onFocusChanged?.Invoke(vis, focused);
+            vis.ToolTip(focused ? null : tooltip); // prevent tooltip from overlaying help on focus
+            await label.InlineHelpTextAsync(tooltip, vis, focused);
         });
+
+    internal static async Task InlineHelpTextAsync(this Label label, string tooltip, VisualElement host, bool focused)
+    {
+        if (focused)
+        {
+            label.BindingContext = host; // abusing unused BindingContext to remember host
+            label.FormattedText = tooltip.ParseMarkdown(); // set its help text
+            await Task.WhenAll(label.FadeTo(1, 300), label.ScaleTo(1, 300, Easing.CubicOut)); // show label
+        }
+        else if (label.BindingContext == host) // only react to unfocused if remembered host matches
+        {
+            await Task.Delay(100); // defer unfocus reaction to allow another control to take focus
+            if (label.BindingContext != host) return; // another host took focus, do not hide
+            label.BindingContext = null; // reset remembered host
+            await Task.WhenAll(label.FadeTo(0, 300), label.ScaleTo(0, 300, Easing.CubicIn)); // hide label
+            if (label.BindingContext == null) label.FormattedText = null; // only reset content if no other host took focus
+        }
+    }
 
     internal static FormattedString? FormatTooltip(this VisualElement vis)
         => ToolTipProperties.GetText(vis)?.ToString()?.ParseMarkdown();

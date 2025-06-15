@@ -14,6 +14,7 @@ internal static class Widgets
     }
 
     internal static Label Lbl(string text) => new() { Text = text };
+    internal static Label HelpLabel() => new() { Scale = 0, Opacity = 0 };
 
     internal static HorizontalStackLayout LbldView(string label, View view, string? tooltip = null)
     {

@@ -304,10 +304,8 @@ public partial class VenueEditor : ObservableObject
 
         private Grid EventContainerSelector()
         {
-            Label help = new();
-
+            Label help = HelpLabel();
             Label scrapeConfigInfo = Lbl("ⓘ").ToolTip(string.Format(HelpTexts.ScrapeConfigInfoFormat, AppInfo.Name));
-
             scrapeConfigInfo.TapGesture(() => help.FormattedText = scrapeConfigInfo.FormatTooltip());
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
@@ -334,16 +332,16 @@ public partial class VenueEditor : ObservableObject
                 SelectedIndex = model.PagingStrategies.IndexOf(model.venue.Event.PagingStrategy)
             };
 
-            pagingStrategy.OnFocusChanged((_, focused) => SyncPagingStrategyHelp(focused));
+            pagingStrategy.OnFocusChanged(async (_, focused) => await SyncPagingStrategyHelp(focused));
 
-            pagingStrategy.SelectedIndexChanged += (s, e) =>
+            pagingStrategy.SelectedIndexChanged += async (s, e) =>
             {
                 if (pagingStrategy.SelectedIndex >= 0)
                 {
                     model.venue.Event.PagingStrategy = model.PagingStrategies[pagingStrategy.SelectedIndex];
-                    SyncPagingStrategyHelp(true);
+                    await SyncPagingStrategyHelp(focused: true);
                 }
-                else SyncPagingStrategyHelp(false);
+                else await SyncPagingStrategyHelp(focused: false);
             };
 
             var nextPageSelector = SelectorEntry(
@@ -392,8 +390,8 @@ public partial class VenueEditor : ObservableObject
                 return toggle;
             }
 
-            void SyncPagingStrategyHelp(bool focused) =>
-                help.FormattedText = focused ? model.venue.Event.PagingStrategy.GetHelp()?.ParseMarkdown() : null;
+            Task SyncPagingStrategyHelp(bool focused) =>
+                help.InlineHelpTextAsync(model.venue.Event.PagingStrategy.GetHelp()!, pagingStrategy, focused);
         }
 
         private VerticalStackLayout OptionalEventFields()

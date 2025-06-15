@@ -282,7 +282,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
     public partial class View : VerticalStackLayout
     {
-        private readonly Label help = new();
+        private readonly Label help = HelpLabel();
         private readonly ScrapeJobEditor model;
         private readonly Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry;
         private readonly Func<Entry?> getVisualSelectorHost;

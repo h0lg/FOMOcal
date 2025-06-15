@@ -95,7 +95,7 @@ partial class VenueEditor
             const string displayedSelector = nameof(DisplayedSelector),
                 showSelectorOptions = nameof(ShowSelectorOptions);
 
-            Label help = new();
+            Label help = HelpLabel();
 
             var controlsAndInstructions = HWrap(5,
                 Swtch(nameof(EnablePicking)).Wrapper
