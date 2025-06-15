@@ -24,7 +24,7 @@ public partial class ScrapeJobEditor : ObservableObject
     [ObservableProperty] public partial bool IsEmpty { get; set; }
 
     #region ScrapeJob proxy properties
-    private static readonly string[] scrapeJobStringPropertyNames = [nameof(Closest), nameof(Selector), nameof(Attribute), nameof(Replace), nameof(Match)];
+    private static readonly string[] scrapeJobStringPropertyNames = [nameof(Closest), nameof(Selector), nameof(Attribute), nameof(Replace), nameof(Match), nameof(Comment)];
     private static readonly string[] scrapeJobPropertyNames = [.. scrapeJobStringPropertyNames, nameof(IgnoreNestedText), nameof(Format), nameof(Culture)];
 
     private static readonly PropertyInfo[] scrapeJobStringProperties =
@@ -92,6 +92,17 @@ public partial class ScrapeJobEditor : ObservableObject
         {
             if (ScrapeJob.Match == value) return;
             ScrapeJob.Match = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string? Comment
+    {
+        get => ScrapeJob.Comment;
+        set
+        {
+            if (ScrapeJob.Comment == value) return;
+            ScrapeJob.Comment = value;
             OnPropertyChanged();
         }
     }
@@ -323,6 +334,8 @@ public partial class ScrapeJobEditor : ObservableObject
             if (model.DateScrapeJob is not null) children.AddRange(
                 TextEntry("date format", nameof(Format), HelpTexts.DateScrapeJobFormat),
                 TextEntry("culture", nameof(Culture), HelpTexts.DateScrapeJobCulture));
+
+            children.Add(TextEntry("comment", nameof(Comment), HelpTexts.Comment));
 
             foreach (var child in children.Cast<Microsoft.Maui.Controls.View>())
             {

@@ -73,6 +73,7 @@ public partial class ScrapeJob
     }
 
     public string? Match { get; set; }
+    public string? Comment { get; set; }
 
     public virtual string? GetValue(AngleSharp.Dom.IElement element, List<Exception>? errors = null)
     {

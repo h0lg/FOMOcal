@@ -69,6 +69,17 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
+    public string? Comment
+    {
+        get => venue.Event.Comment;
+        set
+        {
+            if (value == venue.Event.Comment) return;
+            venue.Event.Comment = value;
+            OnPropertyChanged();
+        }
+    }
+
     public string EventSelector
     {
         get => venue.Event.Selector;
@@ -276,6 +287,7 @@ public partial class VenueEditor : ObservableObject
             var urlEntry = Entr(programUrl, placeholder: "Program page URL");
             var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
             var encoding = Entr(nameof(Encoding), placeholder: "encoding override").ToolTip(HelpTexts.Encoding);
+            var comment = Entr(nameof(Comment), placeholder: "explain this config or something about it").ToolTip(HelpTexts.Comment);
 
             var location = new Entry { Placeholder = "Location, contacts or other helpful info" }
                 .Bind(Entry.TextProperty,
@@ -293,11 +305,12 @@ public partial class VenueEditor : ObservableObject
             var openUrl = Btn("📡", nameof(OpenUrlCommand), source: model, parameterPath: programUrl)
                 .BindIsVisibleToValueOf(programUrl);
 
-            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,
+            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 FldLbl("🕸"), urlEntry.Column(1), loadingIndicator.Column(2), reload.Column(2), openUrl.Column(3),
                 FldLbl("🏷").Row(1), nameEntry.Row(1).Column(1).ColumnSpan(3),
                 FldLbl("📍").Row(2), location.Row(2).Column(1).ColumnSpan(3),
-                FldLbl("🔣").Row(3), encoding.Row(3).Column(1).ColumnSpan(3));
+                FldLbl("🔣").Row(3), encoding.Row(3).Column(1).ColumnSpan(3),
+                FldLbl("💬").Row(4), comment.Row(4).Column(1).ColumnSpan(3));
 
             static Label FldLbl(string Text) => Lbl(Text).CenterVertical();
         }

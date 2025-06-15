@@ -84,6 +84,15 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A note explaining something you&apos;re doing e.g. in the selector or the RegEx that&apos;s complicated or not obvious..
+        /// </summary>
+        internal static string Comment {
+            get {
+                return ResourceManager.GetString("Comment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The [language/country code](https://en.wikipedia.org/wiki/Language_code) used to parse the date in ISO 639 (en) or ISO 3166 format (en-US)..
         /// </summary>
         internal static string DateScrapeJobCulture {
