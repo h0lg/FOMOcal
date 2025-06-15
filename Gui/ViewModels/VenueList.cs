@@ -78,7 +78,6 @@ public partial class VenueList : ObservableObject
         VenueEditor model = new(added, scraper, adding);
         await navigation.PushAsync(new VenueEditor.Page(model));
         VenueEditor.Actions? result = await adding.Task; // wait for editor
-        model.Dispose();
         if (result == null) return; // canceled, do nothing
 
         switch (result)
@@ -103,7 +102,6 @@ public partial class VenueList : ObservableObject
         VenueEditor model = new(edited, scraper, editing);
         await navigation.PushAsync(new VenueEditor.Page(model));
         VenueEditor.Actions? result = await editing.Task; // wait for editor
-        model.Dispose();
         if (result == null) return; // canceled, do nothing
 
         switch (result)

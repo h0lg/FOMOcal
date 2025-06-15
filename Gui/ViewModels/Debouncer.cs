@@ -1,13 +1,12 @@
 ﻿namespace FomoCal.Gui.ViewModels;
 
-internal partial class Debouncer : IDisposable
+internal partial class Debouncer
 {
     private readonly TimeSpan delay;
     private readonly Func<Task>? asyncAction;
     private readonly Action? syncAction;
     private readonly Action<Exception> onError;
     private CancellationTokenSource? cts;
-    private bool disposed;
 
     internal Debouncer(TimeSpan delay, Action syncAction, Action<Exception> onError)
     {
@@ -27,10 +26,10 @@ internal partial class Debouncer : IDisposable
     {
         cts?.Cancel(); // cancel any previous waiting task
         cts?.Dispose();
-        if (disposed) return;
 
-        cts = new CancellationTokenSource();
-        var token = cts.Token;
+        CancellationTokenSource localCts = new(); // Create a new CTS for this specific run
+        cts = localCts; // store it so it may be canceled by subsequent calls
+        var token = localCts.Token; // Use the token from the local CTS to prevent a race condition in case field is reassigned before this runs
 
         Task.Run(async () =>
         {
@@ -51,20 +50,18 @@ internal partial class Debouncer : IDisposable
                 // raise Error if not debounced
                 if (ex is not TaskCanceledException || !token.IsCancellationRequested) onError.Invoke(ex);
             }
+            finally
+            {
+                localCts.Dispose(); // dispose after use
+                if (ReferenceEquals(cts, localCts)) cts = null; // clear field only if it's the latest - not from more recent calls
+            }
         });
     }
 
     internal void Cancel()
     {
-        if (disposed) return;
-        cts?.Cancel();
-    }
-
-    public void Dispose()
-    {
-        if (disposed) return;
-        disposed = true;
         cts?.Cancel();
         cts?.Dispose();
+        cts = null;
     }
 }
