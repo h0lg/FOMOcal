@@ -193,8 +193,8 @@ public partial class ScrapeJobEditor : ObservableObject
     {
         if (focused)
         {
-            HasFocus = true;
             focusedId = visual.Id; // assign this visual the component's focus token
+            HasFocus = true;
             return;
         }
 
@@ -211,8 +211,8 @@ public partial class ScrapeJobEditor : ObservableObject
             b) allows the help to stay visible while working in the visualSelector */
         if (visual.Id == focusedId && visual != getVisualSelectorHost())
         {
-            HasFocus = false;
             focusedId = null;
+            HasFocus = false;
         }
     }
 
