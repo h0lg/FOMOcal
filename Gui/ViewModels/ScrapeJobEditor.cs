@@ -21,7 +21,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
     [ObservableProperty] public partial string?[]? PreviewResults { get; set; }
     [ObservableProperty] public partial bool HasErrors { get; set; }
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayInputs))] public partial bool IsEmpty { get; set; }
+    [ObservableProperty] public partial bool IsEmpty { get; set; }
 
     #region ScrapeJob proxy properties
     private static readonly string[] scrapeJobStringPropertyNames = [nameof(Closest), nameof(Selector), nameof(Attribute), nameof(Replace), nameof(Match)];
@@ -124,7 +124,7 @@ public partial class ScrapeJobEditor : ObservableObject
     private bool displayInputs;
     public bool DisplayInputs
     {
-        get => displayInputs || !IsEmpty;
+        get => displayInputs || HasFocus;
         set
         {
             if (displayInputs != value)
@@ -187,7 +187,7 @@ public partial class ScrapeJobEditor : ObservableObject
     private void ValidateAsRequired() => IsValidAsRequired = !HasErrors && PreviewResults?.Length == getEventsForPreview()?.Length;
 
     private Guid? focusedId; // tracks the child that currently has focus
-    [ObservableProperty] public partial bool HasFocus { get; set; }
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayInputs))] public partial bool HasFocus { get; set; }
 
     internal async ValueTask SetFocusAsync(VisualElement visual, bool focused)
     {
@@ -298,9 +298,11 @@ public partial class ScrapeJobEditor : ObservableObject
             Spacing = 5;
 
             FlexLayout form = new() { Wrap = FlexWrap.Wrap, AlignItems = FlexAlignItems.Center };
-            (Switch Switch, Grid Wrapper) displayInputs = Swtch(nameof(DisplayInputs));
+
+            (Switch Switch, Grid Wrapper) displayInputs = Swtch(nameof(DisplayInputs),
+                BindingMode.OneWayToSource); // avoids triggering set by reaction to PropertyChanged, falsifying field value
+
             (Switch Switch, Grid Wrapper) ignoreNestedText = Swtch(nameof(IgnoreNestedText));
-            displayInputs.Switch.ForwardFocusTo(model);
             HintedInput(ignoreNestedText.Switch, HelpTexts.ScrapeJobIgnoreNestedText);
 
             List<IView> children = [
@@ -395,10 +397,10 @@ internal static class ScopeJobEditorExtensions
         => vis.OnFocusChanged(async (vis, focused) => await model.SetFocusAsync(vis, focused));
 
     internal static T DisplayWithSignificant<T>(this T vis, string textPropertyName) where T : VisualElement
-        => vis.BindVisible(new Binding(nameof(ScrapeJobEditor.HasFocus)), Converters.Or,
+        => vis.BindVisible(new Binding(nameof(ScrapeJobEditor.DisplayInputs)), Converters.Or,
             new Binding(textPropertyName, converter: Converters.IsSignificant));
 
     internal static T DisplayWithChecked<T>(this T vis, string boolPropertyName) where T : VisualElement
-        => vis.BindVisible(new Binding(nameof(ScrapeJobEditor.HasFocus)),
+        => vis.BindVisible(new Binding(nameof(ScrapeJobEditor.DisplayInputs)),
             Converters.Or, new Binding(boolPropertyName));
 }

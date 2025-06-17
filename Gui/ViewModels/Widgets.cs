@@ -35,9 +35,9 @@ internal static class Widgets
     internal static CheckBox Check(string isCheckedPropertyPath, object? source = null)
         => new CheckBox().Margins(right: -20).Bind(CheckBox.IsCheckedProperty, isCheckedPropertyPath, source: source);
 
-    internal static (Switch Switch, Grid Wrapper) Swtch(string isToggledPropertyPath)
+    internal static (Switch Switch, Grid Wrapper) Swtch(string isToggledPropertyPath, BindingMode mode = BindingMode.Default)
     {
-        Switch swtch = new Switch().Bind(Switch.IsToggledProperty, isToggledPropertyPath);
+        Switch swtch = new Switch().Bind(Switch.IsToggledProperty, isToggledPropertyPath, mode);
         return (Switch: swtch, Wrapper: SwtchWrp(swtch));
     }
 
