@@ -103,7 +103,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
 
         async void HandleLoaded(string? html)
         {
-            Unsub();
+            DetachHandlers();
 
             if (html.IsSignificant())
             {
@@ -117,7 +117,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
 
         void HandleError(WebNavigationResult navigationResult)
         {
-            Unsub();
+            DetachHandlers();
 
             if (!throwOnTimeout && navigationResult == WebNavigationResult.Timeout)
                 eventHtmlLoading.TrySetResult(null);
@@ -129,7 +129,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
             }
         }
 
-        void Unsub()
+        void DetachHandlers()
         {
             loader!.HtmlWithEventsLoaded -= HandleLoaded;
             loader!.ErrorLoading -= HandleError;
