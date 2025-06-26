@@ -67,7 +67,16 @@ public partial class EventList : ObservableObject
 
     internal async Task LoadEvents()
     {
-        allEvents = await eventRepo.LoadAllAsync();
+        try
+        {
+            allEvents = await eventRepo.LoadAllAsync();
+        }
+        catch (Exception ex)
+        {
+            allEvents = [];
+            await ErrorReport.WriteAsyncAndShare(ex.ToString(), "loading events");
+        }
+
         ApplyFilter();
     }
 
