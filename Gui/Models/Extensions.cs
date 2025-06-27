@@ -30,7 +30,7 @@ internal static partial class StringExtensions
     internal static string ApplyReplacements(this string input, Dictionary<string, string> replacements)
     {
         foreach (var pair in replacements) // Apply each replacement pair
-            input = Regex.Replace(input, Regex.Escape(pair.Key), pair.Value);
+            input = Regex.Replace(input, pair.Key, pair.Value);
 
         return input;
     }
