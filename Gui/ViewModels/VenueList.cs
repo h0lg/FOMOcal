@@ -282,16 +282,19 @@ public partial class VenueList : ObservableObject
                 if (cmd.CanExecute(btn.CommandParameter))
                 {
                     cts?.Cancel(); // stop animation
+                    cts?.Dispose(); // explicitly to avoid memory leaks
+                    cts = null; // make it eligible for GC
                     return;
                 }
 
                 // can't execute, i.e. should run
                 if (cts != null) return; // already running
                 cts = new CancellationTokenSource();
+                var token = cts.Token; // use separate variable for token because cts may be set null on another thread
 
                 try
                 {
-                    while (!cts.Token.IsCancellationRequested && !cmd.CanExecute(btn.CommandParameter))
+                    while (!token.IsCancellationRequested && !cmd.CanExecute(btn.CommandParameter))
                     {
                         await btn.RotateTo(90, 1500, Easing.SinInOut); // retract animation
                         await btn.RotateTo(0, 500, Easing.SpringOut); // hit animation
@@ -300,7 +303,6 @@ public partial class VenueList : ObservableObject
                 finally
                 {
                     await btn.RotateTo(0, 500, Easing.SinInOut); // final hit resets
-                    cts = null;
                 }
             };
         }
