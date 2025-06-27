@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Markup.LeftToRight;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FomoCal.Gui.Resources;
@@ -261,19 +262,20 @@ public partial class VenueEditor : ObservableObject
                 .BindVisible(nameof(ShowRequiredEventFields));
 
             // Step 4: Additional Event Details
-            var optionalEventFields = OptionalEventFields().BindVisible(nameof(ShowOptionalEventFields));
+            const string showOptionalEventFields = nameof(ShowOptionalEventFields);
+            var optionalEventFields = OptionalEventFields().BindVisible(showOptionalEventFields);
 
-            // form controls
-            var saveButton = Btn("💾 Save this venue", nameof(SaveCommand))
-                .BindVisible(nameof(ShowOptionalEventFields));
-
-            var deleteButton = Btn("🗑 Delete this venue", nameof(DeleteCommand)).IsVisible(model.isDeletable);
+            var formControls = HStack(10,
+                Btn("💾 Save", nameof(SaveCommand)).BindVisible(showOptionalEventFields),
+                Lbl("or").BindVisible(showOptionalEventFields),
+                Btn("🗑 Delete", nameof(DeleteCommand)).IsVisible(model.isDeletable),
+                Lbl("this venue")).Right();
 
             form = new ScrollView
             {
                 Content = VStack(20,
                     //progress,
-                    venueFields, eventContainer, requiredEventFields, optionalEventFields, saveButton, deleteButton)
+                    venueFields, eventContainer, requiredEventFields, optionalEventFields, formControls)
                     .Padding(20)
             };
 
