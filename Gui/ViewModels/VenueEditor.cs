@@ -320,8 +320,13 @@ public partial class VenueEditor : ObservableObject
         private Grid EventContainerSelector()
         {
             var help = HelpLabel();
-            Label scrapeConfigInfo = Lbl("ⓘ").ToolTip(string.Format(HelpTexts.ScrapeConfigInfoFormat, AppInfo.Name));
-            scrapeConfigInfo.TapGesture(() => help.label.FormattedText = scrapeConfigInfo.FormatTooltip());
+            Label scrapeConfigInfo = Lbl("ⓘ");
+            string scrapeConfigInfoText = string.Format(HelpTexts.ScrapeConfigInfoFormat, AppInfo.Name);
+
+            scrapeConfigInfo.TapGesture(async () =>
+                await help.InlineHelpTextAsync(scrapeConfigInfoText, host: scrapeConfigInfo,
+                    focused: help.label.BindingContext != scrapeConfigInfo)); // close help if already opened
+
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
             selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help, async (_, focused) =>
