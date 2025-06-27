@@ -84,7 +84,7 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A note explaining something you&apos;re doing e.g. in the selector or the RegEx that&apos;s complicated or not obvious..
+        ///   Looks up a localized string similar to A note explaining something you&apos;re doing - e.g. in the selector or the RegEx - that&apos;s complicated or not obvious..
         /// </summary>
         internal static string Comment {
             get {
@@ -109,7 +109,7 @@ namespace FomoCal.Gui.Resources {
         ///^^M | MM – Month number (no | with leading zero)
         ///^^MMM | MMMM – Month name (short | full)
         ///^^yy | yyyy – Year (2 | 4 digits)
-        ///^^separators like . / , wh [rest of string was truncated]&quot;;.
+        ///^^separators like . /  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string DateScrapeJobFormat {
             get {

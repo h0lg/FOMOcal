@@ -255,6 +255,6 @@ If you specify only one encoding without a pipe, it's used for both flavors.
 To default either value to the encoding the page or server claims, omit it; e.g. "|UTF-8" will only re-interpret the encoding of the HTML received from the automated browser.</value>
   </data>
   <data name="Comment" xml:space="preserve">
-    <value>A note explaining something you're doing e.g. in the selector or the RegEx that's complicated or not obvious.</value>
+    <value>A note explaining something you're doing - e.g. in the selector or the RegEx - that's complicated or not obvious.</value>
   </data>
 </root>
