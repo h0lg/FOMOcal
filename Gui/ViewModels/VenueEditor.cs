@@ -459,10 +459,10 @@ public partial class VenueEditor : ObservableObject
                 return (selector, picksDescendant);
             });
 
-        protected override void OnDisappearing()
+        protected override bool OnBackButtonPressed()
         {
-            base.OnDisappearing();
             model.SetActionTaken(null); // to signal cancellation
+            return base.OnBackButtonPressed();
         }
     }
 }
