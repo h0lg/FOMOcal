@@ -95,7 +95,7 @@ partial class VenueEditor
             const string displayedSelector = nameof(DisplayedSelector),
                 showSelectorOptions = nameof(ShowSelectorOptions);
 
-            Label help = HelpLabel();
+            var help = HelpLabel();
 
             var controlsAndInstructions = HWrap(5,
                 Swtch(nameof(EnablePicking)).Wrapper
@@ -156,7 +156,7 @@ partial class VenueEditor
             {
                 Content = Grd(cols: [Star], rows: [Auto, Auto, Auto], spacing: 0,
                 controlsAndInstructions.View,
-                help.BindVisible(showSelectorOptions).Row(1), selectorDisplay.Row(2))
+                help.layout.BindVisible(showSelectorOptions).Row(1), selectorDisplay.Row(2))
             };
 
             SetupAutoSizing();

@@ -317,9 +317,9 @@ public partial class VenueEditor : ObservableObject
 
         private Grid EventContainerSelector()
         {
-            Label help = HelpLabel();
+            var help = HelpLabel();
             Label scrapeConfigInfo = Lbl("ⓘ").ToolTip(string.Format(HelpTexts.ScrapeConfigInfoFormat, AppInfo.Name));
-            scrapeConfigInfo.TapGesture(() => help.FormattedText = scrapeConfigInfo.FormatTooltip());
+            scrapeConfigInfo.TapGesture(() => help.label.FormattedText = scrapeConfigInfo.FormatTooltip());
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
             selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help, async (_, focused) =>
@@ -382,7 +382,7 @@ public partial class VenueEditor : ObservableObject
             return Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),
                 scrapeConfigInfo.CenterVertical().Column(1),
-                help.Row(1).ColumnSpan(2),
+                help.layout.Row(1).ColumnSpan(2),
                 controls.View.Row(2).ColumnSpan(2),
                 previewOrErrors.Row(3).ColumnSpan(2));
 

@@ -37,7 +37,7 @@ internal static partial class ViewExtensions
         return vis;
     }
 
-    internal static T InlineTooltipOnFocus<T>(this T host, string tooltip, Label label,
+    internal static T InlineTooltipOnFocus<T>(this T host, string tooltip, (Label label, Border layout) help,
         Action<VisualElement, bool>? onFocusChanged = null,
         Func<VisualElement, bool, bool>? cancelFocusChanged = null) where T : VisualElement
         => host.ToolTip(tooltip).OnFocusChanged(async (vis, focused) =>
@@ -45,24 +45,24 @@ internal static partial class ViewExtensions
             if (cancelFocusChanged?.Invoke(vis, focused) == true) return;
             onFocusChanged?.Invoke(vis, focused);
             vis.ToolTip(focused ? null : tooltip); // prevent tooltip from overlaying help on focus
-            await label.InlineHelpTextAsync(tooltip, vis, focused);
+            await help.InlineHelpTextAsync(tooltip, vis, focused);
         });
 
-    internal static async Task InlineHelpTextAsync(this Label label, string tooltip, VisualElement host, bool focused)
+    internal static async Task InlineHelpTextAsync(this (Label label, Border layout) help, string tooltip, VisualElement host, bool focused)
     {
         if (focused)
         {
-            label.BindingContext = host; // abusing unused BindingContext to remember host
-            label.FormattedText = tooltip.ParseMarkdown(); // set its help text
-            await Task.WhenAll(label.FadeTo(1, 300), label.ScaleTo(1, 300, Easing.CubicOut)); // show label
+            help.label.BindingContext = host; // abusing unused BindingContext to remember host
+            help.label.FormattedText = tooltip.ParseMarkdown(); // set its help text
+            await Task.WhenAll(help.layout.FadeTo(1, 300), help.layout.ScaleTo(1, 300, Easing.CubicOut)); // show label
         }
-        else if (label.BindingContext == host) // only react to unfocused if remembered host matches
+        else if (help.label.BindingContext == host) // only react to unfocused if remembered host matches
         {
             await Task.Delay(100); // defer unfocus reaction to allow another control to take focus
-            if (label.BindingContext != host) return; // another host took focus, do not hide
-            label.BindingContext = null; // reset remembered host
-            await Task.WhenAll(label.FadeTo(0, 300), label.ScaleTo(0, 300, Easing.CubicIn)); // hide label
-            if (label.BindingContext == null) label.FormattedText = null; // only reset content if no other host took focus
+            if (help.label.BindingContext != host) return; // another host took focus, do not hide
+            help.label.BindingContext = null; // reset remembered host
+            await Task.WhenAll(help.layout.FadeTo(0, 300), help.layout.ScaleTo(0, 300, Easing.CubicIn)); // hide label
+            if (help.label.BindingContext == null) help.label.FormattedText = null; // only reset content if no other host took focus
         }
     }
 

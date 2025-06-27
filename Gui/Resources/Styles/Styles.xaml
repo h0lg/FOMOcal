@@ -223,6 +223,21 @@
         <Setter Property="FontSize" Value="12" />
     </Style>
 
+    <Style TargetType="Border" Class="help">
+        <Setter Property="Padding" Value="5" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource HelpBg}, Dark={StaticResource HelpBgDark}}" />
+
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="10" />
+            </Setter.Value>
+        </Setter>
+
+        <!-- to support opening animation -->
+        <Setter Property="Scale" Value="0" />
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+
     <Style TargetType="Label" Class="Headline">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
         <Setter Property="FontSize" Value="20" />

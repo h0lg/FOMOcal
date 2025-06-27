@@ -19,8 +19,10 @@
     <Color x:Key="Magenta">#D600AA</Color>
     <Color x:Key="MidnightBlue">#190649</Color>
     <Color x:Key="OffBlack">#1f1f1f</Color>
-    <Color x:Key="Help">#88f</Color>
-    <Color x:Key="HelpDark">#88f</Color>
+    <Color x:Key="HelpBg">#ccf</Color>
+    <Color x:Key="HelpBgDark">#33c</Color>
+    <Color x:Key="Help">#228</Color>
+    <Color x:Key="HelpDark">#ddf</Color>
     <Color x:Key="Success">#2a2</Color>
     <Color x:Key="SuccessDark">#2a2</Color>
     <Color x:Key="Error">#a22</Color>
@@ -50,6 +52,6 @@
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
 
-    <Color x:Key="LinkTextLight">#7777FF</Color>
-    <Color x:Key="LinkTextDark">#55f</Color>
+    <Color x:Key="LinkTextLight">#77F</Color>
+    <Color x:Key="LinkTextDark">#aaf</Color>
 </ResourceDictionary>

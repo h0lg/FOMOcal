@@ -293,7 +293,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
     public partial class View : VerticalStackLayout
     {
-        private readonly Label help = HelpLabel();
+        private readonly (Label label, Border layout) help;
         private readonly ScrapeJobEditor model;
         private readonly Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry;
         private readonly Func<Entry?> getVisualSelectorHost;
@@ -305,6 +305,8 @@ public partial class ScrapeJobEditor : ObservableObject
             this.model = model;
             this.createVisualSelectorEntry = createVisualSelectorEntry;
             this.getVisualSelectorHost = getVisualSelectorHost;
+            help = HelpLabel();
+
             BindingContext = model;
             Spacing = 5;
 
@@ -343,7 +345,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 form.Children.Add(child);
             }
 
-            Children.Add(help);
+            Children.Add(help.layout);
             Children.Add(form);
 
             Children.Add(PreviewOrErrorList(itemsSource: nameof(PreviewResults),
