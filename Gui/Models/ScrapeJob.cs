@@ -107,7 +107,7 @@ public partial class ScrapeJob
 
             if (text.IsNullOrWhiteSpace()) return null;
             text = text.NormalizeWhitespace(); // trims text as well
-            if (Replace.IsSignificant()) text = text.ApplyReplacements(Replacements);
+            if (Replace.IsSignificant() && Replacements.Count > 0) text = text.ApplyReplacements(Replacements);
             return Match.IsSignificant() ? ApplyRegex(text!, Match!) : text;
         }
         catch (Exception ex)
