@@ -297,14 +297,16 @@ public partial class VenueList : ObservableObject
                     while (!token.IsCancellationRequested && !cmd.CanExecute(btn.CommandParameter))
                     {
                         await btn.RotateTo(90, 1500, Easing.SinInOut); // retract animation
-                        await btn.RotateTo(0, 500, Easing.SpringOut); // hit animation
+                        await AnimateHit();
                     }
                 }
                 finally
                 {
-                    await btn.RotateTo(0, 500, Easing.SinInOut); // final hit resets
+                    await AnimateHit(); // final hit resets
                 }
             };
+
+            Task<bool> AnimateHit() => btn.RotateTo(0, 300, Easing.SpringOut);
         }
     }
 
