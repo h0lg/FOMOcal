@@ -263,9 +263,21 @@
         <Setter Property="LineBreakMode" Value="WordWrap" />
     </Style>
 
-    <Style TargetType="Label" Class="Clickable">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
+    <Style TargetType="Border" Class="showVisualSelector">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="Margin" Value="-5,0,0,0" />
+        <Setter Property="Padding" Value="5,3,5,12" />
+
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="0,5,0,5" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Label" Class="showVisualSelectorLabel">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
+        <Setter Property="FontSize" Value="20" />
     </Style>
 
     <Style TargetType="Editor" Class="Error">

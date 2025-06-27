@@ -9,7 +9,7 @@ internal static class Styles
     internal static class Label
     {
         internal static string Headline = GetName(), SubHeadline = GetName(),
-            Clickable = GetName(), Demoted = GetName(), VenueRowDetail = GetName();
+            Demoted = GetName(), VenueRowDetail = GetName();
     }
 
     internal static class Editor

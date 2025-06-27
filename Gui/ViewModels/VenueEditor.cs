@@ -440,15 +440,19 @@ public partial class VenueEditor : ObservableObject
 
         private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)
         {
-            Label lbl = Lbl("🖽").ToolTip("🥢 pluck from the page").FontSize(20).CenterVertical()
-                .StyleClass(Styles.Label.Clickable)
-                .TapGesture(async () =>
-                {
-                    (string selector, bool pickDescendant) = pickRelativeTo.Invoke();
-                    await ShowVisualSelectorForAsync(entry, selector, pickDescendant);
-                });
+            Border layout = new()
+            {
+                StyleClass = ["showVisualSelector"],
+                Content = Lbl("🖽").StyleClass("showVisualSelectorLabel")
+            };
 
-            return HStack(0, entry, lbl.Margins(left: -5));
+            layout.ToolTip("🥢 pluck from the page").TapGesture(async () =>
+            {
+                (string selector, bool pickDescendant) = pickRelativeTo.Invoke();
+                await ShowVisualSelectorForAsync(entry, selector, pickDescendant);
+            });
+
+            return HStack(0, entry, layout);
         }
 
         private HorizontalStackLayout RelativeSelectorEntry(Entry entry, Func<string?>? maybeGetDescendantOfClosest)
