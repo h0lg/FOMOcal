@@ -113,13 +113,16 @@ internal static partial class ViewExtensions
     {
         FormattedString formatted = new();
 
-        foreach (var line in text.Split('\n'))
+        string[] lines = text.Split('\n');
+
+        for (int i = 0; i < lines.Length; i++)
         {
+            string? line = lines[i];
             var trimmedLine = line.Trim();
 
             if (trimmedLine.IsNullOrWhiteSpace())
             {
-                formatted.Spans.Add(new Span { Text = Environment.NewLine });
+                AppendEmptyLine(formatted, lines, i);
                 continue;
             }
 
@@ -128,7 +131,7 @@ internal static partial class ViewExtensions
             {
                 var footerText = trimmedLine[footerPrefix.Length..].TrimStart();
                 AppendWithLinks(formatted, footerText, Styles.Span.HelpFooterLinkSpan, Styles.Span.HelpFooterSpan);
-                formatted.Spans.Add(new Span { Text = Environment.NewLine });
+                AppendEmptyLine(formatted, lines, i);
                 continue;
             }
 
@@ -151,10 +154,16 @@ internal static partial class ViewExtensions
 
             // Default: normal paragraph with possible links
             AppendWithLinks(formatted, trimmedLine, Styles.Span.HelpLinkSpan, Styles.Span.HelpSpan);
-            formatted.Spans.Add(new Span { Text = Environment.NewLine });
+            AppendEmptyLine(formatted, lines, i);
         }
 
         return formatted;
+
+        static void AppendEmptyLine(FormattedString formatted, string[] lines, int lineIndex)
+        {
+            // only append empty line if there are more lines, don't end on one
+            if (lineIndex < lines.Length - 1) formatted.Spans.Add(new Span { Text = Environment.NewLine });
+        }
     }
 
     internal static FormattedString LinkifyUrls(this string text, Style linkStyle, Style? normalStyle = null)
