@@ -25,7 +25,7 @@ Tired of missing great shows? **FOMOcal** helps you stay on top of your local mu
 4. ✨ **Select the events** you want to attend or share.
 
 5. 🥡 **Export your selection** as an [📆 iCalendar (.ics)](https://en.wikipedia.org/wiki/ICalendar) file for your calendar app or as a [📊 CSV Data Export](https://en.wikipedia.org/wiki/Comma-separated_values) file.
-    Share your venue configs with friends so they can pull the same listings.
+    Share even your venue configs with friends so they can pull and browse the same listings.
 
 ### Event details
 ❗ *Name* and 📆 *Date* are **required**.
@@ -183,7 +183,8 @@ Lend those cool little local spots a hand by promoting their events - that way k
 bringing people together for some good music and hopefully more great bands into your town in the future.
 
 With FOMOcal you can support different scenes by **sharing relevant venues and their events in easily digestible formats**.
-Go figure out how to get event info from the web page of a concert location and share it.
-Or curate a list of shows over the next few months for the fine lads and lasses yourself.
-FOMOcal assumes you have no clue how web pages are built and tries to give you the tools -
-and enough help for them - to let you succeed anyway.
+Go figure out how to get event info from the web page of a concert location and share the config with friends.
+Or curate a list of good shows over the next few months for the music lovers yourself.
+
+FOMOcal assumes you have no clue how web pages work or how to extract data from them - and tries to hand you the tools
+and enough help for them to let you succeed anyway.
