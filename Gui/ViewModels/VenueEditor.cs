@@ -109,6 +109,18 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
+    public string? EventFilter
+    {
+        get => venue.Event.Filter;
+        set
+        {
+            if (value == venue.Event.Filter) return;
+            venue.Event.Filter = value;
+            previewedEvents = null;
+            OnPropertyChanged();
+        }
+    }
+
     public string? NextEventPageSelector
     {
         get => venue.Event.NextPageSelector;
@@ -141,7 +153,9 @@ public partial class VenueEditor : ObservableObject
 
         PropertyChanged += (o, e) =>
         {
-            if (e.PropertyName == nameof(SkipEvents) || e.PropertyName == nameof(TakeEvents))
+            if (e.PropertyName == nameof(SkipEvents)
+                || e.PropertyName == nameof(TakeEvents)
+                || e.PropertyName == nameof(EventFilter))
                 UpdateEventContainerPreview();
         };
 
@@ -191,7 +205,7 @@ public partial class VenueEditor : ObservableObject
 
         try
         {
-            previewedEvents = [.. programDocument.SelectEvents(venue).Skip(SkipEvents).Take(TakeEvents)];
+            previewedEvents = [.. programDocument.SelectEvents(venue).FilterEvents(venue).Skip(SkipEvents).Take(TakeEvents)];
             PreviewedEventTexts = [.. previewedEvents.Select(e => e.TextContent.NormalizeWhitespace())];
             scrapeJobEditors.ForEach(e => e.UpdatePreview());
             EventSelectorHasError = false;
@@ -359,6 +373,10 @@ public partial class VenueEditor : ObservableObject
             waitForJsRendering.Switch.InlineTooltipOnFocus(HelpTexts.WaitForJsRendering, help,
                 onFocusChanged: async (_, focused) => await ToggleSelectorRelatedFocus(focused));
 
+            var eventFilter = Entr(nameof(EventFilter), placeholder: "text or XPath")
+                .InlineTooltipOnFocus(string.Format(HelpTexts.EventContainerFilterFormat, FomoCal.ScrapeJob.XPathSelectorPrefix),
+                    help, onFocusChanged: async (_, focused) => await ToggleSelectorRelatedFocus(focused));
+
             Picker pagingStrategy = new()
             {
                 ItemsSource = model.PagingStrategies.ConvertAll(e => e.GetDescription()),
@@ -391,6 +409,7 @@ public partial class VenueEditor : ObservableObject
 
             var controls = HWrap(5,
                 Lbl("Event container").Bold(), containerSelector,
+                Lbl("filtered by"), eventFilter,
                 Lbl("lazy"), waitForJsRendering.Wrapper,
                 Lbl("loading"), pagingStrategy,
                 nextPageSelector,

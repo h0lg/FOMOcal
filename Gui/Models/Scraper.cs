@@ -69,7 +69,7 @@ public sealed partial class Scraper : IDisposable
     {
         var addedAny = false;
 
-        foreach (var container in document.SelectEvents(venue))
+        foreach (var container in document.SelectEvents(venue).FilterEvents(venue))
         {
             var name = venue.Event.Name.GetValue(container, errors);
             DateTime? date = venue.Event.Date.GetDate(container, errors);

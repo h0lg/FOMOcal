@@ -162,6 +162,19 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Filters the selected event containers. Supply a simple case-insensitive substring the container text must contain.
+        ///You may also use XPath for more control - if you do, stick to XPath 1.0 features and pre-fix your filter with &apos;{0}&apos;.
+        ///
+        ///^^You could do this in the selector - but you&apos;d have to write both selection and filtering in the more complicated XPath syntax.
+        ///^^Also, pre-filtering events in the selector will cause initial loading to run into a timeout when waiting for lazy-loaded events and the page con [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string EventContainerFilterFormat {
+            get {
+                return ResourceManager.GetString("EventContainerFilterFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The selector to the event containers - of which there are probably multiple on the page, each containing as many of one event&apos;s details as possible - but only of a single event.
         ///
         ///^^Some event pages for example display multiple events on the same day in a group. If you see it, use skip/take to try it out on such a group and choose a container that contains only one of their details - otherwise only the first event on any given day will be retrieved.
@@ -338,9 +351,7 @@ namespace FomoCal.Gui.Resources {
         ///   Looks up a localized string similar to What&apos;s the difference? In most cases you&apos;ll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler selector syntax.
         ///
         ///# XPath
-        ///For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
-        ///^^Make sure to stick to XPath 1.0 features and prefix your selector with &apos;{0}&apos;. Using the ➕ append button will do that for you.
-        ///^^E.g. to select elements with class &apos;event&apos; that have a [rest of string was truncated]&quot;;.
+        ///For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more features like [traversing along different axes](https://developer.mozilla.org/en-US/docs/Web/XML/XPath/Reference/Axes) in the document or [powerful functions](https://developer.mozilla.org/en-US/docs/Web/XML/XPath/Reference/Fu [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SelectorSyntaxFormat {
             get {

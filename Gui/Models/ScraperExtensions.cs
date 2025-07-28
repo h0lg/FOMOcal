@@ -23,6 +23,19 @@ internal static class ScraperExtensions
             ? document.Body.SelectNodes(xPathSelector).OfType<DomElmt>()
             : document.QuerySelectorAll(venue.Event.Selector);
 
+    internal static IEnumerable<DomElmt> FilterEvents(this IEnumerable<DomElmt> unfiltered, Venue venue)
+    {
+        if (venue.Event.Filter.IsNullOrWhiteSpace()) return unfiltered;
+
+        var filter = venue.Event.Filter!;
+        var events = unfiltered.ToArray();
+
+        return ScrapeJob.TryGetXPathSelector(filter, out var xPathFilter)
+            ? events.Where(el => el.SelectNodes(xPathFilter).Count > 0)
+            // fallback: treat as text substring filter
+            : events.Where(el => el.TextContent?.Contains(filter, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
+
     /// <summary>Adds a HTTP header to the <paramref name="response"/> that overrides
     /// e.g. a meta tag in the document source that claims an incorrect encoding
     /// with the specified <paramref name="encoding"/>,

@@ -54,6 +54,7 @@ public class Venue
     {
         public required string Selector { get; set; }
         public bool WaitForJsRendering { get; set; }
+        public string? Filter { get; set; }
         public PagingStrategy PagingStrategy { get; set; }
         public string? NextPageSelector { get; set; }
         public string? Comment { get; set; }

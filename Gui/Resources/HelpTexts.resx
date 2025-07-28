@@ -176,10 +176,10 @@ You may want to do this e.g. to convert a date string into a valid format. Patte
     <value>What's the difference? In most cases you'll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler selector syntax.
 
 # XPath
-For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more powerful functions, e.g. for filtering.
+For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml/xpath_syntax.asp), which has more features like [traversing along different axes](https://developer.mozilla.org/en-US/docs/Web/XML/XPath/Reference/Axes) in the document or [powerful functions](https://developer.mozilla.org/en-US/docs/Web/XML/XPath/Reference/Functions).
 ^^Make sure to stick to XPath 1.0 features and prefix your selector with '{0}'. Using the ➕ append button will do that for you.
-^^E.g. to select elements with class 'event' that have a 'category' class div with the cleaned text 'concert', you'd write:
-^^{0}//div[contains(@class, 'event')][.//div[@class='category' and normalize-space(.)='concert']]</value>
+^^E.g. to select elements with class 'event', you'd write:
+^^{0}//div[contains(@class, 'event')]</value>
   </data>
   <data name="EnablePicking" xml:space="preserve">
     <value>Toggle picking mode.
@@ -256,5 +256,15 @@ To default either value to the encoding the page or server claims, omit it; e.g.
   </data>
   <data name="Comment" xml:space="preserve">
     <value>A note explaining something you're doing - e.g. in the selector or the RegEx - that's complicated or not obvious.</value>
+  </data>
+  <data name="EventContainerFilterFormat" xml:space="preserve">
+    <value>Filters the selected event containers. Supply a simple case-insensitive substring the container text must contain.
+You may also use XPath for more control - if you do, stick to XPath 1.0 features and pre-fix your filter with '{0}'.
+
+^^You could do this in the selector - but you'd have to write both selection and filtering in the more complicated XPath syntax.
+^^Also, pre-filtering events in the selector will cause initial loading to run into a timeout when waiting for lazy-loaded events and the page contains no matches.
+^^
+^^E.g. to filter for containers that have a 'category' class div with the cleaned text 'concert' using XPath, you'd write:
+^^{0}.//div[@class='category' and normalize-space(.)='concert']</value>
   </data>
 </root>
