@@ -329,22 +329,18 @@ public partial class VenueEditor : ObservableObject
 
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
-            selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help, async (_, focused) =>
-            {
-                if (focused) model.EventSelectorRelatedHasFocus = true;
-                else
-                {
-                    await Task.Delay(300); // to allow for using the skip/take steppers without flickering
-                    if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = false;
-                }
+            selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help,
+                onFocusChanged: async (_, focused) => await ToggleSelectorRelatedFocus(focused),
                 /*  Only propagate the loss of focus to the property
                     if entry has not currently opened the visualSelector
                     to keep the help visible while working there */
-            }, cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis);
+                cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis);
 
             var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
-            (Switch Switch, Grid Wrapper) waitForJsRendering = Toggle(nameof(WaitForJsRendering));
-            waitForJsRendering.Switch.InlineTooltipOnFocus(HelpTexts.WaitForJsRendering, help);
+            (Switch Switch, Grid Wrapper) waitForJsRendering = Swtch(nameof(WaitForJsRendering));
+
+            waitForJsRendering.Switch.InlineTooltipOnFocus(HelpTexts.WaitForJsRendering, help,
+                onFocusChanged: async (_, focused) => await ToggleSelectorRelatedFocus(focused));
 
             Picker pagingStrategy = new()
             {
@@ -393,21 +389,14 @@ public partial class VenueEditor : ObservableObject
                 controls.View.Row(2).ColumnSpan(2),
                 previewOrErrors.Row(3).ColumnSpan(2));
 
-            (Switch Switch, Grid Wrapper) Toggle(string isToggledPropertyPath)
+            async Task ToggleSelectorRelatedFocus(bool focused)
             {
-                (Switch Switch, Grid Wrapper) toggle = Swtch(isToggledPropertyPath);
-
-                toggle.Switch.OnFocusChanged(async (_, focused) =>
+                if (focused) model.EventSelectorRelatedHasFocus = true;
+                else
                 {
-                    if (focused) model.EventSelectorRelatedHasFocus = focused;
-                    else
-                    {
-                        await Task.Delay(300); // to allow for using the skip/take steppers without flickering
-                        if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = focused;
-                    }
-                });
-
-                return toggle;
+                    await Task.Delay(300); // to allow for using the skip/take steppers without flickering
+                    if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = false;
+                }
             }
 
             Task SyncPagingStrategyHelp(bool focused) =>
