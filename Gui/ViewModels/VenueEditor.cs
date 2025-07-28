@@ -175,6 +175,7 @@ public partial class VenueEditor : ObservableObject
         ShowEventContainer = hasName && hasProgramUrl;
         ShowRequiredEventFields = ShowEventContainer && EventSelector.IsSignificant();
         ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValidAsRequired && eventDate.IsValidAsRequired;
+        SaveCommand.NotifyCanExecuteChanged();
         if (ShowRequiredEventFields && previewedEvents == null) UpdateEventContainerPreview();
     }
 
@@ -212,7 +213,11 @@ public partial class VenueEditor : ObservableObject
     private static async Task OpenUrlAsync(string url)
         => await WebViewPage.OpenUrlAsync(url);
 
-    [RelayCommand]
+    private bool CanSave() => ShowEventContainer
+        && (previewedEvents == null || previewedEvents.Length == 0)
+            || (eventName.IsValidAsRequired && eventDate.IsValidAsRequired);
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
     {
         // reset empty optional scrape jobs
@@ -273,8 +278,8 @@ public partial class VenueEditor : ObservableObject
             var optionalEventFields = OptionalEventFields().BindVisible(showOptionalEventFields);
 
             var formControls = HStack(10,
-                Btn("💾 Save", nameof(SaveCommand)).BindVisible(showOptionalEventFields),
-                Lbl("or").BindVisible(showOptionalEventFields),
+                Btn("💾 Save", nameof(SaveCommand)),
+                Lbl("or").IsVisible(model.isDeletable),
                 Btn("🗑 Delete", nameof(DeleteCommand)).IsVisible(model.isDeletable),
                 Lbl("this venue")).Right();
 
