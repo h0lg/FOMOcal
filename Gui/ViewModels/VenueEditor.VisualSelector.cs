@@ -27,6 +27,40 @@ partial class VenueEditor
         }
     }
 
+    private async Task OnHtmlWithEventsLoadedAsync(string? html, string timeOutMessage)
+    {
+        if (html.IsSignificant())
+        {
+            string? encodingOverride = venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
+            programDocument = await scraper.CreateDocumentAsync(html!, encodingOverride);
+        }
+        else
+        {
+            programDocument = null;
+            await App.CurrentPage.DisplayAlert("Event loading timed out.", timeOutMessage, "OK");
+        }
+
+        previewedEvents = null;
+        IsEventPageLoading = false;
+        RevealMore();
+    }
+
+    private async Task OnErrorLoadingEventsAsync(WebNavigationResult navigationResult)
+    {
+        previewedEvents = null;
+        programDocument = null;
+        IsEventPageLoading = false;
+        string suffix = navigationResult == WebNavigationResult.Cancel ? "ed" : "";
+        var message = $"Navigation {navigationResult}{suffix}.";
+
+        // using ErrorLoading to give user feedback about an invalid URL instead of validating before
+        if (navigationResult == WebNavigationResult.Failure && !ProgramUrl.IsValidHttpUrl())
+            message += $" '{ProgramUrl}' is not a valid HTTP URL.";
+
+        await App.CurrentPage.DisplayAlert("Error loading event page.", message, "OK");
+        RevealMore();
+    }
+
     // extends the PickedSelectorOptions with others that need persistence
     internal partial class SelectorOptions : AutomatedEventPageView.PickedSelectorOptions
     {
@@ -43,41 +77,8 @@ partial class VenueEditor
         private AbsoluteLayout CreateVisualSelector()
         {
             pageView = new(model.venue);
-
-            pageView.HtmlWithEventsLoaded += async html =>
-            {
-                if (html.IsSignificant())
-                {
-                    string? encodingOverride = model.venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
-                    model.programDocument = await model.scraper.CreateDocumentAsync(html!, encodingOverride);
-                }
-                else
-                {
-                    model.programDocument = null;
-                    await App.CurrentPage.DisplayAlert("Event loading timed out.", pageView.EventLoadingTimedOut, "OK");
-                }
-
-                model.previewedEvents = null;
-                model.IsEventPageLoading = false;
-                model.RevealMore();
-            };
-
-            pageView.ErrorLoading += async navigationResult =>
-            {
-                model.previewedEvents = null;
-                model.programDocument = null;
-                model.IsEventPageLoading = false;
-                string suffix = navigationResult == WebNavigationResult.Cancel ? "ed" : "";
-                var message = $"Navigation {navigationResult}{suffix}.";
-
-                // using ErrorLoading to give user feedback about an invalid URL instead of validating before
-                if (navigationResult == WebNavigationResult.Failure && !model.ProgramUrl.IsValidHttpUrl())
-                    message += $" '{model.ProgramUrl}' is not a valid HTTP URL.";
-
-                await App.CurrentPage.DisplayAlert("Error loading event page.", message, "OK");
-                model.RevealMore();
-            };
-
+            pageView.HtmlWithEventsLoaded += async html => await model.OnHtmlWithEventsLoadedAsync(html, pageView.EventLoadingTimedOut);
+            pageView.ErrorLoading += async navigationResult => await model.OnErrorLoadingEventsAsync(navigationResult);
             pageView.PickedSelector += selector => model.PickedSelector = selector;
 
             model.PropertyChanged += async (o, e) =>
