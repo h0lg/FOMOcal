@@ -43,14 +43,27 @@ public sealed partial class Scraper : IDisposable
         try
         {
             var document = await eventPage.Loading;
-            ScrapeEvents(venue, events, errors, document!);
+            int allRelevantEvents = ScrapeEvents(venue, events, errors, document!);
 
-            while (document!.CanLoadMore(venue))
+            /*  load more even if there are 0 relevantEvents on the first page -
+             *  in case it shows the current month with no gig until the end of the month */
+            while (document!.CanLoadMore(venue)) // does not reliably break loop for all loading strategies
             {
                 document = await eventPage.LoadMoreAsync();
                 if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
-                var added = ScrapeEvents(venue, events, errors, document);
-                if (!added) break; // stop loading more if scraping current page yielded no new events to prevent loop
+                int containedRelevantEvents = ScrapeEvents(venue, events, errors, document);
+
+                // determine number of new, scrapable events that are not already past
+                int newRelevantEvents = venue.Event.PagingStrategy.LoadsDifferentEvents()
+                    ? containedRelevantEvents // all contained relevant events are considered new
+                    : containedRelevantEvents - allRelevantEvents; // substract previously loaded relevant events
+
+                // stop loading more if scraping current page yielded no new relevant events to prevent loop
+                if (newRelevantEvents == 0) break;
+
+                /*  count up total relevant events to hit break condition above
+                 *  for paging strats that load more instead of different events */
+                allRelevantEvents += newRelevantEvents;
             }
         }
         catch (Exception ex)
@@ -65,15 +78,24 @@ public sealed partial class Scraper : IDisposable
         return (events, errors.ToArray());
     }
 
-    private static bool ScrapeEvents(Venue venue, HashSet<Event> events, List<Exception> errors, DomDoc document)
+    private static int ScrapeEvents(Venue venue, HashSet<Event> events, List<Exception> errors, DomDoc document)
     {
-        var addedAny = false;
+        var unfiltered = document.SelectEvents(venue).ToArray();
+        var filtered = unfiltered.FilterEvents(venue).ToArray();
+        int irrelevant = 0; // counts unscrapable and past events in unfiltered
 
-        foreach (var container in document.SelectEvents(venue).FilterEvents(venue))
+        foreach (var container in unfiltered)
         {
             var name = venue.Event.Name.GetValue(container, errors);
             DateTime? date = venue.Event.Date.GetDate(container, errors);
-            if (name == null || date == null) continue;
+
+            if (name == null || date == null || date < DateTime.Today)
+            {
+                irrelevant++; // count before filtering so that filter doesn't distort the count
+                continue;
+            }
+
+            if (!filtered.Contains(container)) continue; // excluded by filter
 
             // scrape and set properties required for equality comparison
             Event scraped = new()
@@ -99,10 +121,11 @@ public sealed partial class Scraper : IDisposable
             scraped.ImageUrl = venue.Event.ImageUrl?.GetUrl(container, errors);
             scraped.TicketUrl = venue.Event.TicketUrl?.GetUrl(container, errors);
             if (scraped.Url == null) scraped.ScrapedFrom = document.Url; // for reference
-            addedAny = events.Add(scraped) || addedAny;
+            events.Add(scraped);
         }
 
-        return addedAny;
+        // return number of scrapable events that are not already past
+        return unfiltered.Length - irrelevant;
     }
 
     /// <summary>Loads the <see cref="DomDoc"/> from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/> for scraping.

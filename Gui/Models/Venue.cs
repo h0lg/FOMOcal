@@ -193,6 +193,10 @@ internal static class VenueExtensions
         => strategy == PagingStrategy.ClickElementToLoadMore
         || strategy == PagingStrategy.ClickElementToLoadDifferent;
 
+    internal static bool LoadsDifferentEvents(this PagingStrategy strategy)
+        => strategy == PagingStrategy.NavigateLinkToLoadMore
+        || strategy == PagingStrategy.ClickElementToLoadDifferent;
+
     internal static string? GetHelp(this PagingStrategy strategy)
         => HelpTexts.ResourceManager.GetString(nameof(PagingStrategy) + strategy.ToString());
 }
