@@ -139,7 +139,7 @@ It will load the page and wait for an element matching your selector to become a
 
 ^^This works around pages that lazy-load events. Some web servers only return an empty template of a page on the first request to improve the response time, then fetch more data asynchronously and render it into the placeholders using a script running in your browser.
 ^^
-^^* To test selectors, load the page in your browser and start up a [developer console](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools#the_javascript_console). In there, use [document.querySelectorAll('.css-selector')](https://www.w3schools.com/jsref/met_document_queryselectorall.asp) or [document.evaluate('//xpath/selector', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate) depending on your chosen selector syntax.</value>
+^^* To [test selectors](https://github.com/h0lg/FOMOcal?tab=readme-ov-file#debugging-selectors), load the page in your browser and start up a [developer console](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/What_are_browser_developer_tools#the_javascript_console). In there, use [$$('.css-selector')](https://developer.chrome.com/docs/devtools/console/utilities#querySelectorAll-function) or [$x('//xpath/selector')](https://developer.chrome.com/docs/devtools/console/utilities#xpath-function) depending on your chosen selector syntax.</value>
   </data>
   <data name="ScrapeJobAttribute" xml:space="preserve">
     <value>The name of the attribute of the selected element to extract the text from.</value>
