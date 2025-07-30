@@ -70,33 +70,33 @@ public sealed partial class Scraper : IDisposable
     {
         var addedAny = false;
 
-        foreach (var eventElement in document.SelectEvents(venue))
+        foreach (var container in document.SelectEvents(venue))
         {
-            var name = venue.Event.Name.GetValue(eventElement, errors);
-            DateTime? date = venue.Event.Date.GetDate(eventElement, errors);
+            var name = venue.Event.Name.GetValue(container, errors);
+            DateTime? date = venue.Event.Date.GetDate(container, errors);
             if (name == null || date == null) continue;
 
-            var scrapedEvent = new Event
+            var scraped = new Event
             {
                 Venue = venue.Name,
                 Name = name,
                 Date = date.Value,
                 Scraped = DateTime.Now,
-                SubTitle = venue.Event.SubTitle?.GetValue(eventElement, errors),
-                Description = venue.Event.Description?.GetValue(eventElement, errors),
-                Genres = venue.Event.Genres?.GetValue(eventElement, errors),
-                Stage = venue.Event.Stage?.GetValue(eventElement, errors),
-                DoorsTime = venue.Event.DoorsTime?.GetValue(eventElement, errors),
-                StartTime = venue.Event.StartTime?.GetValue(eventElement, errors),
-                PresalePrice = venue.Event.PresalePrice?.GetValue(eventElement, errors),
-                DoorsPrice = venue.Event.DoorsPrice?.GetValue(eventElement, errors),
-                Url = venue.Event.Url?.GetUrl(eventElement, errors),
-                ImageUrl = venue.Event.ImageUrl?.GetUrl(eventElement, errors),
-                TicketUrl = venue.Event.TicketUrl?.GetUrl(eventElement, errors)
+                SubTitle = venue.Event.SubTitle?.GetValue(container, errors),
+                Description = venue.Event.Description?.GetValue(container, errors),
+                Genres = venue.Event.Genres?.GetValue(container, errors),
+                Stage = venue.Event.Stage?.GetValue(container, errors),
+                DoorsTime = venue.Event.DoorsTime?.GetValue(container, errors),
+                StartTime = venue.Event.StartTime?.GetValue(container, errors),
+                PresalePrice = venue.Event.PresalePrice?.GetValue(container, errors),
+                DoorsPrice = venue.Event.DoorsPrice?.GetValue(container, errors),
+                Url = venue.Event.Url?.GetUrl(container, errors),
+                ImageUrl = venue.Event.ImageUrl?.GetUrl(container, errors),
+                TicketUrl = venue.Event.TicketUrl?.GetUrl(container, errors)
             };
 
-            if (scrapedEvent.Url == null) scrapedEvent.ScrapedFrom = venue.ProgramUrl; // for reference
-            addedAny = events.Add(scrapedEvent) || addedAny;
+            if (scraped.Url == null) scraped.ScrapedFrom = venue.ProgramUrl; // for reference
+            addedAny = events.Add(scraped) || addedAny;
         }
 
         return addedAny;

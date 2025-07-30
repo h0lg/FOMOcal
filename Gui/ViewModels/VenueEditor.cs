@@ -141,7 +141,7 @@ public partial class VenueEditor : ObservableObject
         PropertyChanged += (o, e) =>
         {
             if (e.PropertyName == nameof(SkipEvents) || e.PropertyName == nameof(TakeEvents))
-                UpdateEventSelectorPreview();
+                UpdateEventContainerPreview();
         };
 
         RevealMore(); // once initially if we're editing to reveal event container
@@ -174,10 +174,10 @@ public partial class VenueEditor : ObservableObject
         ShowEventContainer = hasName && hasProgramUrl;
         ShowRequiredEventFields = ShowEventContainer && EventSelector.IsSignificant();
         ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValidAsRequired && eventDate.IsValidAsRequired;
-        if (ShowRequiredEventFields && previewedEvents == null) UpdateEventSelectorPreview();
+        if (ShowRequiredEventFields && previewedEvents == null) UpdateEventContainerPreview();
     }
 
-    private void UpdateEventSelectorPreview()
+    private void UpdateEventContainerPreview()
     {
         if (programDocument == null)
         {
@@ -252,8 +252,8 @@ public partial class VenueEditor : ObservableObject
             // Step 1: Venue Name and Program URL
             var venueFields = VenueFields();
 
-            // Step 2: Event Selector
-            var eventContainer = EventContainerSelector().BindVisible(nameof(ShowEventContainer));
+            // Step 2: Event container
+            var eventContainer = EventContainer().BindVisible(nameof(ShowEventContainer));
 
             // Step 3: Event Details (Name, Date)
             var requiredEventFields = VStack(0,
@@ -317,7 +317,7 @@ public partial class VenueEditor : ObservableObject
             static Label FldLbl(string Text) => Lbl(Text).CenterVertical();
         }
 
-        private Grid EventContainerSelector()
+        private Grid EventContainer()
         {
             var help = HelpLabel();
             Label scrapeConfigInfo = Lbl("ⓘ");
