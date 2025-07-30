@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Markup;
-using CommunityToolkit.Maui.Markup.LeftToRight;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FomoCal.Gui.Resources;
@@ -27,6 +26,7 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial bool ShowEventContainer { get; set; }
     [ObservableProperty] public partial bool ShowRequiredEventFields { get; set; }
     [ObservableProperty] public partial bool ShowOptionalEventFields { get; set; }
+    [ObservableProperty] public partial double Progress { get; set; } = 0;
 
     [ObservableProperty] public partial bool EventSelectorRelatedHasFocus { get; set; } // for when related controls have focus
     [ObservableProperty] public partial bool EventSelectorHasError { get; set; }
@@ -175,6 +175,7 @@ public partial class VenueEditor : ObservableObject
         ShowEventContainer = hasName && hasProgramUrl;
         ShowRequiredEventFields = ShowEventContainer && EventSelector.IsSignificant();
         ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValidAsRequired && eventDate.IsValidAsRequired;
+        Progress = (ShowOptionalEventFields ? 3 : ShowRequiredEventFields ? 2 : ShowEventContainer ? 1 : 0) / 3d;
         SaveCommand.NotifyCanExecuteChanged();
         if (ShowRequiredEventFields && previewedEvents == null) UpdateEventContainerPreview();
     }
@@ -277,17 +278,21 @@ public partial class VenueEditor : ObservableObject
             const string showOptionalEventFields = nameof(ShowOptionalEventFields);
             var optionalEventFields = OptionalEventFields().BindVisible(showOptionalEventFields);
 
-            var formControls = HStack(10,
-                Btn("💾 Save", nameof(SaveCommand)),
-                Lbl("or").IsVisible(model.isDeletable),
-                Btn("🗑 Delete", nameof(DeleteCommand)).IsVisible(model.isDeletable),
-                Lbl("this venue")).Right();
+            // Progress Indicator
+            var progress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(Progress))
+                .ToolTip("your progress towards the minimum required configuration to make this venue scrapable");
+
+            var formControls = Grd(cols: [Star, Auto, Auto, Auto, Auto], rows: [Auto], spacing: 10,
+                progress,
+                Btn("💾 Save", nameof(SaveCommand)).Column(1),
+                Lbl("or").CenterVertical().IsVisible(model.isDeletable).Column(2),
+                Btn("🗑 Delete", nameof(DeleteCommand)).IsVisible(model.isDeletable).Column(3),
+                Lbl("this venue").CenterVertical().Column(4));
 
             form = new ScrollView
             {
-                Content = VStack(20,
-                    //progress,
-                    venueFields, eventContainer, requiredEventFields, optionalEventFields, formControls)
+                Content = VStack(20, venueFields, eventContainer,
+                    requiredEventFields, optionalEventFields, formControls)
                     .Padding(20)
             };
 
