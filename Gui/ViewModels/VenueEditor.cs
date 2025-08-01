@@ -374,7 +374,7 @@ public partial class VenueEditor : ObservableObject
 
             var controls = HWrap(5,
                 Lbl("Event container").Bold(), containerSelector,
-                Lbl("wait for JS rendering"), waitForJsRendering.Wrapper,
+                Lbl("lazy"), waitForJsRendering.Wrapper,
                 Lbl("loading"), pagingStrategy,
                 nextPageSelector,
                 Lbl("Preview events").Bold(),
