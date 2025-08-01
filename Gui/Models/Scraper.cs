@@ -140,5 +140,12 @@ public sealed partial class Scraper : IDisposable
 
     internal Task<DomDoc> CreateDocumentAsync(string html, Venue venue) => context.CreateDocumentAsync(html, venue);
 
+    internal async Task<DomDoc?> LoadMoreAsync(AutomatedEventPageView loader, Venue venue, DomDoc currentPage)
+    {
+        var loading = await context.LoadMoreAsync(venue, loader, currentPage);
+        if (loading == null) return null;
+        return await loading;
+    }
+
     public void Dispose() => context.Dispose();
 }

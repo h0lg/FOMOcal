@@ -31,11 +31,7 @@ partial class VenueEditor
     private async Task OnHtmlWithEventsLoadedAsync(string? html, string timeOutMessage)
     {
         if (html.IsSignificant()) SetDocument(await scraper.CreateDocumentAsync(html!, venue));
-        else
-        {
-            SetDocument(null);
-            await App.CurrentPage.DisplayAlert("Event loading timed out.", timeOutMessage, "OK");
-        }
+        else await App.CurrentPage.DisplayAlert("Event loading timed out.", timeOutMessage, "OK");
 
         IsEventPageLoading = false;
         RevealMore();
@@ -86,6 +82,9 @@ partial class VenueEditor
                     || e.PropertyName == nameof(Encoding)
                     || (e.PropertyName == nameof(EventSelector) && model.WaitForJsRendering))
                     Reload();
+                else if (e.PropertyName == nameof(SelectedEventCount) && model.SelectedEventCount > 0
+                    && model.programDocument?.CanLoadMore(model.venue) == true)
+                    await model.scraper.LoadMoreAsync(pageView, model.venue, model.programDocument);
             };
 
             const string displayedSelector = nameof(DisplayedSelector),
