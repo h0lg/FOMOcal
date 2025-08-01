@@ -33,7 +33,7 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial string[]? PreviewedEventTexts { get; set; }
     [ObservableProperty] public partial int SkipEvents { get; set; }
     [ObservableProperty] public partial int TakeEvents { get; set; } = 5;
-    [ObservableProperty] public partial int SelectedEventCount { get; set; } = 0;
+    [ObservableProperty, NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))] public partial int SelectedEventCount { get; set; } = 0;
     [ObservableProperty] public partial int FilteredEventCount { get; set; } = 0;
 
     public string ProgramUrl
@@ -228,11 +228,21 @@ public partial class VenueEditor : ObservableObject
     {
         programDocument = document;
         previewedEvents = null;
+        LoadMoreCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]
     private static async Task OpenUrlAsync(string url)
         => await WebViewPage.OpenUrlAsync(url);
+
+    private bool CanLoadMore()
+        => SelectedEventCount > 0
+            && venue.Event.PagingStrategy != Venue.PagingStrategy.AllOnOne
+            && programDocument?.CanLoadMore(venue) == true;
+
+    [RelayCommand(CanExecute = nameof(CanLoadMore))]
+    private async Task LoadMoreAsync(AutomatedEventPageView loader)
+        => await scraper.LoadMoreAsync(loader, venue, programDocument!);
 
     private bool CanSave() => ShowEventContainer
         && (previewedEvents == null || previewedEvents.Length == 0)
@@ -282,6 +292,10 @@ public partial class VenueEditor : ObservableObject
             BindingContext = model;
             Title = model.isDeletable ? "Edit " + model.originalVenueName : "Add a venue";
 
+            /* CreateVisualSelector before EventContainer because the pageView 
+             * created by the former is referenced as a command arg in the latter */
+            visualSelector = CreateVisualSelector();
+
             // Step 1: Venue Name and Program URL
             var venueFields = VenueFields();
 
@@ -316,7 +330,6 @@ public partial class VenueEditor : ObservableObject
                     .Padding(20)
             };
 
-            visualSelector = CreateVisualSelector();
             Content = Grd(cols: [Star], rows: [Star, Auto], spacing: 0, form, visualSelector.Row(1));
         }
 
@@ -434,6 +447,7 @@ public partial class VenueEditor : ObservableObject
                 if (pagingStrategy.SelectedIndex >= 0)
                 {
                     model.venue.Event.PagingStrategy = model.PagingStrategies[pagingStrategy.SelectedIndex];
+                    model.LoadMoreCommand.NotifyCanExecuteChanged();
                     await SyncPagingStrategyHelp(focused: true);
                 }
                 else await SyncPagingStrategyHelp(focused: false);
@@ -447,7 +461,8 @@ public partial class VenueEditor : ObservableObject
                 .BindVisible(nameof(Picker.SelectedIndex), pagingStrategy,
                     Converters.Func<int>(i => model.PagingStrategies[i].RequiresNextPageSelector()));
 
-            return HWrap(5, Lbl("Loading").Bold(), pagingStrategy, nextPageSelector).View;
+            var test = Btn("▶", nameof(LoadMoreCommand), parameterSource: pageView).ToolTip(HelpTexts.TestPagingStrategy);
+            return HWrap(5, Lbl("Loading").Bold(), pagingStrategy, nextPageSelector, test).View;
 
             Task SyncPagingStrategyHelp(bool focused) =>
                 help.InlineHelpTextAsync(model.venue.Event.PagingStrategy.GetHelp()!, pagingStrategy, focused);

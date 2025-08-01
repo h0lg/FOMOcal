@@ -267,4 +267,8 @@ You may also use XPath for more control - if you do, stick to XPath 1.0 features
 ^^E.g. to filter for containers that have a 'category' class div with the cleaned text 'concert' using XPath, you'd write:
 ^^{0}.//div[@class='category' and normalize-space(.)='concert']</value>
   </data>
+  <data name="TestPagingStrategy" xml:space="preserve">
+    <value>🧪 Test this strategy to load more events. You can watch the process in the 🖽 Visual Selector, e.g. the one for the event selector.
+If you test a strategy that involves clicking, make sure to disable the option "Tap a page element to pick it."</value>
+  </data>
 </root>

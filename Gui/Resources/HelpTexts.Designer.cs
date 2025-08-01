@@ -369,6 +369,16 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 🧪 Test this strategy to load more events. You can watch the process in the 🖽 Visual Selector, e.g. the one for the event selector.
+        ///If you test a strategy that involves clicking, make sure to disable the option &quot;Tap a page element to pick it.&quot;.
+        /// </summary>
+        internal static string TestPagingStrategy {
+            get {
+                return ResourceManager.GetString("TestPagingStrategy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Toggle selector details for your picked element. More detail means more specificity - but beware that every moving part also increases the fragility of your selector. You&apos;ll want to find the sweet spot..
         /// </summary>
         internal static string ToggleSelectorDetail {

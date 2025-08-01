@@ -82,9 +82,6 @@ partial class VenueEditor
                     || e.PropertyName == nameof(Encoding)
                     || (e.PropertyName == nameof(EventSelector) && model.WaitForJsRendering))
                     Reload();
-                else if (e.PropertyName == nameof(SelectedEventCount) && model.SelectedEventCount > 0
-                    && model.programDocument?.CanLoadMore(model.venue) == true)
-                    await model.scraper.LoadMoreAsync(pageView, model.venue, model.programDocument);
             };
 
             const string displayedSelector = nameof(DisplayedSelector),

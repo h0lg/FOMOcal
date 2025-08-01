@@ -6,10 +6,14 @@ namespace FomoCal.Gui.ViewModels;
 
 internal static class Widgets
 {
-    internal static Button Btn(string text, string? command = null, object? source = null, string parameterPath = ".")
+    internal static Button Btn(string text, string? command = null, object? source = null,
+        string parameterPath = ".", object? parameterSource = null)
     {
         Button btn = new() { Text = text };
-        if (command != null) btn.BindCommand(command, source: source, parameterPath: parameterPath);
+
+        if (command != null) btn.BindCommand(command, source: source,
+            parameterPath: parameterPath, parameterSource: parameterSource);
+
         return btn;
     }
 
