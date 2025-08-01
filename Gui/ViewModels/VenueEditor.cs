@@ -16,7 +16,12 @@ public partial class VenueEditor : ObservableObject
     private readonly TaskCompletionSource<Actions?> awaiter;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
     private readonly Debouncer debouncedRevealMore;
+    private readonly Venue venue;
+    private readonly ScrapeJobEditor eventName, eventDate;
+
     private Entry? visualSelectorHost;
+    private AngleSharp.Dom.IDocument? programDocument;
+    private AngleSharp.Dom.IElement[]? previewedEvents;
 
     [ObservableProperty] public partial bool IsEventPageLoading { get; set; } = true;
     [ObservableProperty] public partial bool ShowEventContainer { get; set; }
@@ -28,12 +33,6 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial string[]? PreviewedEventTexts { get; set; }
     [ObservableProperty] public partial int SkipEvents { get; set; }
     [ObservableProperty] public partial int TakeEvents { get; set; } = 5;
-
-    private AngleSharp.Dom.IDocument? programDocument;
-    private AngleSharp.Dom.IElement[]? previewedEvents;
-
-    private readonly Venue venue;
-    private readonly ScrapeJobEditor eventName, eventDate;
 
     public string ProgramUrl
     {
