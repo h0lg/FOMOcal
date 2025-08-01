@@ -12,7 +12,7 @@ public partial class VenueEditor : ObservableObject
 {
     private readonly bool isDeletable;
     private readonly string originalVenueName;
-    private readonly Scraper scraper;
+    private readonly Scraper scraper; // singleton, disposed of by the service provider
     private readonly TaskCompletionSource<Actions?> awaiter;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
     private readonly Debouncer debouncedRevealMore;
