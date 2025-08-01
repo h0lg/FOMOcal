@@ -15,9 +15,10 @@
     function enable(enable) {
         const action = enable ? document.addEventListener : document.removeEventListener;
 
-        /*  run in Capture phase to ensures that the handler intercepts the event
+        /*  Run in Capture phase to ensures that the handler intercepts the event
             before it reaches the target element's own event handlers, see
-            https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#usecapture */
+            https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#usecapture
+            Beware that this may interfere with a PagingStrategy that ClicksElementToLoad. */
         action.call(undefined, 'click', intercept, true);
     }
 
@@ -218,7 +219,6 @@
 }`;
 
             document.head.appendChild(style);
-            enable(true);
             buildCssRuleSelectorCache(); // to pre-fill first-level cache
         },
 

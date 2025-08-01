@@ -11,8 +11,9 @@ using SelectorOptionsRepo = SingletonJsonFileRepository<VenueEditor.SelectorOpti
 partial class VenueEditor
 {
     private readonly SelectorOptions selectorOptions = new() { SemanticClasses = true, LayoutClasses = true }; // initialize with defaults
+
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial string? PickedSelector { get; set; }
-    [ObservableProperty] public partial bool EnablePicking { get; set; } = true;
+    [ObservableProperty] public partial bool EnablePicking { get; set; } = false;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial bool ShowSelectorOptions { get; set; }
     [ObservableProperty] public partial bool ShowSelectorDetail { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial bool IncludePickedSelectorPath { get; set; }
@@ -263,6 +264,7 @@ partial class VenueEditor
 
         private void HideVisualSelector()
         {
+            model.EnablePicking = false; // to enable running a PagingStrategy that ClicksElementToLoad
             if (model.visualSelectorHost == null) return;
 
             MainThread.BeginInvokeOnMainThread(async () =>
