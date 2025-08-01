@@ -33,6 +33,8 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial string[]? PreviewedEventTexts { get; set; }
     [ObservableProperty] public partial int SkipEvents { get; set; }
     [ObservableProperty] public partial int TakeEvents { get; set; } = 5;
+    [ObservableProperty] public partial int SelectedEventCount { get; set; } = 0;
+    [ObservableProperty] public partial int FilteredEventCount { get; set; } = 0;
 
     public string ProgramUrl
     {
@@ -205,7 +207,11 @@ public partial class VenueEditor : ObservableObject
 
         try
         {
-            previewedEvents = [.. programDocument.SelectEvents(venue).FilterEvents(venue).Skip(SkipEvents).Take(TakeEvents)];
+            var selectedEvents = programDocument.SelectEvents(venue).ToArray();
+            var filtered = selectedEvents.FilterEvents(venue).ToArray();
+            SelectedEventCount = selectedEvents.Length;
+            FilteredEventCount = filtered.Length;
+            previewedEvents = [.. filtered.Skip(SkipEvents).Take(TakeEvents)];
             PreviewedEventTexts = [.. previewedEvents.Select(e => e.TextContent.NormalizeWhitespace())];
             scrapeJobEditors.ForEach(e => e.UpdatePreview());
             EventSelectorHasError = false;
@@ -408,8 +414,9 @@ public partial class VenueEditor : ObservableObject
                 hasError: nameof(EventSelectorHasError), source: model);
 
             var controls = HWrap(5,
-                Lbl("Event container").Bold(), containerSelector,
-                Lbl("filtered by"), eventFilter,
+                Lbl("Event container").Bold(),
+                BndLbl(nameof(SelectedEventCount), "{0} selected by"), containerSelector,
+                BndLbl(nameof(FilteredEventCount), "{0} filtered by"), eventFilter,
                 Lbl("lazy"), waitForJsRendering.Wrapper,
                 Lbl("loading"), pagingStrategy,
                 nextPageSelector,
