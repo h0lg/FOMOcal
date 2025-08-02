@@ -38,7 +38,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
          * while staying out of view and not taking up space in the layout it's added to. */
         loader = new AutomatedEventPageView(venue)
             //.LayoutBounds(0, 0, width, height) // use to see what's going on
-            .LayoutBounds(width, height, width, height) // position off-screen with a decent size
+            .LayoutBounds(-2 * width, -2 * height, width, height) // position off-screen with a decent size
             .LayoutFlags(AbsoluteLayoutFlags.None);
 
         AbsoluteLayout wrapper = new() { WidthRequest = 0, HeightRequest = 0 };
