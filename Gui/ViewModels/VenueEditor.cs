@@ -386,7 +386,7 @@ public partial class VenueEditor : ObservableObject
                 nextPageSelector,
                 Lbl("Preview events").Bold(),
                 // focus selectorText as the closest match to display the help text of while keeping the previewOrErrors open
-                LabeledStepper("skipping", nameof(SkipEvents), max: 100, onValueChanged: () => selectorText.Focus()),
+                LabeledStepper("skipping", nameof(SkipEvents), max: int.MaxValue, onValueChanged: () => selectorText.Focus()),
                 LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus()));
 
             return Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto], spacing: 5,
