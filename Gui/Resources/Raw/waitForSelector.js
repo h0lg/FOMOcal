@@ -76,35 +76,33 @@
         }, settings.intervalDelayMs);
     }
 
+    function findClosestCommonAncestor(el1, el2) {
+        const ancestors = new Set();
+
+        // Collect all ancestors of el1
+        while (el1) {
+            ancestors.add(el1);
+            el1 = el1.parentNode;
+        }
+
+        // Traverse up from el2 until we find a common ancestor
+        while (el2 && !ancestors.has(el2))
+            el2 = el2.parentNode;
+
+        return el2; // This is the closest common ancestor
+    }
+
     function getClosestCommonAncestor(elements) {
         if (!elements.length) return null;
         if (elements.length === 1) return elements[0].parentNode;
 
-        // Helper function to get the CCA of two elements
-        function findCCA(el1, el2) {
-            const ancestors = new Set();
-
-            // Collect all ancestors of el1
-            while (el1) {
-                ancestors.add(el1);
-                el1 = el1.parentNode;
-            }
-
-            // Traverse up from el2 until we find a common ancestor
-            while (el2 && !ancestors.has(el2)) {
-                el2 = el2.parentNode;
-            }
-
-            return el2; // This is the closest common ancestor
-        }
-
         // Start with the CCA of the first two elements
-        let commonAncestor = findCCA(elements[0], elements[1]);
+        let commonAncestor = findClosestCommonAncestor(elements[0], elements[1]);
 
         // Check the rest of the elements
         for (let i = 2; i < elements.length; i++) {
             if (!commonAncestor.contains(elements[i])) {
-                commonAncestor = findCCA(commonAncestor, elements[i]);
+                commonAncestor = findClosestCommonAncestor(commonAncestor, elements[i]);
             }
         }
 
