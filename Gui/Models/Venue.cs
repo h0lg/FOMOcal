@@ -78,7 +78,9 @@ public class Venue
         internal bool LoadsMoreOnScrollDown() => PagingStrategy == PagingStrategy.ScrollDownToLoadMore;
         private bool WaitsForEvents() => WaitForJsRendering || LoadsMoreOnScrollDown();
         internal bool RequiresAutomation() => WaitsForEvents() || PagingStrategy.ClicksElementToLoad();
-        internal bool LoadsMoreOnNextPage() => NextPageSelector.IsSignificant() && PagingStrategy.RequiresNextPageSelector();
+
+        internal bool LoadsMoreOrDifferentOnNextPage()
+            => NextPageSelector.IsSignificant() && PagingStrategy.RequiresNextPageSelector();
 
         public override bool Equals(object? obj) => obj is EventScrapeJob other && Equals(other);
 

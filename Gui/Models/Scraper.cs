@@ -45,7 +45,7 @@ public sealed partial class Scraper : IDisposable
             var document = await eventPage.Loading;
             ScrapeEvents(venue, events, errors, document!);
 
-            while (eventPage.HasMore())
+            while (eventPage.CanLoadMore())
             {
                 document = await eventPage.LoadMoreAsync();
                 if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
