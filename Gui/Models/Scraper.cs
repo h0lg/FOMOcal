@@ -75,25 +75,29 @@ public sealed partial class Scraper : IDisposable
             DateTime? date = venue.Event.Date.GetDate(container, errors);
             if (name == null || date == null) continue;
 
-            var scraped = new Event
+            // scrape and set properties required for equality comparison
+            Event scraped = new()
             {
                 Venue = venue.Name,
                 Name = name,
                 Date = date.Value,
                 Scraped = DateTime.Now,
-                SubTitle = venue.Event.SubTitle?.GetValue(container, errors),
-                Description = venue.Event.Description?.GetValue(container, errors),
-                Genres = venue.Event.Genres?.GetValue(container, errors),
-                Stage = venue.Event.Stage?.GetValue(container, errors),
-                DoorsTime = venue.Event.DoorsTime?.GetValue(container, errors),
-                StartTime = venue.Event.StartTime?.GetValue(container, errors),
-                PresalePrice = venue.Event.PresalePrice?.GetValue(container, errors),
-                DoorsPrice = venue.Event.DoorsPrice?.GetValue(container, errors),
-                Url = venue.Event.Url?.GetUrl(container, errors),
-                ImageUrl = venue.Event.ImageUrl?.GetUrl(container, errors),
-                TicketUrl = venue.Event.TicketUrl?.GetUrl(container, errors)
+                Url = venue.Event.Url?.GetUrl(container, errors)
             };
 
+            if (events.Contains(scraped)) continue; // duplicate
+
+            // scrape details and add event
+            scraped.SubTitle = venue.Event.SubTitle?.GetValue(container, errors);
+            scraped.Description = venue.Event.Description?.GetValue(container, errors);
+            scraped.Genres = venue.Event.Genres?.GetValue(container, errors);
+            scraped.Stage = venue.Event.Stage?.GetValue(container, errors);
+            scraped.DoorsTime = venue.Event.DoorsTime?.GetValue(container, errors);
+            scraped.StartTime = venue.Event.StartTime?.GetValue(container, errors);
+            scraped.PresalePrice = venue.Event.PresalePrice?.GetValue(container, errors);
+            scraped.DoorsPrice = venue.Event.DoorsPrice?.GetValue(container, errors);
+            scraped.ImageUrl = venue.Event.ImageUrl?.GetUrl(container, errors);
+            scraped.TicketUrl = venue.Event.TicketUrl?.GetUrl(container, errors);
             if (scraped.Url == null) scraped.ScrapedFrom = document.Url; // for reference
             addedAny = events.Add(scraped) || addedAny;
         }
