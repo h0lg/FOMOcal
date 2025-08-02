@@ -383,6 +383,44 @@ public partial class VenueEditor : ObservableObject
                 .InlineTooltipOnFocus(string.Format(HelpTexts.EventContainerFilterFormat, FomoCal.ScrapeJob.XPathSelectorPrefix),
                     help, onFocusChanged: async (_, focused) => await ToggleSelectorRelatedFocus(focused));
 
+            var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
+                itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
+                hasError: nameof(EventSelectorHasError), source: model);
+
+            var controls = HWrap(5,
+                Lbl("Event container").Bold(),
+                BndLbl(nameof(SelectedEventCount), "{0} selected by"), containerSelector,
+                BndLbl(nameof(FilteredEventCount), "{0} filtered by"), eventFilter,
+                Lbl("lazy"), waitForJsRendering.Wrapper);
+
+            return Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
+                Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),
+                scrapeConfigInfo.CenterVertical().Column(1),
+                help.layout.Row(1).ColumnSpan(2),
+                controls.View.Row(2).ColumnSpan(2),
+                previewOrErrors.Row(3).ColumnSpan(2),
+                PreviewControls(selectorText).Row(4).ColumnSpan(2),
+                PagingControls(help).Row(5).ColumnSpan(2));
+
+            async Task ToggleSelectorRelatedFocus(bool focused)
+            {
+                if (focused) model.EventSelectorRelatedHasFocus = true;
+                else
+                {
+                    await Task.Delay(300); // to allow for using the skip/take steppers without flickering
+                    if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = false;
+                }
+            }
+        }
+
+        private static FlexLayout PreviewControls(Entry selectorText)
+            => HWrap(5, Lbl("Preview events").Bold(),
+                // focus selectorText as the closest match to display the help text of while keeping the previewOrErrors open
+                LabeledStepper("skipping", nameof(SkipEvents), max: int.MaxValue, onValueChanged: () => selectorText.Focus()),
+                LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus())).View;
+
+        private FlexLayout PagingControls((Label label, Border layout) help)
+        {
             Picker pagingStrategy = new()
             {
                 ItemsSource = model.PagingStrategies.ConvertAll(e => e.GetDescription()),
@@ -409,38 +447,7 @@ public partial class VenueEditor : ObservableObject
                 .BindVisible(nameof(Picker.SelectedIndex), pagingStrategy,
                     Converters.Func<int>(i => model.PagingStrategies[i].RequiresNextPageSelector()));
 
-            var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
-                itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
-                hasError: nameof(EventSelectorHasError), source: model);
-
-            var controls = HWrap(5,
-                Lbl("Event container").Bold(),
-                BndLbl(nameof(SelectedEventCount), "{0} selected by"), containerSelector,
-                BndLbl(nameof(FilteredEventCount), "{0} filtered by"), eventFilter,
-                Lbl("lazy"), waitForJsRendering.Wrapper,
-                Lbl("loading"), pagingStrategy,
-                nextPageSelector,
-                Lbl("Preview events").Bold(),
-                // focus selectorText as the closest match to display the help text of while keeping the previewOrErrors open
-                LabeledStepper("skipping", nameof(SkipEvents), max: int.MaxValue, onValueChanged: () => selectorText.Focus()),
-                LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus()));
-
-            return Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto], spacing: 5,
-                Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),
-                scrapeConfigInfo.CenterVertical().Column(1),
-                help.layout.Row(1).ColumnSpan(2),
-                controls.View.Row(2).ColumnSpan(2),
-                previewOrErrors.Row(3).ColumnSpan(2));
-
-            async Task ToggleSelectorRelatedFocus(bool focused)
-            {
-                if (focused) model.EventSelectorRelatedHasFocus = true;
-                else
-                {
-                    await Task.Delay(300); // to allow for using the skip/take steppers without flickering
-                    if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = false;
-                }
-            }
+            return HWrap(5, Lbl("Loading").Bold(), pagingStrategy, nextPageSelector).View;
 
             Task SyncPagingStrategyHelp(bool focused) =>
                 help.InlineHelpTextAsync(model.venue.Event.PagingStrategy.GetHelp()!, pagingStrategy, focused);
