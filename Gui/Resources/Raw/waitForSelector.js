@@ -150,6 +150,7 @@
             notifyFound = onFound;
         },
 
+        // for EventScrapeJob.WaitForJsRendering
         onLoad: options => {
             console.info('waitForSelector.onLoad', options);
             withOptions(options);
@@ -160,6 +161,7 @@
             else addEventListener('load', startWaiting);
         },
 
+        // for PagingStrategy.ScrollDownToLoadMore
         afterScrollingDown: options => {
             console.info('waitForSelector.afterScrollingDown', options);
             withOptions(options);
@@ -185,6 +187,7 @@
             });
         },
 
+        // for PagingStrategy.ClickElementToLoadMore
         afterClickingOn: (selector, options) => {
             console.info('waitForSelector.afterClickingOn', selector, options);
             withOptions(options);
@@ -203,6 +206,7 @@
             }
         },
 
+        // for PagingStrategy.ClickElementToLoadDifferent
         mutationAfterClickingOn: (selector, options) => {
             console.info('waitForSelector.mutationAfterClickingOn', selector, options);
             withOptions(options);
@@ -211,7 +215,6 @@
 
             if (element !== null) {
                 element.scrollIntoView();
-                element.click();
 
                 waitForMutation().then(() => {
                     notifyFound(true);
