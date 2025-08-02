@@ -32,23 +32,21 @@ partial class VenueEditor
         if (html.IsSignificant())
         {
             string? encodingOverride = venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
-            programDocument = await scraper.CreateDocumentAsync(html!, encodingOverride);
+            SetDocument(await scraper.CreateDocumentAsync(html!, encodingOverride));
         }
         else
         {
-            programDocument = null;
+            SetDocument(null);
             await App.CurrentPage.DisplayAlert("Event loading timed out.", timeOutMessage, "OK");
         }
 
-        previewedEvents = null;
         IsEventPageLoading = false;
         RevealMore();
     }
 
     private async Task OnErrorLoadingEventsAsync(WebNavigationResult navigationResult)
     {
-        previewedEvents = null;
-        programDocument = null;
+        SetDocument(null);
         IsEventPageLoading = false;
         string suffix = navigationResult == WebNavigationResult.Cancel ? "ed" : "";
         var message = $"Navigation {navigationResult}{suffix}.";

@@ -41,6 +41,7 @@ public partial class VenueEditor : ObservableObject
         {
             if (value == venue.ProgramUrl) return;
             venue.ProgramUrl = value;
+            SetDocument(null);
             OnPropertyChanged();
             RevealMore();
         }
@@ -87,8 +88,10 @@ public partial class VenueEditor : ObservableObject
         {
             if (value == venue.Event.Selector) return;
             venue.Event.Selector = value;
-            previewedEvents = null;
-            if (WaitForJsRendering) programDocument = null; // because then loaded HTML depends on venue.Event.Selector
+
+            if (WaitForJsRendering) SetDocument(null); // because then loaded HTML depends on venue.Event.Selector
+            else previewedEvents = null; // otherwise SetDocument takes care of it
+
             OnPropertyChanged();
             RevealMore();
         }
@@ -101,8 +104,7 @@ public partial class VenueEditor : ObservableObject
         {
             if (value == venue.Event.WaitForJsRendering) return;
             venue.Event.WaitForJsRendering = value;
-            previewedEvents = null;
-            programDocument = null;
+            SetDocument(null);
             OnPropertyChanged();
         }
     }
@@ -198,6 +200,12 @@ public partial class VenueEditor : ObservableObject
             PreviewedEventTexts = [ex.Message];
             EventSelectorHasError = true;
         }
+    }
+
+    private void SetDocument(AngleSharp.Dom.IDocument? document)
+    {
+        programDocument = document;
+        previewedEvents = null;
     }
 
     [RelayCommand]
