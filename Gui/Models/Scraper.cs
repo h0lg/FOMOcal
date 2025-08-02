@@ -45,7 +45,7 @@ public sealed partial class Scraper : IDisposable
             var document = await eventPage.Loading;
             ScrapeEvents(venue, events, errors, document!);
 
-            while (eventPage.CanLoadMore())
+            while (document!.CanLoadMore(venue))
             {
                 document = await eventPage.LoadMoreAsync();
                 if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
@@ -108,16 +108,10 @@ public sealed partial class Scraper : IDisposable
     /// which is when it is removed again.</summary>
     private EventPage GetEventPage(Venue venue)
         => venue.Event.RequiresAutomation()
-            ? new EventPage(venue, TopLayout, CreateDocumentAsync)
+            ? new EventPage(venue, context, TopLayout)
             : new EventPage(venue, context);
 
-    internal async Task<DomDoc> CreateDocumentAsync(string html, Venue venue)
-        => await context.OpenAsync(response =>
-        {
-            response.Content(html).Address(venue.ProgramUrl);
-            string? encodingOverride = venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
-            if (encoding.IsSignificant()) response.OverrideEncoding(encoding);
-        });
+    internal Task<DomDoc> CreateDocumentAsync(string html, Venue venue) => context.CreateDocumentAsync(html, venue);
 
     public void Dispose() => context.Dispose();
 }
