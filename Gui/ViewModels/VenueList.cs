@@ -16,6 +16,7 @@ public partial class VenueList : ObservableObject
     private readonly HashSet<Venue> refreshingVenues = [];
 
     [ObservableProperty] public partial bool IsLoading { get; set; }
+    [ObservableProperty] public partial double RefreshAllVenuesProgress { get; set; } = 1; // none is refreshing
 
     public ObservableCollection<Venue> Venues { get; } = [];
 
@@ -194,6 +195,10 @@ public partial class VenueList : ObservableObject
         if (isRefreshing) refreshingVenues.Add(venue);
         else refreshingVenues.Remove(venue);
 
+        /* refreshing venues count against the progress, i.e. all refreshing => 0, none => 1
+         * so that the bar progresses as venues finish refreshing */
+        RefreshAllVenuesProgress = (Venues.Count - refreshingVenues.Count) / (double)Venues.Count;
+
         RefreshVenueCommand.NotifyCanExecuteChanged();
     }
 
@@ -261,10 +266,16 @@ public partial class VenueList : ObservableObject
             var addVenue = Btn("➕", nameof(AddVenueCommand));
             var refreshAll = Btn("⛏ dig all gigs", nameof(RefreshAllVenuesCommand));
 
-            Content = Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Star, Auto], spacing: 5,
+            var refreshAllProgress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(RefreshAllVenuesProgress))
+                .ToolTip("the progress of refreshing the events of all venues ")
+                // hide when none is refreshing
+                .BindVisible(nameof(RefreshAllVenuesProgress), converter: Converters.Func<double>(progress => progress < 1d));
+
+            Content = Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Star, Auto, Auto], spacing: 5,
                 title.ColumnSpan(2), importVenues.Column(2), exportVenues.Column(3),
                 list.Row(1).ColumnSpan(4),
-                addVenue.Row(2), refreshAll.Row(2).Column(2).ColumnSpan(2));
+                refreshAllProgress.Row(2).ColumnSpan(4),
+                addVenue.Row(3), refreshAll.Row(3).Column(2).ColumnSpan(2));
         }
 
         private void SwingPickaxeDuring(Button btn, ICommand cmd)
