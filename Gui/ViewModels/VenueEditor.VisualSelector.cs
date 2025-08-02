@@ -29,11 +29,7 @@ partial class VenueEditor
 
     private async Task OnHtmlWithEventsLoadedAsync(string? html, string timeOutMessage)
     {
-        if (html.IsSignificant())
-        {
-            string? encodingOverride = venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
-            SetDocument(await scraper.CreateDocumentAsync(html!, encodingOverride));
-        }
+        if (html.IsSignificant()) SetDocument(await scraper.CreateDocumentAsync(html!, venue));
         else
         {
             SetDocument(null);

@@ -111,10 +111,11 @@ public sealed partial class Scraper : IDisposable
             ? new EventPage(venue, TopLayout, CreateDocumentAsync)
             : new EventPage(venue, context);
 
-    internal async Task<DomDoc> CreateDocumentAsync(string html, string? encoding = null)
+    internal async Task<DomDoc> CreateDocumentAsync(string html, Venue venue)
         => await context.OpenAsync(response =>
         {
             response.Content(html);
+            string? encodingOverride = venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
             if (encoding.IsSignificant()) response.OverrideEncoding(encoding);
         });
 
