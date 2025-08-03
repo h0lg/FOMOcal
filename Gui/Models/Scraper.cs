@@ -114,7 +114,7 @@ public sealed partial class Scraper : IDisposable
     internal async Task<DomDoc> CreateDocumentAsync(string html, Venue venue)
         => await context.OpenAsync(response =>
         {
-            response.Content(html);
+            response.Content(html).Address(venue.ProgramUrl);
             string? encodingOverride = venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
             if (encoding.IsSignificant()) response.OverrideEncoding(encoding);
         });
