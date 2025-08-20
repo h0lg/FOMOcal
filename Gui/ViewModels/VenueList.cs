@@ -79,7 +79,7 @@ public partial class VenueList : ObservableObject
         VenueEditor model = new(added, scraper, adding);
         await navigation.PushAsync(new VenueEditor.Page(model));
         VenueEditor.Actions? result = await adding.Task; // wait for editor
-        if (result == null) return; // canceled, do nothing
+        if (result == null) return;  // canceled & navigation stack popped, do nothing
 
         switch (result)
         {
@@ -92,7 +92,7 @@ public partial class VenueList : ObservableObject
                 break;
         }
 
-        await navigation.PopAsync();
+        await navigation.PopAsync(); // navigate back
     }
 
     [RelayCommand]
@@ -103,7 +103,7 @@ public partial class VenueList : ObservableObject
         VenueEditor model = new(edited, scraper, editing);
         await navigation.PushAsync(new VenueEditor.Page(model));
         VenueEditor.Actions? result = await editing.Task; // wait for editor
-        if (result == null) return; // canceled, do nothing
+        if (result == null) return; // canceled & navigation stack popped, do nothing
 
         switch (result)
         {
@@ -125,7 +125,7 @@ public partial class VenueList : ObservableObject
                 break;
         }
 
-        await navigation.PopAsync();
+        await navigation.PopAsync(); // navigate back
     }
 
     [RelayCommand(AllowConcurrentExecutions = true, CanExecute = nameof(CanRefreshVenue))]
