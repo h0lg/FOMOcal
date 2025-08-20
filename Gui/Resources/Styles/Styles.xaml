@@ -355,6 +355,33 @@
         </Setter>
     </Style>
 
+    <!--see https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/radiobutton?view=net-maui-9.0#redefine-radiobutton-appearance-->
+    <ControlTemplate x:Key="SingleSelectToggleButtonTemplate">
+        <Border Padding="10,0" StrokeThickness="0" StrokeShape="RoundRectangle 10">
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CheckedStates">
+                        <VisualState x:Name="Checked">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Unchecked">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="Transparent"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </VisualStateManager.VisualStateGroups>
+            <ContentPresenter VerticalOptions="Center" />
+        </Border>
+    </ControlTemplate>
+    
+    <Style TargetType="RadioButton" Class="SingleSelectToggleButton">
+        <Setter Property="ControlTemplate" Value="{StaticResource SingleSelectToggleButtonTemplate}" />
+    </Style>
+
     <Style TargetType="RefreshView">
         <Setter Property="RefreshColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
     </Style>

@@ -1,4 +1,6 @@
-﻿namespace FomoCal.Gui
+﻿using FomoCal.Gui.ViewModels;
+
+namespace FomoCal.Gui
 {
     public partial class App : Application
     {
@@ -16,6 +18,8 @@
                 Exception exception = (Exception)args.ExceptionObject;
                 await ErrorReport.WriteAsyncAndShare(exception.ToString(), "caught globally");
             };
+
+            Theme.Restore(); // ASAP to prevent flicker
         }
 
         protected override Window CreateWindow(IActivationState? activationState)

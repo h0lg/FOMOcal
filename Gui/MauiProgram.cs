@@ -38,6 +38,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<VenueList>();
         builder.Services.AddSingleton<EventList>();
         builder.Services.AddSingleton<VenueList.View>();
+        builder.Services.AddTransient<Settings>();
+        builder.Services.AddTransient<Settings.Page>();
         builder.Services.AddSingleton<MainPage>();
 
 #if WINDOWS

@@ -196,6 +196,9 @@ public partial class VenueList : ObservableObject
         }
     }
 
+    [RelayCommand]
+    private async Task OpenSettingsAsync() => await navigation.PushAsync(new Settings.Page(new Settings()));
+
     private bool CanRefreshVenue(Venue? venue) => venue is not null && !IsRefreshing(venue);
     private bool IsRefreshing(Venue venue) => refreshingVenues.Contains(venue);
 
@@ -273,6 +276,7 @@ public partial class VenueList : ObservableObject
             var title = Lbl("🏟 Venues").StyleClass(Styles.Label.Headline).CenterVertical();
             var importVenues = Btn("📥", nameof(ImportVenuesCommand)).ToolTip("import venues");
             var exportVenues = Btn("🥡", nameof(ExportVenuesCommand)).ToolTip("export venues");
+            var openSettings = Btn("🛠", nameof(OpenSettingsCommand)).ToolTip("open settings");
             var addVenue = Btn("➕", nameof(AddVenueCommand)).ToolTip("add a venue");
             var refreshAll = Btn("⛏ dig all gigs", nameof(RefreshAllVenuesCommand)).ToolTip("refresh events from all venues");
 
@@ -281,11 +285,11 @@ public partial class VenueList : ObservableObject
                 // hide when none is refreshing
                 .BindVisible(nameof(RefreshAllVenuesProgress), converter: Converters.Func<double>(progress => progress < 1d));
 
-            Content = Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Star, Auto, Auto], spacing: 5,
-                title.ColumnSpan(2), importVenues.Column(2), exportVenues.Column(3),
-                list.Row(1).ColumnSpan(4),
-                refreshAllProgress.Row(2).ColumnSpan(4),
-                addVenue.Row(3), refreshAll.Row(3).Column(2).ColumnSpan(2));
+            Content = Grd(cols: [Auto, Auto, Star, Auto, Auto], rows: [Auto, Star, Auto, Auto], spacing: 5,
+                title.ColumnSpan(3), importVenues.Column(3), exportVenues.Column(4),
+                list.Row(1).ColumnSpan(5),
+                refreshAllProgress.Row(2).ColumnSpan(5),
+                openSettings.Row(3), addVenue.Row(3).Column(1), refreshAll.Row(3).Column(3).ColumnSpan(2));
         }
 
         private void SwingPickaxeDuring(Button btn, ICommand cmd)

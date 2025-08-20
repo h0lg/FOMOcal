@@ -12,5 +12,8 @@
         <Tab Title="Events">
             <ShellContent ContentTemplate="{DataTemplate vm:EventList+Page}" />
         </Tab>
+        <Tab Title="Settings">
+            <ShellContent ContentTemplate="{DataTemplate vm:Settings+Page}" />
+        </Tab>
     </TabBar>
 </Shell>
