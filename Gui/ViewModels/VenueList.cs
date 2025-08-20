@@ -271,10 +271,10 @@ public partial class VenueList : ObservableObject
                 }));
 
             var title = Lbl("🏟 Venues").StyleClass(Styles.Label.Headline).CenterVertical();
-            var importVenues = Btn("📥", nameof(ImportVenuesCommand));
-            var exportVenues = Btn("🥡", nameof(ExportVenuesCommand));
-            var addVenue = Btn("➕", nameof(AddVenueCommand));
-            var refreshAll = Btn("⛏ dig all gigs", nameof(RefreshAllVenuesCommand));
+            var importVenues = Btn("📥", nameof(ImportVenuesCommand)).ToolTip("import venues");
+            var exportVenues = Btn("🥡", nameof(ExportVenuesCommand)).ToolTip("export venues");
+            var addVenue = Btn("➕", nameof(AddVenueCommand)).ToolTip("add a venue");
+            var refreshAll = Btn("⛏ dig all gigs", nameof(RefreshAllVenuesCommand)).ToolTip("refresh events from all venues");
 
             var refreshAllProgress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(RefreshAllVenuesProgress))
                 .ToolTip("the progress of refreshing the events of all venues ")
