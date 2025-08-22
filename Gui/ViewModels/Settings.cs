@@ -13,6 +13,12 @@ public partial class Settings : ObservableObject
     [ObservableProperty] public partial AppTheme UserTheme { get; set; } = Theme.Get();
     partial void OnUserThemeChanged(AppTheme value) => Theme.Set(value);
 
+    [ObservableProperty] public partial bool ExportTextAlignedWithHeaders { get; set; } = Export.TextAlignedWithHeaders;
+    partial void OnExportTextAlignedWithHeadersChanged(bool value) => Export.TextAlignedWithHeaders = value;
+
+    public EventPropertySelection ExportedTextEventFields { get; }
+        = new(Export.EventFieldsForText, save: fields => Export.EventFieldsForText = fields);
+
     public EventPropertySelection ExportedHtmlEventFields { get; }
         = new(Export.EventFieldsForHtml, save: fields => Export.EventFieldsForHtml = fields);
 
@@ -23,14 +29,25 @@ public partial class Settings : ObservableObject
             BindingContext = model;
             Title = "Settings";
             var htmlExport = EventPropertySelection.Views(model.ExportedHtmlEventFields);
+            var textExport = EventPropertySelection.Views(model.ExportedTextEventFields);
 
-            Content = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto], spacing: 5,
+            var exportTextAlignedWithHeaders = Swtch(nameof(ExportTextAlignedWithHeaders)).Wrapper
+                .ToolTip("whether to column-align the plain text export using spaces and include column headers");
+
+            Content = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("Theme").StyleClass(Styles.Label.SubHeadline).CenterVertical().End(), ThemeSwitches().Column(1),
                 Lbl("HTML export").StyleClass(Styles.Label.SubHeadline).CenterVertical().End().Row(1),
                 Lbl("included fields").CenterVertical().End().Row(2),
                 htmlExport.included.CenterVertical().Row(2).Column(1),
                 Lbl("excluded fields").StyleClass(Styles.Label.Demoted).CenterVertical().End().Row(3),
-                htmlExport.excluded.Row(3).Column(1)).Center();
+                htmlExport.excluded.Row(3).Column(1),
+                Lbl("Text export").StyleClass(Styles.Label.SubHeadline).CenterVertical().End().Row(4),
+                Lbl("aligned with headers").CenterVertical().End().Row(5),
+                exportTextAlignedWithHeaders.CenterVertical().Row(5).Column(1),
+                Lbl("included fields").CenterVertical().End().Row(6),
+                textExport.included.CenterVertical().Row(6).Column(1),
+                Lbl("excluded fields").StyleClass(Styles.Label.Demoted).CenterVertical().End().Row(7),
+                textExport.excluded.Row(7).Column(1)).Center();
         }
 
         private static HorizontalStackLayout ThemeSwitches()
