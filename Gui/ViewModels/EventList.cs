@@ -193,8 +193,8 @@ public partial class EventList : ObservableObject
                 BndLbl(nameof(SelectedEventCount), stringFormat: "{0} selected").BindVisible(nameof(HasSelection)),
                 Btn("🗑", nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection)),
                 Lbl("🥡 export as").BindVisible(nameof(HasSelection)),
-                ExportButton("📆 iCal", nameof(ExportToIcsCommand)),
-                ExportButton("▦ CSV", nameof(ExportToCsvCommand)));
+                ExportButton("📆 ics", nameof(ExportToIcsCommand)),
+                ExportButton("▦ csv", nameof(ExportToCsvCommand)));
 
             bool UseVerticalEventLayout() => Width < 800; // whether to stack image on top of event details
             var useVerticalEventLayout = UseVerticalEventLayout(); // caches the last result
