@@ -1,4 +1,6 @@
-﻿using System.Net.Mime;
+﻿using System.Net;
+using System.Net.Mime;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using FomoCal.Gui;
@@ -8,6 +10,24 @@ namespace FomoCal;
 internal static partial class Export
 {
     internal static readonly PropertyInfo[] EventFields = [.. typeof(Event).GetProperties().Where(p => p.Name != nameof(Event.IsPast))];
+
+    private const string htmlEventFieldsPreferencesKey = "Export.HtmlEventFields";
+
+    internal static IEnumerable<PropertyInfo> EventFieldsForHtml
+    {
+        get => LoadEventProperties(htmlEventFieldsPreferencesKey, () => [.. EventFields.Select(p => p.Name)]);
+        set => SaveEventProperties(value, htmlEventFieldsPreferencesKey);
+    }
+
+    private static IEnumerable<PropertyInfo> LoadEventProperties(string preferencesKey, Func<string[]> getDefaults)
+    {
+        var saved = Preferences.Get(preferencesKey, null)?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? [];
+        if (saved.Length == 0) saved = getDefaults();
+        return saved.Select(name => EventFields.First(p => p.Name == name));
+    }
+
+    private static void SaveEventProperties(IEnumerable<PropertyInfo> value, string preferencesKey)
+        => Preferences.Set(preferencesKey, value.Select(p => p.Name).Join(","));
 
     [GeneratedRegex(@"(\d{1,2})(?::(\d{2}))?", RegexOptions.Compiled)] private static partial Regex TimeRegex();
 
@@ -96,6 +116,62 @@ internal static partial class Export
             }).Join(","));
 
         await ExportFile("CSV", contents: sb.ToString(), extension: "csv", contentType: MediaTypeNames.Text.Csv);
+    }
+
+    internal static async Task ExportToHtml(this IEnumerable<Event> events)
+    {
+        PropertyInfo[] eventFields = [.. EventFieldsForHtml];
+        var sb = new StringBuilder();
+
+        sb.AppendLine(@"<!DOCTYPE html>
+<html>
+<head>
+<meta charset=""UTF-8"">
+<style>
+table { border-collapse: collapse; font-family: sans-serif; }
+th, td { border: 1px solid #ccc; padding: 4px 8px; }
+img { max-height: 100px; }
+</style>
+</head>
+<body>
+<table>
+<thead><tr>");
+
+        // header
+        foreach (var field in eventFields)
+            sb.AppendLine($"<th>{WebUtility.HtmlEncode(field.Name)}</th>");
+
+        sb.AppendLine("</tr></thead><tbody>");
+
+        // rows
+        foreach (var evt in events)
+        {
+            sb.AppendLine("<tr>");
+
+            foreach (var field in eventFields)
+            {
+                var value = field.GetValue(evt, null);
+
+                string htmlValue = value switch
+                {
+                    null => string.Empty,
+                    string s when field.Name is nameof(Event.Url) or nameof(Event.TicketUrl) or nameof(Event.ScrapedFrom)
+                        => $"<a href=\"{WebUtility.HtmlEncode(s)}\" target=\"_blank\">{WebUtility.HtmlEncode(s)}</a>",
+                    string s when field.Name == nameof(Event.ImageUrl)
+                        => $"<img src=\"{WebUtility.HtmlEncode(s)}\" alt=\"Event Image\"/>",
+                    DateTime date => date.ToString("yyyy-MM-dd"),
+                    _ => WebUtility.HtmlEncode(value.ToString())!
+                };
+
+                sb.AppendLine($"<td>{htmlValue}</td>");
+            }
+
+            sb.AppendLine("</tr>");
+        }
+
+        sb.AppendLine("</tbody></table></body></html>");
+
+        await ExportFile(fileTypeLabel: "HTML", contents: sb.ToString(), extension: "html", contentType: MediaTypeNames.Text.Html);
     }
 
     private static async Task ExportFile(string fileTypeLabel, string contents, string extension, string contentType)

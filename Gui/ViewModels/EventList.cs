@@ -169,6 +169,12 @@ public partial class EventList : ObservableObject
         if (SelectedEvents.Any()) await SelectedEvents.Cast<Event>().ExportToCsv();
     }
 
+    [RelayCommand]
+    private async Task ExportToHtmlAsync()
+    {
+        if (SelectedEvents.Any()) await SelectedEvents.Cast<Event>().ExportToHtml();
+    }
+
     // used on the MainPage for Desktop
     public partial class View : ContentView
     {
@@ -194,7 +200,8 @@ public partial class EventList : ObservableObject
                 Btn("🗑", nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection)),
                 Lbl("🥡 export as").BindVisible(nameof(HasSelection)),
                 ExportButton("📆 ics", nameof(ExportToIcsCommand)),
-                ExportButton("▦ csv", nameof(ExportToCsvCommand)));
+                ExportButton("▦ csv", nameof(ExportToCsvCommand)),
+                ExportButton("🖺 html", nameof(ExportToHtmlCommand)));
 
             bool UseVerticalEventLayout() => Width < 800; // whether to stack image on top of event details
             var useVerticalEventLayout = UseVerticalEventLayout(); // caches the last result
