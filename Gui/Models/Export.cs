@@ -1,8 +1,9 @@
-﻿using System.Net;
-using System.Net.Mime;
+﻿using System.Net.Mime;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using AngleSharp;
+using AngleSharp.Html.Dom;
 using FomoCal.Gui;
 
 namespace FomoCal;
@@ -121,57 +122,84 @@ internal static partial class Export
     internal static async Task ExportToHtml(this IEnumerable<Event> events)
     {
         PropertyInfo[] eventFields = [.. EventFieldsForHtml];
-        var sb = new StringBuilder();
+        var context = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
+        var doc = await context.OpenNewAsync();
 
-        sb.AppendLine(@"<!DOCTYPE html>
-<html>
-<head>
-<meta charset=""UTF-8"">
-<style>
-table { border-collapse: collapse; font-family: sans-serif; }
+        // styling
+        var style = doc.CreateElement("style");
+
+        style.TextContent =
+@"table { border-collapse: collapse; font-family: sans-serif; }
 th, td { border: 1px solid #ccc; padding: 4px 8px; }
-img { max-height: 100px; }
-</style>
-</head>
-<body>
-<table>
-<thead><tr>");
+img { max-height: 100px; }";
 
-        // header
+        doc.Head!.AppendChild(style);
+        var table = doc.CreateElement("table");
+        var thead = doc.CreateElement("thead");
+        var headerRow = doc.CreateElement("tr");
+
+        // table header
         foreach (var field in eventFields)
-            sb.AppendLine($"<th>{WebUtility.HtmlEncode(field.Name)}</th>");
+        {
+            var th = doc.CreateElement("th");
+            th.TextContent = field.Name;
+            headerRow.AppendChild(th);
+        }
 
-        sb.AppendLine("</tr></thead><tbody>");
+        thead.AppendChild(headerRow);
+        table.AppendChild(thead);
+        var tbody = doc.CreateElement("tbody");
 
-        // rows
+        // table body
         foreach (var evt in events)
         {
-            sb.AppendLine("<tr>");
+            var row = doc.CreateElement("tr");
 
             foreach (var field in eventFields)
             {
+                var td = doc.CreateElement("td");
                 var value = field.GetValue(evt, null);
 
-                string htmlValue = value switch
+                if (value != null)
                 {
-                    null => string.Empty,
-                    string s when field.Name is nameof(Event.Url) or nameof(Event.TicketUrl) or nameof(Event.ScrapedFrom)
-                        => $"<a href=\"{WebUtility.HtmlEncode(s)}\" target=\"_blank\">{WebUtility.HtmlEncode(s)}</a>",
-                    string s when field.Name == nameof(Event.ImageUrl)
-                        => $"<img src=\"{WebUtility.HtmlEncode(s)}\" alt=\"Event Image\"/>",
-                    DateTime date => date.ToString("yyyy-MM-dd"),
-                    _ => WebUtility.HtmlEncode(value.ToString())!
-                };
+                    switch (field.Name)
+                    {
+                        case nameof(Event.Url):
+                        case nameof(Event.TicketUrl):
+                        case nameof(Event.ScrapedFrom):
+                            var a = (IHtmlAnchorElement)doc.CreateElement("a");
+                            a.TextContent = a.Href = value.ToString()!;
+                            a.Target = "_blank";
+                            td.AppendChild(a);
+                            break;
 
-                sb.AppendLine($"<td>{htmlValue}</td>");
+                        case nameof(Event.ImageUrl):
+                            var img = (IHtmlImageElement)doc.CreateElement("img");
+                            img.Source = value.ToString();
+                            img.AlternativeText = "Event Image";
+                            td.AppendChild(img);
+                            break;
+
+                        default:
+                            td.TextContent = value switch
+                            {
+                                DateTime dt => dt.ToString("yyyy-MM-dd"),
+                                _ => value.ToString()!
+                            };
+
+                            break;
+                    }
+                }
+
+                row.AppendChild(td);
             }
 
-            sb.AppendLine("</tr>");
+            tbody.AppendChild(row);
         }
 
-        sb.AppendLine("</tbody></table></body></html>");
-
-        await ExportFile(fileTypeLabel: "HTML", contents: sb.ToString(), extension: "html", contentType: MediaTypeNames.Text.Html);
+        table.AppendChild(tbody);
+        doc.Body!.AppendChild(table);
+        await ExportFile(fileTypeLabel: "HTML", contents: doc.ToHtml(), extension: "html", contentType: MediaTypeNames.Text.Html);
     }
 
     private static async Task ExportFile(string fileTypeLabel, string contents, string extension, string contentType)
