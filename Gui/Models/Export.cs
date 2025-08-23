@@ -7,6 +7,8 @@ namespace FomoCal;
 
 internal static partial class Export
 {
+    internal static readonly PropertyInfo[] EventFields = [.. typeof(Event).GetProperties().Where(p => p.Name != nameof(Event.IsPast))];
+
     [GeneratedRegex(@"(\d{1,2})(?::(\d{2}))?", RegexOptions.Compiled)] private static partial Regex TimeRegex();
 
     private static bool TryParseStartTime(string? startTimeStr, out TimeSpan time)
@@ -81,12 +83,11 @@ internal static partial class Export
 
     internal static async Task ExportToCsv(this IEnumerable<Event> events)
     {
-        var columns = typeof(Event).GetProperties();
         var sb = new StringBuilder();
-        sb.AppendLine(columns.Select(p => p.Name).Join(","));
+        sb.AppendLine(EventFields.Select(p => p.Name).Join(","));
 
         foreach (var evt in events)
-            sb.AppendLine(columns.Select(c =>
+            sb.AppendLine(EventFields.Select(c =>
             {
                 var value = c.GetValue(evt, null);
                 if (value is string str) return str.CsvEscape();
