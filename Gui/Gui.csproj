@@ -54,6 +54,10 @@
     <Copyright>Holger Schmidt 2025</Copyright>
     <PackageProjectUrl>https://github.com/h0lg/FOMOcal</PackageProjectUrl>
     <RepositoryUrl>https://github.com/h0lg/FOMOcal</RepositoryUrl>
+
+    <PublishBaseDir>$(MSBuildThisFileDirectory)bin</PublishBaseDir>
+    <PublishDir>$(PublishBaseDir)\$(Product) $(ApplicationDisplayVersion)\</PublishDir>
+    <SatelliteResourceLanguages>en-us</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -97,5 +101,22 @@
     <Exec Command="git describe --long --always --dirty --exclude=* --abbrev=8" ConsoleToMSBuild="True" IgnoreExitCode="False">
       <Output PropertyName="SourceRevisionId" TaskParameter="ConsoleOutput" />
     </Exec>
+  </Target>
+
+  <Target Name="PostPublish" AfterTargets="Publish">
+    <PropertyGroup>
+      <ZipFile>$(PublishBaseDir)\$(Product) $(ApplicationDisplayVersion).zip</ZipFile>
+    </PropertyGroup>
+
+    <!-- Delete existing zip -->
+    <Exec Command="powershell -Command &quot;if (Test-Path '$(ZipFile)') { Remove-Item '$(ZipFile)' -Force }&quot;" />
+
+    <!-- Create new zip including the folder -->
+    <Exec Command="powershell -Command &quot;Compress-Archive -Path '$(PublishDir)' -DestinationPath '$(ZipFile)'&quot;" />
+
+    <Message Text="Packed $(ZipPath)" Importance="high" />
+
+    <!-- Open in Explorer -->
+    <Exec Command="explorer.exe &quot;$(PublishBaseDir)&quot;" IgnoreExitCode="true" />
   </Target>
 </Project>
