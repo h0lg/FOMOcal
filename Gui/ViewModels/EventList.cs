@@ -20,6 +20,7 @@ public partial class EventList : ObservableObject
     public EventList(EventRepository eventRepo)
     {
         this.eventRepo = eventRepo;
+        RecentSearches = new(recentSearches.Get());
 
         PropertyChanged += (o, e) =>
         {
@@ -161,7 +162,7 @@ public partial class EventList : ObservableObject
         public View(EventList model)
         {
             BindingContext = model;
-            SearchBar searchBar = BuildSearch(model);
+            (SearchBar searchBar, CollectionView recentSearches) = BuildSearch(model);
 
             var pastEvents = HStack(5,
                 Btn("🗑", nameof(CleanUpPastEventsCommand))
@@ -270,7 +271,7 @@ public partial class EventList : ObservableObject
 
             Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5,
                 HWrap(new Thickness(0, 0, right: 5, 0), pastEvents,
-                    Lbl("Gigs").StyleClass(Styles.Label.Headline), searchBar.Grow(1), commands).View,
+                    Lbl("Gigs").StyleClass(Styles.Label.Headline), searchBar.Grow(1), recentSearches, commands).View,
                 list.Row(1));
         }
 
