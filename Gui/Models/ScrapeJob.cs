@@ -18,7 +18,9 @@ public partial class ScrapeJob
 
     internal static bool TryGetXPathSelector(string selector, [MaybeNullWhen(false)] out string xPathSelector)
     {
-        if (selector.StartsWith(XPathSelectorPrefix, StringComparison.Ordinal))
+        selector = selector.Trim(); // to prevent accidental whitespace from breaking XPathSelectorPrefix detection
+
+        if (selector.StartsWith(XPathSelectorPrefix, StringComparison.OrdinalIgnoreCase))
         {
             xPathSelector = selector[XPathSelectorPrefix.Length..];
             return true;
