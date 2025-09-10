@@ -28,8 +28,8 @@ public partial class AutomatedEventPageView : WebView
     private readonly WaitForSelectorOptions waitForSelectorOptions = new() { IntervalDelayMs = 200, MaxMatches = 100, MaxTries = 25 };
 
     /// <summary>An event that notifies the subscriber about the DOM from <see cref="Venue.ProgramUrl"/>
-    /// being ready for scraping and returning its HTML - or null if it should
-    /// <see cref="Venue.EventScrapeJob.WaitForJsRendering"/> and that times out.</summary>
+    /// being ready for scraping and returning its HTML - or null if events are
+    /// <see cref="Venue.EventScrapeJob.LazyLoaded"/> and that times out.</summary>
     internal event Action<string?>? HtmlWithEventsLoaded;
 
     /// <summary>An event that notifies the subscriber about an error loading the <see cref="Venue.ProgramUrl"/>.</summary>
@@ -137,7 +137,7 @@ public partial class AutomatedEventPageView : WebView
             script += $"{waitForSelector}init(loaded => {{ {NavigateTo($"'{eventsLoaded}?' + loaded")} }});";
         }
 
-        if (venue.Event.WaitForJsRendering)
+        if (venue.Event.LazyLoaded)
             script += $"{waitForSelector}onLoad({GetWaitForSelectorOptions()});";
         else script += NavigateTo($"'{eventsLoaded}?true'"); // if view is used to load URL without waiting, call back immediately
 

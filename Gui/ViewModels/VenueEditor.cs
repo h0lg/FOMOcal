@@ -91,7 +91,7 @@ public partial class VenueEditor : ObservableObject
             if (value == venue.Event.Selector) return;
             venue.Event.Selector = value;
 
-            if (WaitForJsRendering) SetDocument(null); // because then loaded HTML depends on venue.Event.Selector
+            if (LazyLoaded) SetDocument(null); // because then loaded HTML depends on venue.Event.Selector
             else previewedEvents = null; // otherwise SetDocument takes care of it
 
             OnPropertyChanged();
@@ -99,13 +99,13 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
-    public bool WaitForJsRendering
+    public bool LazyLoaded
     {
-        get => venue.Event.WaitForJsRendering;
+        get => venue.Event.LazyLoaded;
         set
         {
-            if (value == venue.Event.WaitForJsRendering) return;
-            venue.Event.WaitForJsRendering = value;
+            if (value == venue.Event.LazyLoaded) return;
+            venue.Event.LazyLoaded = value;
             SetDocument(null);
             OnPropertyChanged();
         }
@@ -387,9 +387,9 @@ public partial class VenueEditor : ObservableObject
                 cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis);
 
             var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
-            (Switch Switch, Grid Wrapper) waitForJsRendering = Swtch(nameof(WaitForJsRendering));
+            (Switch Switch, Grid Wrapper) lazyLoaded = Swtch(nameof(LazyLoaded));
 
-            waitForJsRendering.Switch.InlineTooltipOnFocus(HelpTexts.WaitForJsRendering, help,
+            lazyLoaded.Switch.InlineTooltipOnFocus(HelpTexts.LazyLoaded, help,
                 onFocusChanged: async (_, focused) => await ToggleSelectorRelatedFocus(focused));
 
             var eventFilter = Entr(nameof(EventFilter), placeholder: "text or XPath")
@@ -404,7 +404,7 @@ public partial class VenueEditor : ObservableObject
                 Lbl("Event container").Bold(),
                 BndLbl(nameof(SelectedEventCount), "{0} selected by"), containerSelector,
                 BndLbl(nameof(FilteredEventCount), "{0} filtered by"), eventFilter,
-                Lbl("lazy"), waitForJsRendering.Wrapper);
+                Lbl("lazy"), lazyLoaded.Wrapper);
 
             return Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),

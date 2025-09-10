@@ -133,7 +133,7 @@
     <value>Every web page is made up of 🖽 [boxes inside boxes](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure) - kind of like Russian nesting dolls, but often with more than one contained child.
 Each box holds different parts of the page with different info. In the following, you can tell {0} which boxes to pick what kind of info from.</value>
   </data>
-  <data name="WaitForJsRendering" xml:space="preserve">
+  <data name="LazyLoaded" xml:space="preserve">
     <value>You may want to try this option if your event selector doesn't match anything without it even though it should*.
 It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn't after 10s.
 

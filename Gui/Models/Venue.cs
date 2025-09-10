@@ -53,7 +53,11 @@ public class Venue
     public class EventScrapeJob
     {
         public required string Selector { get; set; }
-        public bool WaitForJsRendering { get; set; }
+        public bool LazyLoaded { get; set; }
+
+        // migrates the old WaitForJsRendering to the new LazyLoaded
+        public bool WaitForJsRendering { set => LazyLoaded = value; }
+
         public string? Filter { get; set; }
         public PagingStrategy PagingStrategy { get; set; }
         public string? NextPageSelector { get; set; }
@@ -77,7 +81,7 @@ public class Venue
         public ScrapeJob? TicketUrl { get; set; }
 
         internal bool LoadsMoreOnScrollDown() => PagingStrategy == PagingStrategy.ScrollDownToLoadMore;
-        private bool WaitsForEvents() => WaitForJsRendering || LoadsMoreOnScrollDown();
+        private bool WaitsForEvents() => LazyLoaded || LoadsMoreOnScrollDown();
         internal bool RequiresAutomation() => WaitsForEvents() || PagingStrategy.ClicksElementToLoad();
 
         internal bool LoadsMoreOrDifferentOnNextPage()

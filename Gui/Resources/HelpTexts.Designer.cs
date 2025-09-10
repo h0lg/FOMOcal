@@ -196,6 +196,18 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You may want to try this option if your event selector doesn&apos;t match anything without it even though it should*.
+        ///It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn&apos;t after 10s.
+        ///
+        ///^^This works around pages that lazy-load events. Some web servers only return an empty template of a page on the first request to improve the response time, then fetch more data asynchronously and render it into the placeholders using a script run [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string LazyLoaded {
+            get {
+                return ResourceManager.GetString("LazyLoaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The selector of the element to click or link to navigate to load more or different events..
         /// </summary>
         internal static string NextEventPageSelector {
@@ -384,18 +396,6 @@ namespace FomoCal.Gui.Resources {
         internal static string ToggleSelectorDetail {
             get {
                 return ResourceManager.GetString("ToggleSelectorDetail", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You may want to try this option if your event selector doesn&apos;t match anything without it even though it should*.
-        ///It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn&apos;t after 10s.
-        ///
-        ///^^This works around pages that lazy-load events. Some web servers only return an empty template of a page on the first request to improve the response time, then fetch more data asynchronously and render it into the placeholders using a script run [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string WaitForJsRendering {
-            get {
-                return ResourceManager.GetString("WaitForJsRendering", resourceCulture);
             }
         }
     }

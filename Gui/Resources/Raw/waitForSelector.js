@@ -150,7 +150,7 @@
             notifyFound = onFound;
         },
 
-        // for EventScrapeJob.WaitForJsRendering
+        // for EventScrapeJob.LazyLoaded
         onLoad: options => {
             console.info('waitForSelector.onLoad', options);
             withOptions(options);

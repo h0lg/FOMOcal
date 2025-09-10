@@ -78,9 +78,9 @@ partial class VenueEditor
                     pageView.Source = model.ProgramUrl;
                 else if (e.PropertyName == nameof(EnablePicking))
                     await pageView.EnablePicking(model.EnablePicking);
-                else if (e.PropertyName == nameof(WaitForJsRendering)
+                else if (e.PropertyName == nameof(LazyLoaded)
                     || e.PropertyName == nameof(Encoding)
-                    || (e.PropertyName == nameof(EventSelector) && model.WaitForJsRendering))
+                    || (e.PropertyName == nameof(EventSelector) && model.LazyLoaded))
                     Reload();
             };
 

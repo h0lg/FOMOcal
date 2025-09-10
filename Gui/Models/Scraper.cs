@@ -129,7 +129,7 @@ public sealed partial class Scraper : IDisposable
     }
 
     /// <summary>Loads the <see cref="DomDoc"/> from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/> for scraping.
-    /// If scraping is configured to <see cref="Venue.EventScrapeJob.WaitForJsRendering"/>,
+    /// If events are <see cref="Venue.EventScrapeJob.LazyLoaded"/>,
     /// a new <see cref="AutomatedEventPageView"/> is added to <see cref="App.GetCurrentContentPage"/>.
     /// That view loads the URL and waits until the <see cref="Venue.EventScrapeJob.Selector"/> matches anything,
     /// which is when it is removed again.</summary>
