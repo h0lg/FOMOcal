@@ -204,7 +204,7 @@ You may want to disable this to interact with the page as you would in a normal 
   <data name="PagingStrategyClickElementToLoadMore" xml:space="preserve">
     <value>More events are loaded into the same page after clicking an element.</value>
   </data>
-  <data name="PagingStrategyNavigateLinkToLoadMore" xml:space="preserve">
+  <data name="PagingStrategyNavigateLinkToLoadDifferent" xml:space="preserve">
     <value>Different events are loaded on the next page after navigating a hyperlink.</value>
   </data>
   <data name="PagingStrategyScrollDownToLoadMore" xml:space="preserve">

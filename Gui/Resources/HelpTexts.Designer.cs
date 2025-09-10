@@ -264,9 +264,9 @@ namespace FomoCal.Gui.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Different events are loaded on the next page after navigating a hyperlink..
         /// </summary>
-        internal static string PagingStrategyNavigateLinkToLoadMore {
+        internal static string PagingStrategyNavigateLinkToLoadDifferent {
             get {
-                return ResourceManager.GetString("PagingStrategyNavigateLinkToLoadMore", resourceCulture);
+                return ResourceManager.GetString("PagingStrategyNavigateLinkToLoadDifferent", resourceCulture);
             }
         }
         

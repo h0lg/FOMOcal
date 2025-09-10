@@ -139,7 +139,7 @@ public class Venue
         ClickElementToLoadMore = 1,
 
         [Description("different by navigating link")]
-        NavigateLinkToLoadMore = 2,
+        NavigateLinkToLoadDifferent = 2,
 
         [Description("more by scrolling down")]
         ScrollDownToLoadMore = 3,
@@ -191,14 +191,14 @@ internal static class VenueExtensions
     }
 
     internal static bool RequiresNextPageSelector(this PagingStrategy strategy)
-        => strategy == PagingStrategy.NavigateLinkToLoadMore || strategy.ClicksElementToLoad();
+        => strategy == PagingStrategy.NavigateLinkToLoadDifferent || strategy.ClicksElementToLoad();
 
     internal static bool ClicksElementToLoad(this PagingStrategy strategy)
         => strategy == PagingStrategy.ClickElementToLoadMore
         || strategy == PagingStrategy.ClickElementToLoadDifferent;
 
     internal static bool LoadsDifferentEvents(this PagingStrategy strategy)
-        => strategy == PagingStrategy.NavigateLinkToLoadMore
+        => strategy == PagingStrategy.NavigateLinkToLoadDifferent
         || strategy == PagingStrategy.ClickElementToLoadDifferent;
 
     internal static string? GetHelp(this PagingStrategy strategy)

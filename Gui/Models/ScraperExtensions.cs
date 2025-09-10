@@ -60,7 +60,7 @@ internal static class ScraperExtensions
                 ArgumentNullException.ThrowIfNull(loader);
                 await loader.ClickElementToLoadMore(venue.Event.NextPageSelector!);
                 return loader.LoadAutomated(browsingContext, venue);
-            case Venue.PagingStrategy.NavigateLinkToLoadMore:
+            case Venue.PagingStrategy.NavigateLinkToLoadDifferent:
                 var nextPage = currentPage.GetNextPageElement(venue)!;
                 var href = nextPage.GetAttribute("href");
                 if (href.IsNullOrWhiteSpace() || href == "#") return null; // to prevent loop
