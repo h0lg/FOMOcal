@@ -10,11 +10,6 @@ public partial class ScrapeJob
 {
     internal const string XPathSelectorPrefix = "XPATH^";
     internal static string FormatXpathSelector(string selector) => XPathSelectorPrefix + selector;
-    [GeneratedRegex("(?<=\\[xpath>\")(.+)(?=\"\\])")] private static partial Regex OldXpathSelectorPattern();
-
-    internal static string? MigrateSelector(string? selector)
-        => selector.IsNullOrWhiteSpace() ? null
-            : TryGetXPathSelector(selector!, out var xPath) ? FormatXpathSelector(xPath) : selector;
 
     internal static bool TryGetXPathSelector(string selector, [MaybeNullWhen(false)] out string xPathSelector)
     {
@@ -23,14 +18,6 @@ public partial class ScrapeJob
         if (selector.StartsWith(XPathSelectorPrefix, StringComparison.OrdinalIgnoreCase))
         {
             xPathSelector = selector[XPathSelectorPrefix.Length..];
-            return true;
-        }
-
-        var xpathMatch = OldXpathSelectorPattern().Match(selector);
-
-        if (xpathMatch.Success)
-        {
-            xPathSelector = xpathMatch.Value;
             return true;
         }
 
