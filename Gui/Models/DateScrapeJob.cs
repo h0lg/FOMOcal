@@ -24,7 +24,7 @@ public class DateScrapeJob : ScrapeJob
     public DateTime? GetDate(AngleSharp.Dom.IElement element, List<Exception>? errors = null)
     {
         var rawValue = base.GetValue(element, errors);
-        if (string.IsNullOrWhiteSpace(rawValue)) return null;
+        if (rawValue.IsNullOrWhiteSpace()) return null;
         const DateTimeStyles style = DateTimeStyles.None;
 
         if (DateTime.TryParseExact(rawValue, Format, CultureInfo, style, out DateTime parsedDate)) return parsedDate;
