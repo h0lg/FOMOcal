@@ -38,22 +38,18 @@ internal static partial class StringExtensions
     // Regex pattern to match "Pattern => Replacement, Pattern2 =>" pairs
     [GeneratedRegex(@"([^=\s]+)\s*=>\s*([^,]*)")] private static partial Regex InlinedReplacements();
 
-    /// <summary>Explodes the in-lined <paramref name="replacements"/> in the form "Pattern => Replacement, Pattern2 =>"
+    internal static string? MigrateInlinedReplacements(string? replacements)
+        => replacements.IsNullOrWhiteSpace() ? null // reset to null
+            : replacements!.Contains("}}") ? replacements // already migrated
+            : InlinedReplacements().Matches(replacements!) // migrate
+                .Select(match => $"{match.Groups[1].Value} }}}} {match.Groups[2].Value}").Join(" || ");
+
+    /// <summary>Explodes the in-lined <paramref name="replacements"/> in the form "Pattern }} Replacement || Pattern2 }}"
     /// into pairs for <see cref="ApplyReplacements(string, Dictionary{string, string})"/>.</summary>
     internal static Dictionary<string, string> ExplodeInlinedReplacements(this string replacements)
-    {
-        // Create a dictionary to hold the pairs (pattern => replacement)
-        Dictionary<string, string> exploded = [];
-
-        // Use Regex to find all pattern-replacement pairs
-        foreach (Match match in InlinedReplacements().Matches(replacements))
-        {
-            string patternKey = match.Groups[1].Value;
-            exploded[patternKey] = match.Groups[2].Value;
-        }
-
-        return exploded;
-    }
+        => MigrateInlinedReplacements(replacements)!.Split("||", StringSplitOptions.RemoveEmptyEntries)
+            .Select(replacement => replacement.Split("}}"))
+            .ToDictionary(arr => arr[0].Trim(), arr => arr[1].Trim());
 
     /// <summary>Indicates whether <paramref name="text"/> contains any of the supplied
     /// <paramref name="terms"/> using <paramref name="stringComparison"/> to compare.</summary>

@@ -145,7 +145,8 @@ It will load the page and wait for an element matching your selector to become a
     <value>The name of the attribute of the selected element to extract the text from.</value>
   </data>
   <data name="ScrapeJobReplace" xml:space="preserve">
-    <value>Multiple optional replacements to apply, in the form "Pattern =&gt; Replacement, Pattern2 =&gt;".
+    <value>Multiple optional replacements to apply, in the form "Pattern }} Replacement || Pattern2 }}".
+Use "||" to separate multiple replacements and "}}" to separate the pattern from the replacement, which may be empty.
 You may want to do this e.g. to convert a date string into a valid format. Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavor, but plain text often works.
 
 ^^[regex101](https://regex101.com/) is great to debug your patterns, learn and find existing patterns. If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.

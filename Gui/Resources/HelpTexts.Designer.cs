@@ -337,12 +337,11 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple optional replacements to apply, in the form &quot;Pattern =&gt; Replacement, Pattern2 =&gt;&quot;.
+        ///   Looks up a localized string similar to Multiple optional replacements to apply, in the form &quot;Pattern }} Replacement || Pattern2 }}&quot;.
+        ///Use &quot;||&quot; to separate multiple replacements and &quot;}}&quot; to separate the pattern from the replacement, which may be empty.
         ///You may want to do this e.g. to convert a date string into a valid format. Patterns are [Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavor, but plain text often works.
         ///
-        ///^^[regex101](https://regex101.com/) is great to debug your patterns, learn and find existing patterns. If you can&apos;t be bothered or are struggling - ask a chat bot for help, they&apos;re pretty good at this.
-        ///^^
-        ///^^Thi [rest of string was truncated]&quot;;.
+        ///^^[regex101](https://regex101.com/) is great to debug your patterns, learn and find existin [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ScrapeJobReplace {
             get {

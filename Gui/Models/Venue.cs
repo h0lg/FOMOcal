@@ -151,6 +151,23 @@ public class Venue
 
 internal static class VenueExtensions
 {
+    internal static T Migrate<T>(this T venues) where T : IEnumerable<Venue>
+    {
+        foreach (var venue in venues)
+        {
+            ScrapeJob[] scrapeJobs = [
+                .. typeof(EventScrapeJob).GetProperties()
+                    .Where(p => p.PropertyType.IsAssignableTo(typeof(ScrapeJob)))
+                    .Select(p => p.GetValue(venue.Event))
+                    .WithValue().Cast<ScrapeJob>()];
+
+            foreach (var job in scrapeJobs)
+                job.Replace = StringExtensions.MigrateInlinedReplacements(job.Replace);
+        }
+
+        return venues;
+    }
+
     internal static void Import(this Collection<Venue> existing, HashSet<Venue> imported)
     {
         foreach (var import in imported)

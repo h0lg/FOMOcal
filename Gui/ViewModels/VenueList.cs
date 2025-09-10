@@ -232,7 +232,7 @@ public partial class VenueList : ObservableObject
         }
     }
 
-    private Task SaveVenues() => venueRepo.SaveCompleteAsync(Venues.ToHashSet());
+    private Task SaveVenues() => venueRepo.SaveCompleteAsync(Venues.Migrate().ToHashSet());
 
     private static string ReportErrors(Exception[] errors, Venue venue)
         => errors.Select(ex => ex.ToString())
