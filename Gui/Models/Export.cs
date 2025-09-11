@@ -10,22 +10,23 @@ namespace FomoCal;
 
 internal static partial class Export
 {
-    internal static readonly PropertyInfo[] EventFields = [.. typeof(Event).GetProperties().Where(p => p.Name != nameof(Event.IsPast))];
+    private const string textAlignedWithHeadersPreferencesKey = "Export.TextAlignedWithHeaders";
 
-    private const string htmlEventFieldsPreferencesKey = "Export.HtmlEventFields",
-        textEventFieldsPreferencesKey = "Export.TextEventFields",
-        textAlignedWithHeadersPreferencesKey = "Export.TextAlignedWithHeaders";
+    private static readonly RememberedStrings htmlEventFields = new("Export.HtmlEventFields"),
+        textEventFields = new("Export.TextEventFields");
+
+    internal static readonly PropertyInfo[] EventFields = [.. typeof(Event).GetProperties().Where(p => p.Name != nameof(Event.IsPast))];
 
     internal static IEnumerable<PropertyInfo> EventFieldsForHtml
     {
-        get => LoadEventProperties(htmlEventFieldsPreferencesKey, () => [.. EventFields.Select(p => p.Name)]);
-        set => SaveEventProperties(value, htmlEventFieldsPreferencesKey);
+        get => LoadEventProperties(htmlEventFields, () => [.. EventFields.Select(p => p.Name)]);
+        set => SaveEventProperties(value, htmlEventFields);
     }
 
     internal static IEnumerable<PropertyInfo> EventFieldsForText
     {
-        get => LoadEventProperties(textEventFieldsPreferencesKey, () => [nameof(Event.Date), nameof(Event.Name), nameof(Event.Venue)]);
-        set => SaveEventProperties(value, textEventFieldsPreferencesKey);
+        get => LoadEventProperties(textEventFields, () => [nameof(Event.Date), nameof(Event.Name), nameof(Event.Venue)]);
+        set => SaveEventProperties(value, textEventFields);
     }
 
     internal static bool TextAlignedWithHeaders
@@ -34,15 +35,15 @@ internal static partial class Export
         set => Preferences.Set(textAlignedWithHeadersPreferencesKey, value);
     }
 
-    private static IEnumerable<PropertyInfo> LoadEventProperties(string preferencesKey, Func<string[]> getDefaults)
+    private static IEnumerable<PropertyInfo> LoadEventProperties(RememberedStrings remembered, Func<string[]> getDefaults)
     {
-        var saved = Preferences.Get(preferencesKey, null)?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? [];
+        var saved = remembered.Get();
         if (saved.Length == 0) saved = getDefaults();
         return saved.Select(name => EventFields.First(p => p.Name == name));
     }
 
-    private static void SaveEventProperties(IEnumerable<PropertyInfo> value, string preferencesKey)
-        => Preferences.Set(preferencesKey, value.Select(p => p.Name).Join(","));
+    private static void SaveEventProperties(IEnumerable<PropertyInfo> value, RememberedStrings remembered)
+        => remembered.Set(value.Select(p => p.Name));
 
     [GeneratedRegex(@"(\d{1,2})(?::(\d{2}))?", RegexOptions.Compiled)] private static partial Regex TimeRegex();
 
