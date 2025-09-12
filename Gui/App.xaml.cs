@@ -1,6 +1,4 @@
-﻿using FomoCal.Gui.ViewModels;
-
-namespace FomoCal.Gui
+﻿namespace FomoCal.Gui
 {
     public partial class App : Application
     {
