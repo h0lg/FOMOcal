@@ -82,20 +82,22 @@ In there, use either the [$$ short-hand](https://developer.chrome.com/docs/devto
 or [`document.querySelectorAll`](https://www.w3schools.com/jsref/met_document_queryselectorall.asp)
 to debug **CSS** selectors
 
-<!-- this syntax adds a code block with copy to clipboard function, see
-    https://stackoverflow.com/questions/31908564/easy-way-to-add-copy-to-clipboard-to-github-markdown -->
-#####
-    $$('#your > .css selector')
-#####
-    document.querySelectorAll('#your > .css selector')
+```js
+$$('#your > .css selector')
+```
+```js
+document.querySelectorAll('#your > .css selector')
+```
 
 and either the [$x short-hand](https://developer.chrome.com/docs/devtools/console/utilities#xpath-function)
 or [`document.evaluate`](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)
 for **XPath**.
-#####
-    $x('//your/xpath/selector')
-#####
-    Array.from({ length: (r = document.evaluate('//your/xpath/selector', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)).snapshotLength }, (_, i) => r.snapshotItem(i))
+```js
+$x('//your/xpath/selector')
+```
+```js
+Array.from({ length: (r = document.evaluate('//your/xpath/selector', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)).snapshotLength }, (_, i) => r.snapshotItem(i))
+```
 
 The short-hands are available in most browsers. If they're not, fall back to the standardized alternative.
 
