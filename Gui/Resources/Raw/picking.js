@@ -30,7 +30,7 @@
         classHasStyle.clear(); // Clear secondary cache when rebuilding
 
         for (const sheet of document.styleSheets) {
-            console.debug('searching sheet', sheet.href || sheet.ownerNode);
+            console.debug('searching style sheet', sheet.href || sheet.ownerNode);
 
             try {
                 const rules = sheet.cssRules || [];
@@ -188,11 +188,12 @@
         let selector;
 
         if (pickDescendant) {
-            console.info('picking descendant relative to', anchor);
+            console.info('picking descendant selector relative to', anchor);
             const root = target.closest(anchor);
             if (root === null) notifyPicked('');
             selector = selectorDetail.xPathSyntax ? getXPath(root, target) : getCssSelector(root, target);
         } else {
+            console.info('picking selector of closest common ancestor with', anchor);
             const root = getClosestCommonAncestor(target, anchor);
             if (root === null) notifyPicked('');
             selector = selectorDetail.xPathSyntax ? createXPath(root) : createCssSelector(root);
@@ -225,7 +226,7 @@
         enable,
 
         relativeTo: (anchorSelector, descendant) => {
-            console.info('picking relative to', anchorSelector, 'descendant', descendant);
+            console.info('picking', descendant ? 'descendants of' : 'closest common ancestor with', anchorSelector);
             anchor = anchorSelector;
             pickDescendant = descendant;
         },
@@ -239,4 +240,4 @@
     };
 })();
 
-console.info('FOMOcal.picking attached.');
+console.debug('FOMOcal.picking attached.');

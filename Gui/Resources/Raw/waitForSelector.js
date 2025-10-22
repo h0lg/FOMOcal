@@ -46,11 +46,11 @@
             list.getEntries().forEach(entry => {
                 if (entry.initiatorType === 'xmlhttprequest' || entry.initiatorType === 'fetch') {
                     runningRequests++; // count up running requests
-                    console.debug('loading', runningRequests);
+                    console.debug('AJAX request started,', runningRequests, 'running');
 
                     setTimeout(() => {
                         runningRequests--; // make sure to count down again because we don't know when they end
-                        console.debug('loading probably finished', runningRequests);
+                        console.debug('AJAX request probably finished,', runningRequests, 'running');
                     }, 3000); // trying to give slow requests enough time before counting them out
                 }
             });
@@ -68,7 +68,7 @@
             if (tries >= settings.maxTries) stopTrying(false); // stop trying when maxTries are exceeded
 
             const found = getMatchCount();
-            console.debug('checking for selector', settings.selector, 'found', found);
+            console.debug('selecting', settings.selector, 'found', found, 'matching elements');
             tries++; // important to eventually time out
 
             const stop = stopIf(found, runningRequests, () => tries = 0);
@@ -115,12 +115,12 @@
                 successTimeoutId;
 
             const contentElements = getMatches();
-            console.debug(settings.selector, 'already loaded', contentElements.length);
+            console.debug('already loaded', contentElements.length, 'elements matching', settings.selector);
             if (!contentElements.length) return reject(new Error(`Timeout: No elements match selector '${settings.selector}' found to observe`));
             const targetNode = getClosestCommonAncestor([...contentElements]);
 
             const observer = new MutationObserver((mutations, obs) => {
-                console.info('mutation observer detected changes');
+                console.info('DOM changes detected');
                 if (successTimeoutId) clearTimeout(successTimeoutId); // to only resolve after the last mutation
 
                 successTimeoutId = setTimeout(() => {
@@ -130,11 +130,11 @@
                 }, 200); // to enable further mutations to cancel the resolution
             });
 
-            console.info('mutation observer starting');
+            console.info('starting to observe the DOM for mutations');
             observer.observe(targetNode, options);
 
             timeoutId = setTimeout(() => {
-                console.info('mutation observer timed out');
+                console.info('waiting for DOM changes timed out');
                 observer.disconnect();
                 reject(new Error(`Timeout: No mutation detected for selector '${settings.selector}' within ${timeoutMs}ms`));
             }, timeoutMs);
@@ -146,13 +146,13 @@
 
     exports.waitForSelector = {
         init: onFound => {
-            console.info('waitForSelector.init');
+            console.debug('waitForSelector.init');
             notifyFound = onFound;
         },
 
         // for EventScrapeJob.LazyLoaded
         onLoad: options => {
-            console.info('waitForSelector.onLoad', options);
+            console.debug('waitForSelector.onLoad', options);
             withOptions(options);
             const startWaiting = () => { start(found => found > 0); };
 
@@ -163,14 +163,14 @@
 
         // for PagingStrategy.ScrollDownToLoadMore
         afterScrollingDown: options => {
-            console.info('waitForSelector.afterScrollingDown', options);
+            console.debug('waitForSelector.afterScrollingDown', options);
             withOptions(options);
             let lastFound = getMatchCount();
             if (settings.maxMatches <= lastFound) return notifyFound(true); // succeeded because we found maxMatches or more
             scrollDown(); // once initially
 
             start((found, runningRequests, resetTries) => {
-                console.debug('afterScrollingDown found', found, 'loading', runningRequests);
+                console.debug('afterScrollingDown found', found, 'events with', runningRequests, 'requests still running');
                 // enough matches loaded
                 if (settings.maxMatches <= found) return true; // succeeded because we found maxMatches or more
 
@@ -189,7 +189,7 @@
 
         // for PagingStrategy.ClickElementToLoadMore
         afterClickingOn: (selector, options) => {
-            console.info('waitForSelector.afterClickingOn', selector, options);
+            console.debug('waitForSelector.afterClickingOn', selector, options);
             withOptions(options);
             const element = document.querySelector(selector);
             console.info('trying to click', selector, 'found', element);
@@ -198,7 +198,7 @@
                 element.scrollIntoView();
                 element.click();
                 const alreadyLoaded = getMatchCount();
-                console.debug(settings.selector, 'already loaded', alreadyLoaded);
+                console.debug('already loaded', alreadyLoaded.length, 'elements matching', settings.selector);
                 // should only notifyFound(true) when loading more matches than alreadyLoaded were loaded
                 start(found => alreadyLoaded < found);
             } else {
@@ -208,7 +208,7 @@
 
         // for PagingStrategy.ClickElementToLoadDifferent
         mutationAfterClickingOn: (selector, options) => {
-            console.info('waitForSelector.mutationAfterClickingOn', selector, options);
+            console.debug('waitForSelector.mutationAfterClickingOn', selector, options);
             withOptions(options);
             const element = document.querySelector(selector);
             console.info('trying to click', selector, 'found', element);
@@ -232,4 +232,4 @@
     };
 })();
 
-console.info('FOMOcal.waitForSelector attached.');
+console.debug('FOMOcal.waitForSelector attached.');
