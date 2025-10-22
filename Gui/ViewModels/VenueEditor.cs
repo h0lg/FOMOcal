@@ -147,6 +147,8 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
+    public Dictionary<string, string>? ScrapeLogs { get; }
+
     internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter)
     {
         this.venue = venue;
@@ -163,6 +165,8 @@ public partial class VenueEditor : ObservableObject
         eventDate = ScrapeJob("📆 Date", evt.Date, nameof(Venue.EventScrapeJob.Date));
         eventName.IsValidAsRequiredChanged += (_, _) => RevealMore();
         eventDate.IsValidAsRequiredChanged += (_, _) => RevealMore();
+
+        ScrapeLogs = ScrapeLogFile.GetAll(venue);
 
         PropertyChanged += (o, e) =>
         {
@@ -244,6 +248,9 @@ public partial class VenueEditor : ObservableObject
     [RelayCommand]
     private static async Task OpenUrlAsync(string url)
         => await WebViewPage.OpenUrlAsync(url);
+
+    [RelayCommand]
+    private static async Task OpenFileAsync(string path) => await FileHelper.OpenFileAsync(path);
 
     private bool CanLoadMore()
         => SelectedEventCount > 0
@@ -501,7 +508,19 @@ public partial class VenueEditor : ObservableObject
         {
             var save = Swtch(nameof(SaveScrapeLogs));
             save.Switch.ToolTip(HelpTexts.SaveScrapLogs);
-            return HWrap(5, Lbl("📜 Scrape logs").Bold(), Lbl("save"), save.Wrapper).View;
+
+            DataTemplate itemTemplate = new(() => BndLbl(nameof(KeyValuePair<,>.Key)).Padding(10)
+                .BindTapGesture(nameof(OpenFileCommand), commandSource: model, parameterPath: nameof(KeyValuePair<,>.Value)));
+
+            var logs = new CollectionView
+            {
+                ItemsSource = model.ScrapeLogs,
+                ItemsLayout = LinearItemsLayout.Horizontal,
+                ItemTemplate = itemTemplate
+            }
+                .ToolTip("Tap any log to open it.");
+
+            return HWrap(5, Lbl("📜 Scrape logs").Bold(), Lbl("save"), save.Wrapper, logs).View;
         }
 
         private static HorizontalStackLayout LabeledStepper(string label, string valueProperty, int max, Action onValueChanged)
