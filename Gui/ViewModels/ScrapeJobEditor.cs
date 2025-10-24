@@ -331,7 +331,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
                 LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),
                 TextEntry("attribute", nameof(Attribute), HelpTexts.ScrapeJobAttribute),
-                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace),
+                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, "a }} b"),
                 TextEntry("match", nameof(Match), HelpTexts.ScrapeJobMatch)
             ];
 
@@ -365,8 +365,8 @@ public partial class ScrapeJobEditor : ObservableObject
             return LbldView(label, input).DisplayWithSignificant(property);
         }
 
-        private HorizontalStackLayout TextEntry(string label, string property, string tooltip)
-            => LabeledInput(label, Entr(property), tooltip).DisplayWithSignificant(property);
+        private HorizontalStackLayout TextEntry(string label, string property, string tooltip, string? placeholder = null)
+            => LabeledInput(label, Entr(property).Placeholder(placeholder), tooltip).DisplayWithSignificant(property);
 
         private HorizontalStackLayout LabeledInput(string label, Microsoft.Maui.Controls.View view, string tooltip)
             => LbldView(label, HintedInput(view, tooltip));
