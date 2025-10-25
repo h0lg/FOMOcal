@@ -1,4 +1,5 @@
-﻿using AngleSharp;
+﻿using System.Collections.Concurrent;
+using AngleSharp;
 using CommunityToolkit.Maui.Markup;
 using FomoCal.Gui.ViewModels;
 using DomDoc = AngleSharp.Dom.IDocument;
@@ -12,6 +13,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     internal readonly Venue Venue;
     private readonly IBrowsingContext browsingContext; // not ours to dispose, just holding on to it
     private readonly AutomatedEventPageView? loader;
+    private readonly ConcurrentBag<string> log = [];
     private readonly Action? cleanup;
 
     internal Task<DomDoc?> Loading { get; private set; }
@@ -39,7 +41,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
         /* Add loader to an AbsoluteLayout that lets it have a decent size and be IsVisible
          * (which some pages require to properly scroll and load more events)
          * while staying out of view and not taking up space in the layout it's added to. */
-        loader = new AutomatedEventPageView(venue)
+        loader = new AutomatedEventPageView(venue, Log)
             //.LayoutBounds(0, 0, width, height) // use to see what's going on
             .LayoutBounds(-2 * width, -2 * height, width, height); // position off-screen with a decent size
 
@@ -53,7 +55,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
 
     internal async Task<DomDoc?> LoadMoreAsync()
     {
-        var loading = await browsingContext.LoadMoreAsync(Venue, loader, Loading.Result!);
+        var loading = await browsingContext.LoadMoreAsync(Venue, loader, Loading.Result!, Log);
         if (loading == null) return null;
         Loading = loading;
         return await Loading;
@@ -72,6 +74,9 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
         return await browsingContext.OpenAsync(response =>
             response.Content(stream).Address(Venue.ProgramUrl).OverrideEncoding(encoding));
     }
+
+    internal void Log(string message, string? level = null) => log.Add($"{DateTime.UtcNow:o} {level ?? "INFO"} {message}");
+    internal string GetScrapeLog() => log.Reverse().LineJoin();
 
     private bool isDisposed;
 

@@ -16,10 +16,12 @@ public partial class AutomatedEventPageView : WebView
     const string interopMessagePrefix = "fomocal://",
         eventsLoaded = interopMessagePrefix + "events.loaded",
         elementPicked = interopMessagePrefix + "element.picked",
+        messageLogged = interopMessagePrefix + "console",
         elementPickedSelector = "selector",
         scriptApi = "FOMOcal.", picking = scriptApi + "picking.", waitForSelector = scriptApi + "waitForSelector.";
 
     private readonly Venue venue;
+    private readonly Action<string, string?>? Log;
 
     /* check every 200ms for 25 resetting iterations,
     * i.e. wait for approx. 5sec for JS rendering or scrolling down to load more before timing out
@@ -43,9 +45,10 @@ public partial class AutomatedEventPageView : WebView
     /// - for when <see cref="HtmlWithEventsLoaded"/> returns null.</summary>
     internal string EventLoadingTimedOut => $"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.";
 
-    public AutomatedEventPageView(Venue venue)
+    public AutomatedEventPageView(Venue venue, Action<string, string?>? log = null)
     {
         this.venue = venue;
+        Log = log;
 
         // avoid navigation error caused by setting Source to empty string when adding a venue
         if (venue.ProgramUrl.IsSignificant()) Source = venue.ProgramUrl;
@@ -97,7 +100,17 @@ public partial class AutomatedEventPageView : WebView
 
         args.Cancel = true; // canceling navigation if it is used as a work-around to inter-op with the host app
 
-        if (args.Url.StartsWith(eventsLoaded))
+        if (args.Url.StartsWith(messageLogged))
+        {
+            var query = HttpUtility.ParseQueryString(args.Url.Split('?')[1]);
+
+            foreach (var level in query.AllKeys)
+            {
+                var message = query[level];
+                if (message != null) Log?.Invoke(message, level?.ToUpper());
+            }
+        }
+        else if (args.Url.StartsWith(eventsLoaded))
         {
             var loaded = args.Url[(args.Url.IndexOf('?') + 1)..];
 
@@ -130,7 +143,8 @@ public partial class AutomatedEventPageView : WebView
             return;
         }
 
-        string script = "";
+        string script = await consoleHooksScript.Value;
+        script += $"{scriptApi}console.hook((level, msg) => {{ {NavigateTo($"`{messageLogged}?${{level}}=${{encodeURIComponent(msg)}}`")} }});";
 
         if (venue.Event.RequiresAutomation())
         {
@@ -174,6 +188,7 @@ public partial class AutomatedEventPageView : WebView
 
     /*  Used to cache the loaded and pre-processed script while allowing for a
      *  thread-safe asynchronous lazy initialization that only ever happens once. */
+    private static readonly Lazy<Task<string>> consoleHooksScript = new(() => LoadAndInlineScriptAsync("consoleHooks.js"));
     private static readonly Lazy<Task<string>> waitForSelectorScript = new(() => LoadAndInlineScriptAsync("waitForSelector.js"));
     private static readonly Lazy<Task<string>> pickingScript = new(() => LoadAndInlineScriptAsync("picking.js"));
 
