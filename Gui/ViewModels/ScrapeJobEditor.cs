@@ -336,10 +336,10 @@ public partial class ScrapeJobEditor : ObservableObject
             ];
 
             if (model.DateScrapeJob is not null) children.AddRange(
-                TextEntry("date format", nameof(Format), HelpTexts.DateScrapeJobFormat),
+                TextEntry("📆 format", nameof(Format), HelpTexts.DateScrapeJobFormat),
                 TextEntry("culture", nameof(Culture), HelpTexts.DateScrapeJobCulture));
 
-            children.Add(TextEntry("comment", nameof(Comment), HelpTexts.Comment));
+            children.Add(TextEntry("💬", nameof(Comment), HelpTexts.Comment));
 
             foreach (var child in children.Cast<Microsoft.Maui.Controls.View>())
             {
