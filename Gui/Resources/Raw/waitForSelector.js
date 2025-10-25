@@ -12,7 +12,7 @@
         getMatchCount = () => getMatches().length,
         withOptions = options => { Object.assign(settings, options); };
 
-    let notifyFound;
+    let notifyFound; // callback with true or false
 
     function queryXPathAll(xpath, context = document) {
         const result = document.evaluate(xpath, context, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null),
@@ -182,7 +182,7 @@
                     return; // to continue trying if loading isn't triggered immediately
                 }
 
-                // stop trying early if there are no more active loading requests
+                // stop trying early if there are no more active requests
                 if (runningRequests <= 0) return true;
             });
         },

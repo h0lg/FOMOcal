@@ -63,7 +63,8 @@ public partial class AutomatedEventPageView : WebView
     /// when building the selector to return via <see cref="PickedSelector"/>.
     /// If <paramref name="descendant"/> is true, it returns the selector
     /// of the picked element descendant relative to its closest ancestor (or self) matching <paramref name="selector"/>.
-    /// Otherwise, it returns the selector for the closest common ancestor of the picked element and the <paramref name="selector"/>.</summary>
+    /// Otherwise, it returns the selector for the closest common ancestor of the picked element and the <paramref name="selector"/>
+    /// (relative to the document root).</summary>
     internal Task PickRelativeTo(string selector, bool descendant)
         => EvaluateJavaScriptAsync($"{picking}relativeTo('{selector}', {descendant.ToString().ToLower()});");
 

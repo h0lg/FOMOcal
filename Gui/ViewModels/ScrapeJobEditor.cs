@@ -321,10 +321,12 @@ public partial class ScrapeJobEditor : ObservableObject
             List<IView> children = [
                 HStack(5, Lbl(model.label).Bold(), displayInputs.Wrapper.BindVisible(nameof(IsEmpty))),
 
-                SelectorEntry("closest", nameof(Closest), null, // for picking common ancestor
+                SelectorEntry("closest", nameof(Closest),
+                    null, // for picking common ancestor of clicked element and event container
                     HelpTexts.ScrapeJobClosest),
 
-                SelectorEntry("selector", nameof(Selector), () => model.Closest, // for picking descendant, preferably from Closest
+                SelectorEntry("selector", nameof(Selector),
+                    () => model.Closest, // for picking descendant, preferably from Closest if set
                     HelpTexts.ScrapeJobSelector),
 
                 LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),
