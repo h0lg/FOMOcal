@@ -13,7 +13,7 @@ namespace FomoCal.Gui.ViewModels;
 /// or loading more depending on the <see cref="Venue.EventScrapeJob.PagingStrategy"/>.</summary>
 public partial class AutomatedEventPageView : WebView
 {
-    const string interopMessagePrefix = "https://fomocal.",
+    const string interopMessagePrefix = "fomocal://",
         eventsLoaded = interopMessagePrefix + "events.loaded",
         elementPicked = interopMessagePrefix + "element.picked",
         elementPickedSelector = "selector",
