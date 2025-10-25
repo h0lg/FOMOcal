@@ -84,6 +84,9 @@ public sealed partial class Scraper : IDisposable
         }
         finally
         {
+            if (eventPage.Venue.SaveScrapeLogs)
+                await eventPage.SaveScrapeLogAsync();
+
             eventPage.Dispose();
         }
 

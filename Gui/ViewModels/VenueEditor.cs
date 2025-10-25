@@ -136,6 +136,17 @@ public partial class VenueEditor : ObservableObject
 
     public List<Venue.PagingStrategy> PagingStrategies { get; } = [.. Enum.GetValues<Venue.PagingStrategy>()];
 
+    public bool SaveScrapeLogs
+    {
+        get => venue.SaveScrapeLogs;
+        set
+        {
+            if (value == venue.SaveScrapeLogs) return;
+            venue.SaveScrapeLogs = value;
+            OnPropertyChanged();
+        }
+    }
+
     internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter)
     {
         this.venue = venue;
@@ -323,7 +334,7 @@ public partial class VenueEditor : ObservableObject
             form = new ScrollView
             {
                 Content = VStack(20, venueFields, eventContainer,
-                    requiredEventFields, optionalEventFields, formControls)
+                    requiredEventFields, optionalEventFields, ScrapeLogs(model), formControls)
                     .Padding(20)
             };
 
@@ -484,6 +495,13 @@ public partial class VenueEditor : ObservableObject
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
                => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute),
                     RelativeSelectorEntry, () => model.visualSelectorHost);
+        }
+
+        private static FlexLayout ScrapeLogs(VenueEditor model)
+        {
+            var save = Swtch(nameof(SaveScrapeLogs));
+            save.Switch.ToolTip(HelpTexts.SaveScrapLogs);
+            return HWrap(5, Lbl("📜 Scrape logs").Bold(), Lbl("save"), save.Wrapper).View;
         }
 
         private static HorizontalStackLayout LabeledStepper(string label, string valueProperty, int max, Action onValueChanged)

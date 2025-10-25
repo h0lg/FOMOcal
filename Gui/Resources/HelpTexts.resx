@@ -274,4 +274,10 @@ You may also use XPath for more control - if you do, stick to XPath 1.0 features
     <value>🧪 Test this strategy to load more events. You can watch the process in the 🖽 Visual Selector, e.g. the one for the event selector.
 If you test a strategy that involves clicking, make sure to disable the option "Tap a page element to pick it."</value>
   </data>
+  <data name="SaveScrapLogs" xml:space="preserve">
+    <value>Log the scrape process, across event paging if configured.
+Automatically included in the error log if an error occurs.
+
+This option saves the scrape logs even without error to debug your scrape config - e.g. if it's unreliable or doesn't yield the expected number of results.</value>
+  </data>
 </root>

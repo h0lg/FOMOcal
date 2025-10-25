@@ -286,6 +286,18 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Log the scrape process, across event paging if configured.
+        ///Automatically included in the error log if an error occurs.
+        ///
+        ///This option saves the scrape logs even without error to debug your scrape config - e.g. if it&apos;s unreliable or doesn&apos;t yield the expected number of results..
+        /// </summary>
+        internal static string SaveScrapLogs {
+            get {
+                return ResourceManager.GetString("SaveScrapLogs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Every web page is made up of 🖽 [boxes inside boxes](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure) - kind of like Russian nesting dolls, but often with more than one contained child.
         ///Each box holds different parts of the page with different info. In the following, you can choose which boxes to pick what kind of info from..
         /// </summary>
