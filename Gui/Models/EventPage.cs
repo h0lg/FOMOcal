@@ -9,7 +9,7 @@ namespace FomoCal;
 /// pages with or without automation.</summary>
 internal partial class EventPage : IDisposable // to support custom cleanup in order to detach the loader from the layout again
 {
-    private readonly Venue venue;
+    internal readonly Venue Venue;
     private readonly IBrowsingContext browsingContext; // not ours to dispose, just holding on to it
     private readonly AutomatedEventPageView? loader;
     private readonly Action? cleanup;
@@ -19,7 +19,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     /// <summary>For scraping a <paramref name="venue"/> that doesn't require automation.</summary>
     internal EventPage(Venue venue, IBrowsingContext browsingContext)
     {
-        this.venue = venue;
+        Venue = venue;
         this.browsingContext = browsingContext;
 
         Loading = venue.TryGetDirectHtmlEncoding(out var encoding) ? LoadOverridingEncoding(encoding)
@@ -31,7 +31,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     /// and removing it again on disposal.</summary>
     internal EventPage(Venue venue, IBrowsingContext browsingContext, Layout layout)
     {
-        this.venue = venue;
+        Venue = venue;
         this.browsingContext = browsingContext;
 
         const int height = 1000, width = 1000;
@@ -53,7 +53,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
 
     internal async Task<DomDoc?> LoadMoreAsync()
     {
-        var loading = await browsingContext.LoadMoreAsync(venue, loader, Loading.Result!);
+        var loading = await browsingContext.LoadMoreAsync(Venue, loader, Loading.Result!);
         if (loading == null) return null;
         Loading = loading;
         return await Loading;
@@ -65,12 +65,12 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     private async Task<DomDoc?> LoadOverridingEncoding(string encoding)
     {
         using HttpClient httpClient = new();
-        using var response = await httpClient.GetAsync(venue.ProgramUrl, HttpCompletionOption.ResponseHeadersRead);
+        using var response = await httpClient.GetAsync(Venue.ProgramUrl, HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
         await using var stream = await response.Content.ReadAsStreamAsync();
 
         return await browsingContext.OpenAsync(response =>
-            response.Content(stream).Address(venue.ProgramUrl).OverrideEncoding(encoding));
+            response.Content(stream).Address(Venue.ProgramUrl).OverrideEncoding(encoding));
     }
 
     private bool isDisposed;

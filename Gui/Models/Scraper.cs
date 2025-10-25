@@ -43,7 +43,7 @@ public sealed partial class Scraper : IDisposable
         try
         {
             var document = await eventPage.Loading;
-            int allRelevantEvents = ScrapeEvents(venue, events, errors, document!);
+            int allRelevantEvents = ScrapeEvents(eventPage, events, errors, document!);
 
             /*  load more even if there are 0 relevantEvents on the first page -
              *  in case it shows the current month with no gig until the end of the month */
@@ -51,7 +51,7 @@ public sealed partial class Scraper : IDisposable
             {
                 document = await eventPage.LoadMoreAsync();
                 if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
-                int containedRelevantEvents = ScrapeEvents(venue, events, errors, document);
+                int containedRelevantEvents = ScrapeEvents(eventPage, events, errors, document);
 
                 // determine number of new, scrapable events that are not already past
                 int newRelevantEvents = venue.Event.PagingStrategy.LoadsDifferentEvents()
@@ -80,8 +80,9 @@ public sealed partial class Scraper : IDisposable
         return (events, errors.ToArray());
     }
 
-    private static int ScrapeEvents(Venue venue, HashSet<Event> events, List<Exception> errors, DomDoc document)
+    private static int ScrapeEvents(EventPage eventPage, HashSet<Event> events, List<Exception> errors, DomDoc document)
     {
+        var venue = eventPage.Venue;
         var unfiltered = document.SelectEvents(venue).ToArray();
         var filtered = unfiltered.FilterEvents(venue).ToArray();
         int irrelevant = 0; // counts unscrapable and past events in unfiltered
