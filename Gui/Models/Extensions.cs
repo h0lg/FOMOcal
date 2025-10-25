@@ -109,4 +109,7 @@ internal static class FileHelper
             // see https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/data/share#share-a-file
             await Share.Default.RequestAsync(
                 new ShareFileRequest { Title = title, File = new ShareFile(filePath, contentType) }));
+
+    internal static Task OpenFileAsync(string path, string? header = null)
+        => Launcher.OpenAsync(new OpenFileRequest { Title = header, File = new ReadOnlyFile(path) });
 }
