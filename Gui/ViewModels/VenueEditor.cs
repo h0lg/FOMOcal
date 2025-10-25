@@ -23,7 +23,7 @@ public partial class VenueEditor : ObservableObject
     private AngleSharp.Dom.IElement[]? previewedEvents;
 
     [ObservableProperty] public partial bool IsEventPageLoading { get; set; } = true;
-    [ObservableProperty] public partial bool ShowEventContainer { get; set; }
+    [ObservableProperty] public partial bool HasRequiredInfo { get; set; }
     [ObservableProperty] public partial bool ShowRequiredEventFields { get; set; }
     [ObservableProperty] public partial bool ShowOptionalEventFields { get; set; }
     [ObservableProperty] public partial double Progress { get; set; } = 0;
@@ -188,10 +188,10 @@ public partial class VenueEditor : ObservableObject
             hasName = true;
         }
 
-        ShowEventContainer = hasName && hasProgramUrl;
-        ShowRequiredEventFields = ShowEventContainer && EventSelector.IsSignificant();
+        HasRequiredInfo = hasName && hasProgramUrl;
+        ShowRequiredEventFields = HasRequiredInfo && EventSelector.IsSignificant();
         ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValidAsRequired && eventDate.IsValidAsRequired;
-        Progress = (ShowOptionalEventFields ? 3 : ShowRequiredEventFields ? 2 : ShowEventContainer ? 1 : 0) / 3d;
+        Progress = (ShowOptionalEventFields ? 3 : ShowRequiredEventFields ? 2 : HasRequiredInfo ? 1 : 0) / 3d;
         SaveCommand.NotifyCanExecuteChanged();
         if (ShowRequiredEventFields && previewedEvents == null) UpdateEventContainerPreview();
     }
@@ -244,7 +244,7 @@ public partial class VenueEditor : ObservableObject
     private async Task LoadMoreAsync(AutomatedEventPageView loader)
         => await scraper.LoadMoreAsync(loader, venue, programDocument!);
 
-    private bool CanSave() => ShowEventContainer
+    private bool CanSave() => HasRequiredInfo
         && (previewedEvents == null || previewedEvents.Length == 0)
             || (eventName.IsValidAsRequired && eventDate.IsValidAsRequired);
 
@@ -300,7 +300,7 @@ public partial class VenueEditor : ObservableObject
             var venueFields = VenueFields();
 
             // Step 2: Event container
-            var eventContainer = EventContainer().BindVisible(nameof(ShowEventContainer));
+            var eventContainer = EventContainer().BindVisible(nameof(HasRequiredInfo));
 
             // Step 3: Event Details (Name, Date)
             var requiredEventFields = VStack(0,
