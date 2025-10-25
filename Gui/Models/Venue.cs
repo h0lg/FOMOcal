@@ -48,7 +48,8 @@ public class Venue
     public bool Equals(Venue? other) => other is not null && GetHashCode() == other.GetHashCode();
     public override int GetHashCode() => HashCode.Combine(Name, ProgramUrl);
 
-    internal Venue DeepCopy() => JsonSerializer.Deserialize<Venue>(JsonSerializer.Serialize(this))!;
+    internal string Serialize() => JsonSerializer.Serialize(this);
+    internal Venue DeepCopy() => JsonSerializer.Deserialize<Venue>(Serialize())!;
 
     public class EventScrapeJob
     {

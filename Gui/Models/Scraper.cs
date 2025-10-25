@@ -68,7 +68,9 @@ public sealed partial class Scraper : IDisposable
         }
         catch (Exception ex)
         {
-            errors.Add(new ScrapeJob.Error($"Failed to scrape venue {venue.Name}", ex));
+            var config = venue.Serialize();
+            string message = $"Failed to scrape venue {venue.Name}\n\nConfig\n\n{config}";
+            errors.Add(new ScrapeJob.Error(message, ex));
         }
         finally
         {
