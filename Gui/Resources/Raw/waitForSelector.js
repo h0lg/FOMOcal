@@ -39,18 +39,18 @@
 
     function start(stopIf) {
         let tries = 0,
-            loading = 0; // running AJAX requests
+            runningRequests = 0; // running AJAX requests
 
         // helps count active AJAX requests
         const observer = new PerformanceObserver(list => {
             list.getEntries().forEach(entry => {
                 if (entry.initiatorType === 'xmlhttprequest' || entry.initiatorType === 'fetch') {
-                    loading++; // count up running requests
-                    console.debug('loading', loading);
+                    runningRequests++; // count up running requests
+                    console.debug('loading', runningRequests);
 
                     setTimeout(() => {
-                        loading--; // make sure to count down again because we don't know when they end
-                        console.debug('loading probably finished', loading);
+                        runningRequests--; // make sure to count down again because we don't know when they end
+                        console.debug('loading probably finished', runningRequests);
                     }, 3000); // trying to give slow requests enough time before counting them out
                 }
             });
@@ -71,7 +71,7 @@
             console.debug('checking for selector', settings.selector, 'found', found);
             tries++; // important to eventually time out
 
-            const stop = stopIf(found, loading, () => tries = 0);
+            const stop = stopIf(found, runningRequests, () => tries = 0);
             if (stop) stopTrying(true);
         }, settings.intervalDelayMs);
     }
@@ -169,21 +169,21 @@
             if (settings.maxMatches <= lastFound) return notifyFound(true); // succeeded because we found maxMatches or more
             scrollDown(); // once initially
 
-            start((found, loading, resetTimout) => {
-                console.debug('afterScrollingDown found', found, 'loading', loading);
+            start((found, runningRequests, resetTries) => {
+                console.debug('afterScrollingDown found', found, 'loading', runningRequests);
                 // enough matches loaded
                 if (settings.maxMatches <= found) return true; // succeeded because we found maxMatches or more
 
                 if (lastFound !== found) { // more matches loaded
                     console.debug('loaded more. resetting tries.');
                     lastFound = found; // update found matches - important to time out
-                    resetTimout(); // reset tries to achieve a sliding timeout if no new matches are loaded
+                    resetTries(); // reset tries to achieve a sliding timeout if no new matches are loaded
                     scrollDown(); // to try trigger loading more
                     return; // to continue trying if loading isn't triggered immediately
                 }
 
                 // stop trying early if there are no more active loading requests
-                if (loading <= 0) return true;
+                if (runningRequests <= 0) return true;
             });
         },
 
