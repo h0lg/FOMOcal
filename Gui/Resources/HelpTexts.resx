@@ -159,7 +159,9 @@ You may want to do this e.g. to convert a date string into a valid format. Patte
 ^^[regex101](https://regex101.com/) is great to debug your RegEx, learn and find existing patterns. If you can't be bothered or are struggling - ask a chat bot for help, they're pretty good at this.</value>
   </data>
   <data name="DateScrapeJobFormat" xml:space="preserve">
-    <value>The .NET [custom](https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings) or [standard](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings) date format used to parse the date.
+    <value>The .NET [custom](https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings) or [standard](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings) date format/s used to parse the date.
+
+If you want to try parsing the date in different formats, separate them with two || pipes. That may be required for venues that e.g. omit the year for event dates in the current year, but not in the next.
 
 ^^ddd | dddd – Weekday (short | full name)
 ^^d | dd – Day of month (no | with leading zero)

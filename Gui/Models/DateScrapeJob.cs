@@ -26,14 +26,21 @@ public class DateScrapeJob : ScrapeJob
         var rawValue = base.GetValue(element, errors);
         if (rawValue.IsNullOrWhiteSpace()) return null;
         const DateTimeStyles style = DateTimeStyles.None;
+        string[] formats = Format.Split("||", StringSplitOptions.RemoveEmptyEntries);
 
-        if (DateTime.TryParseExact(rawValue, Format, CultureInfo, style, out DateTime parsedDate)) return parsedDate;
+        foreach (var format in formats)
+        {
+            if (DateTime.TryParseExact(rawValue, format, CultureInfo, style, out DateTime parsedDate)) return parsedDate;
+        }
 
-        if (!Format.Contains('y') // retry parsing date as next year's for format without year info
-            && DateTime.TryParseExact(rawValue + " " + (DateTime.Today.Year + 1), Format + " yyyy",
+        foreach (var format in formats)
+        {
+            if (!format.Contains('y') // retry parsing date as next year's for format without year info
+               && DateTime.TryParseExact(rawValue + " " + (DateTime.Today.Year + 1), format + " yyyy",
                 CultureInfo, style, out DateTime nextYearsDate)) return nextYearsDate;
+        }
 
-        return AddOrThrow<DateTime?>(errors, new Error($"Failed to parse date '{rawValue}' using format '{Format}' in culture '{Culture}'."));
+        return AddOrThrow<DateTime?>(errors, new Error($"Failed to parse date '{rawValue}' using format/s '{Format}' in culture '{Culture}'."));
     }
 
     public override string? GetValue(AngleSharp.Dom.IElement element, List<Exception>? errors = null) => GetDate(element, errors)?.ToString("D");

@@ -102,14 +102,11 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The .NET [custom](https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings) or [standard](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings) date format used to parse the date.
+        ///   Looks up a localized string similar to The .NET [custom](https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings) or [standard](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings) date format/s used to parse the date.
         ///
-        ///^^ddd | dddd – Weekday (short | full name)
-        ///^^d | dd – Day of month (no | with leading zero)
-        ///^^M | MM – Month number (no | with leading zero)
-        ///^^MMM | MMMM – Month name (short | full)
-        ///^^yy | yyyy – Year (2 | 4 digits)
-        ///^^separators like . /  [rest of string was truncated]&quot;;.
+        ///If you want to try parsing the date in different formats, separate them with two || pipes. That may be required for venues that e.g. omit the year for event dates in the current year, but not in the next.
+        ///
+        ///^^ddd | dddd – Weekday (short | f [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string DateScrapeJobFormat {
             get {
