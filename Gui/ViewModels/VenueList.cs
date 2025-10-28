@@ -270,12 +270,11 @@ public partial class VenueList : ObservableObject
                     return new Border
                     {
                         Padding = 10,
-                        Content = Grd(cols: [Auto, Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
-                            name.ColumnSpan(3),
-                            location.Row(1).ColumnSpan(2),
-                            refresh.Row(1).Column(2).RowSpan(2).Bottom(),
-                            lastEventCount.Row(2),
-                            lastRefreshed.Row(2).Column(1).End())
+                        Content = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
+                            name.ColumnSpan(2),
+                            location.Row(1),
+                            refresh.Row(1).Column(1).RowSpan(2).Bottom(),
+                            HWrap(1, lastEventCount, lastRefreshed).View.Row(2).End())
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
