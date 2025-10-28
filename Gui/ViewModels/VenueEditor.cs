@@ -148,6 +148,9 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
+    public int? LastEventCount => venue.LastEventCount;
+    public DateTime? LastRefreshed => venue.LastRefreshed;
+
     public ObservableCollection<ScrapeLogFile.ForVenue> ScrapeLogs { get; }
 
     internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter)
@@ -399,6 +402,14 @@ public partial class VenueEditor : ObservableObject
                 await help.InlineHelpTextAsync(HelpTexts.ScrapeConfigInfo, host: scrapeConfigInfo,
                     focused: help.label.BindingContext != scrapeConfigInfo)); // close help if already opened
 
+            var lastEventCount = BndLbl(nameof(LastEventCount))
+                .StyleClass(Styles.Label.VenueRowDetail)
+                .BindIsVisibleToHasValueOf<Label, int>(nameof(LastEventCount));
+
+            var lastRefreshed = BndLbl(nameof(LastRefreshed), stringFormat: "last ⛏ {0:d MMM H:mm}")
+                .StyleClass(Styles.Label.VenueRowDetail)
+                .BindIsVisibleToHasValueOf<Label, DateTime>(nameof(LastRefreshed));
+
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
             selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help,
@@ -428,14 +439,16 @@ public partial class VenueEditor : ObservableObject
                 BndLbl(nameof(FilteredEventCount), "{0} filtered by"), eventFilter,
                 Lbl("lazy"), lazyLoaded.Wrapper);
 
-            return Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
+            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),
                 scrapeConfigInfo.CenterVertical().Column(1),
-                help.layout.Row(1).ColumnSpan(2),
-                controls.View.Row(2).ColumnSpan(2),
-                previewOrErrors.Row(3).ColumnSpan(2),
-                PreviewControls(selectorText).Row(4).ColumnSpan(2),
-                PagingControls(help).Row(5).ColumnSpan(2));
+                lastEventCount.Column(2),
+                lastRefreshed.Column(3),
+                help.layout.Row(1).ColumnSpan(4),
+                controls.View.Row(2).ColumnSpan(4),
+                previewOrErrors.Row(3).ColumnSpan(4),
+                PreviewControls(selectorText).Row(4).ColumnSpan(4),
+                PagingControls(help).Row(5).ColumnSpan(4));
 
             async Task ToggleSelectorRelatedFocus(bool focused)
             {
