@@ -255,7 +255,7 @@ public partial class VenueList : ObservableObject
                     var name = BndLbl(nameof(Venue.Name)).FontSize(16).Wrap();
                     var location = BndLbl(nameof(Venue.Location)).StyleClass(Styles.Label.VenueRowDetail);
 
-                    var lastRefreshed = BndLbl(nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:g}")
+                    var lastRefreshed = BndLbl(nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:d MMM H:mm}")
                         .StyleClass(Styles.Label.VenueRowDetail)
                         .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastRefreshed.HasValue);
 
