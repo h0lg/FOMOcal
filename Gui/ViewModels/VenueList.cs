@@ -222,6 +222,7 @@ public partial class VenueList : ObservableObject
         {
             (HashSet<Event> events, Exception[] errors) = await scraper.ScrapeVenueAsync(venue);
             venue.LastRefreshed = DateTime.Now;
+            venue.LastEventCount = events.Count;
             var warning = events.Count > 0 || errors.Length > 0 ? null : $"Found no relevant events for {venue.Name}.";
             EventsScraped?.Invoke(venue, events); // notify subscribers
             return (errors, warning);
@@ -255,6 +256,10 @@ public partial class VenueList : ObservableObject
                     var name = BndLbl(nameof(Venue.Name)).FontSize(16).Wrap();
                     var location = BndLbl(nameof(Venue.Location)).StyleClass(Styles.Label.VenueRowDetail);
 
+                    var lastEventCount = BndLbl(nameof(Venue.LastEventCount))
+                        .StyleClass(Styles.Label.VenueRowDetail)
+                        .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastEventCount.HasValue);
+
                     var lastRefreshed = BndLbl(nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:d MMM H:mm}")
                         .StyleClass(Styles.Label.VenueRowDetail)
                         .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastRefreshed.HasValue);
@@ -265,11 +270,12 @@ public partial class VenueList : ObservableObject
                     return new Border
                     {
                         Padding = 10,
-                        Content = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
-                            name.ColumnSpan(2),
-                            location.Row(1),
-                            refresh.Row(1).Column(1).RowSpan(2).Bottom(),
-                            lastRefreshed.Row(2).End())
+                        Content = Grd(cols: [Auto, Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
+                            name.ColumnSpan(3),
+                            location.Row(1).ColumnSpan(2),
+                            refresh.Row(1).Column(2).RowSpan(2).Bottom(),
+                            lastEventCount.Row(2),
+                            lastRefreshed.Row(2).Column(1).End())
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
