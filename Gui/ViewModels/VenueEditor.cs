@@ -368,10 +368,9 @@ public partial class VenueEditor : ObservableObject
         {
             var help = HelpLabel();
             Label scrapeConfigInfo = Lbl("ⓘ");
-            string scrapeConfigInfoText = string.Format(HelpTexts.ScrapeConfigInfoFormat, AppInfo.Name);
 
             scrapeConfigInfo.TapGesture(async () =>
-                await help.InlineHelpTextAsync(scrapeConfigInfoText, host: scrapeConfigInfo,
+                await help.InlineHelpTextAsync(HelpTexts.ScrapeConfigInfo, host: scrapeConfigInfo,
                     focused: help.label.BindingContext != scrapeConfigInfo)); // close help if already opened
 
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");

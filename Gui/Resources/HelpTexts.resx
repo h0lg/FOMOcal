@@ -129,9 +129,9 @@
   <data name="ScrapeJobIgnoreNestedText" xml:space="preserve">
     <value>Whether to ignore the text of nested elements and only extract direct text nodes from the HTML. Does not apply if an attribute is set.</value>
   </data>
-  <data name="ScrapeConfigInfoFormat" xml:space="preserve">
+  <data name="ScrapeConfigInfo" xml:space="preserve">
     <value>Every web page is made up of 🖽 [boxes inside boxes](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure) - kind of like Russian nesting dolls, but often with more than one contained child.
-Each box holds different parts of the page with different info. In the following, you can tell {0} which boxes to pick what kind of info from.</value>
+Each box holds different parts of the page with different info. In the following, you can choose which boxes to pick what kind of info from.</value>
   </data>
   <data name="LazyLoaded" xml:space="preserve">
     <value>You may want to try this option if your event selector doesn't match anything without it even though it should*.

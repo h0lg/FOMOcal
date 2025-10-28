@@ -287,11 +287,11 @@ namespace FomoCal.Gui.Resources {
         
         /// <summary>
         ///   Looks up a localized string similar to Every web page is made up of 🖽 [boxes inside boxes](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure) - kind of like Russian nesting dolls, but often with more than one contained child.
-        ///Each box holds different parts of the page with different info. In the following, you can tell {0} which boxes to pick what kind of info from..
+        ///Each box holds different parts of the page with different info. In the following, you can choose which boxes to pick what kind of info from..
         /// </summary>
-        internal static string ScrapeConfigInfoFormat {
+        internal static string ScrapeConfigInfo {
             get {
-                return ResourceManager.GetString("ScrapeConfigInfoFormat", resourceCulture);
+                return ResourceManager.GetString("ScrapeConfigInfo", resourceCulture);
             }
         }
         
