@@ -258,11 +258,11 @@ public partial class VenueList : ObservableObject
 
                     var lastEventCount = BndLbl(nameof(Venue.LastEventCount))
                         .StyleClass(Styles.Label.VenueRowDetail)
-                        .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastEventCount.HasValue);
+                        .BindIsVisibleToHasValueOf<Label, int>(nameof(Venue.LastEventCount));
 
                     var lastRefreshed = BndLbl(nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:d MMM H:mm}")
                         .StyleClass(Styles.Label.VenueRowDetail)
-                        .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastRefreshed.HasValue);
+                        .BindIsVisibleToHasValueOf<Label, DateTime>(nameof(Venue.LastRefreshed));
 
                     var refresh = Btn("⛏", nameof(RefreshVenueCommand), source: model);
                     SwingPickaxeDuring(refresh, model.RefreshVenueCommand);
