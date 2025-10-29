@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FomoCal.Gui.Resources;
@@ -147,7 +148,7 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
-    public Dictionary<string, string>? ScrapeLogs { get; }
+    public ObservableCollection<ScrapeLogFile.ForVenue> ScrapeLogs { get; }
 
     internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter)
     {
@@ -166,7 +167,7 @@ public partial class VenueEditor : ObservableObject
         eventName.IsValidAsRequiredChanged += (_, _) => RevealMore();
         eventDate.IsValidAsRequiredChanged += (_, _) => RevealMore();
 
-        ScrapeLogs = ScrapeLogFile.GetAll(venue);
+        ScrapeLogs = new(ScrapeLogFile.GetAll(venue));
 
         PropertyChanged += (o, e) =>
         {
@@ -251,6 +252,13 @@ public partial class VenueEditor : ObservableObject
 
     [RelayCommand]
     private static async Task OpenFileAsync(string path) => await FileHelper.OpenFileAsync(path);
+
+    [RelayCommand]
+    private void DeleteScrapeLog(ScrapeLogFile.ForVenue log)
+    {
+        File.Delete(log.Path);
+        ScrapeLogs!.Remove(log);
+    }
 
     private bool CanLoadMore()
         => SelectedEventCount > 0
@@ -509,8 +517,17 @@ public partial class VenueEditor : ObservableObject
             var save = Swtch(nameof(SaveScrapeLogs));
             save.Switch.ToolTip(HelpTexts.SaveScrapLogs);
 
-            DataTemplate itemTemplate = new(() => BndLbl(nameof(KeyValuePair<,>.Key)).Padding(10)
-                .BindTapGesture(nameof(OpenFileCommand), commandSource: model, parameterPath: nameof(KeyValuePair<,>.Value)));
+            DataTemplate itemTemplate = new(() =>
+            {
+                var deleteBtn = Lbl("🗑").BindTapGesture(nameof(DeleteScrapeLogCommand),
+                    commandSource: model, parameterPath: ".");
+
+                var label = BndLbl(nameof(ScrapeLogFile.ForVenue.TimeStamp)).Padding(10)
+                    .BindTapGesture(nameof(OpenFileCommand), commandSource: model,
+                        parameterPath: nameof(ScrapeLogFile.ForVenue.Path));
+
+                return HStack(5, deleteBtn, label);
+            });
 
             var logs = new CollectionView
             {
