@@ -45,13 +45,16 @@ public partial class AutomatedEventPageView : WebView
     /// - for when <see cref="HtmlWithEventsLoaded"/> returns null.</summary>
     internal string EventLoadingTimedOut => $"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.";
 
+    private string? url;
+    internal string? Url { get => url; set => Source = url = value; }
+
     public AutomatedEventPageView(Venue venue, Action<string, string?>? log = null)
     {
         this.venue = venue;
         Log = log;
 
         // avoid navigation error caused by setting Source to empty string when adding a venue
-        if (venue.ProgramUrl.IsSignificant()) Source = venue.ProgramUrl;
+        if (venue.ProgramUrl.IsSignificant()) Url = venue.ProgramUrl;
 
         Navigating += OnNavigatingAsync;
         Navigated += OnNavigatedAsync;

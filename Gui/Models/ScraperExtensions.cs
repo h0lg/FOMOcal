@@ -9,10 +9,10 @@ namespace FomoCal;
 
 internal static class ScraperExtensions
 {
-    internal static async Task<DomDoc> CreateDocumentAsync(this IBrowsingContext context, string html, Venue venue)
+    internal static async Task<DomDoc> CreateDocumentAsync(this IBrowsingContext context, string html, Venue venue, string? url = null)
         => await context.OpenAsync(response =>
         {
-            response.Content(html).Address(venue.ProgramUrl);
+            response.Content(html).Address(url ?? venue.ProgramUrl);
             string? encodingOverride = venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
             if (encoding.IsSignificant()) response.OverrideEncoding(encoding);
         });
@@ -67,7 +67,7 @@ internal static class ScraperExtensions
                 if (href.IsNullOrWhiteSpace() || href == "#") return null; // to prevent loop
                 var url = nextPage.HyperReference(href!);
                 if (loader == null) return browsingContext.OpenAsync(url)!;
-                loader!.Source = url.ToString();
+                loader!.Url = url.ToString();
                 return loader.LoadAutomated(browsingContext, venue);
             case Venue.PagingStrategy.ScrollDownToLoadMore:
                 ArgumentNullException.ThrowIfNull(loader);
@@ -100,7 +100,7 @@ internal static class ScraperExtensions
 
             if (html.IsSignificant())
             {
-                var doc = await browsingContext.CreateDocumentAsync(html!, venue);
+                var doc = await browsingContext.CreateDocumentAsync(html!, venue, loader.Url);
                 eventHtmlLoading.TrySetResult(doc);
             }
             else if (throwOnTimeout) eventHtmlLoading.TrySetException(new Exception(loader.EventLoadingTimedOut));

@@ -28,9 +28,9 @@ partial class VenueEditor
         }
     }
 
-    private async Task OnHtmlWithEventsLoadedAsync(string? html, string timeOutMessage)
+    private async Task OnHtmlWithEventsLoadedAsync(string? html, string timeOutMessage, string? url)
     {
-        if (html.IsSignificant()) SetDocument(await scraper.CreateDocumentAsync(html!, venue));
+        if (html.IsSignificant()) SetDocument(await scraper.CreateDocumentAsync(html!, venue, url));
         else await App.CurrentPage.DisplayAlert("Event loading timed out.", timeOutMessage, "OK");
 
         IsEventPageLoading = false;
@@ -68,14 +68,17 @@ partial class VenueEditor
         private AbsoluteLayout CreateVisualSelector()
         {
             pageView = new(model.venue);
-            pageView.HtmlWithEventsLoaded += async html => await model.OnHtmlWithEventsLoadedAsync(html, pageView.EventLoadingTimedOut);
+
+            pageView.HtmlWithEventsLoaded += async html => await model.OnHtmlWithEventsLoadedAsync(html,
+                pageView.EventLoadingTimedOut, pageView.Url);
+
             pageView.ErrorLoading += async navigationResult => await model.OnErrorLoadingEventsAsync(navigationResult);
             pageView.PickedSelector += selector => model.PickedSelector = selector;
 
             model.PropertyChanged += async (o, e) =>
             {
                 if (e.PropertyName == nameof(ProgramUrl))
-                    pageView.Source = model.ProgramUrl;
+                    pageView.Url = model.ProgramUrl;
                 else if (e.PropertyName == nameof(EnablePicking))
                     await pageView.EnablePicking(model.EnablePicking);
                 else if (e.PropertyName == nameof(LazyLoaded)

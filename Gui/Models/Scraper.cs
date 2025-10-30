@@ -159,7 +159,8 @@ public sealed partial class Scraper : IDisposable
             ? new EventPage(venue, context, TopLayout)
             : new EventPage(venue, context);
 
-    internal Task<DomDoc> CreateDocumentAsync(string html, Venue venue) => context.CreateDocumentAsync(html, venue);
+    internal Task<DomDoc> CreateDocumentAsync(string html, Venue venue, string? url)
+        => context.CreateDocumentAsync(html, venue, url);
 
     internal async Task<DomDoc?> LoadMoreAsync(AutomatedEventPageView loader, Venue venue, DomDoc currentPage)
     {
