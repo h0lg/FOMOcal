@@ -11,6 +11,11 @@ internal static partial class StringExtensions
     internal static string Join(this IEnumerable<string?> strings, string separator) => string.Join(separator, strings);
     internal static string LineJoin(this IEnumerable<string?> strings) => strings.Join(Environment.NewLine);
 
+    private static readonly char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
+
+    internal static string MakeFileNameSafe(this string name, char replacement = '_')
+        => string.Concat(name.Select(c => invalidFileNameChars.Contains(c) ? replacement : c));
+
     internal static bool IsValidHttpUrl(this string url)
         => Uri.TryCreate(url, UriKind.Absolute, out var uri)
             && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
@@ -109,4 +114,7 @@ internal static class FileHelper
             // see https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/data/share#share-a-file
             await Share.Default.RequestAsync(
                 new ShareFileRequest { Title = title, File = new ShareFile(filePath, contentType) }));
+
+    internal static Task OpenFileAsync(string path, string? header = null)
+        => Launcher.OpenAsync(new OpenFileRequest { Title = header, File = new ReadOnlyFile(path) });
 }

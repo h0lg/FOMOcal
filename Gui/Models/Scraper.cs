@@ -43,20 +43,27 @@ public sealed partial class Scraper : IDisposable
         try
         {
             var document = await eventPage.Loading;
-            int allRelevantEvents = ScrapeEvents(venue, events, errors, document!);
+            var pagingStrat = venue.Event.PagingStrategy;
+            var nextPageSelector = pagingStrat.RequiresNextPageSelector() ? " " + venue.Event.NextPageSelector : null;
+            eventPage.Log($"loaded {document!.Url}, paging strategy loads {pagingStrat.GetDescription()}{nextPageSelector}");
+            int allRelevantEvents = ScrapeEvents(eventPage, events, errors, document!);
 
             /*  load more even if there are 0 relevantEvents on the first page -
              *  in case it shows the current month with no gig until the end of the month */
             while (document!.CanLoadMore(venue)) // does not reliably break loop for all loading strategies
             {
+                eventPage.Log("can load more");
                 document = await eventPage.LoadMoreAsync();
                 if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
-                int containedRelevantEvents = ScrapeEvents(venue, events, errors, document);
+                eventPage.Log($"loaded {document.Url}");
+                int containedRelevantEvents = ScrapeEvents(eventPage, events, errors, document);
 
                 // determine number of new, scrapable events that are not already past
-                int newRelevantEvents = venue.Event.PagingStrategy.LoadsDifferentEvents()
+                int newRelevantEvents = pagingStrat.LoadsDifferentEvents()
                     ? containedRelevantEvents // all contained relevant events are considered new
                     : containedRelevantEvents - allRelevantEvents; // substract previously loaded relevant events
+
+                eventPage.Log($"found {containedRelevantEvents} relevant events, {newRelevantEvents} of them new");
 
                 // stop loading more if scraping current page yielded no new relevant events to prevent loop
                 if (newRelevantEvents == 0) break;
@@ -65,23 +72,30 @@ public sealed partial class Scraper : IDisposable
                  *  for paging strats that load more instead of different events */
                 allRelevantEvents += newRelevantEvents;
             }
+
+            eventPage.Log($"found {allRelevantEvents} relevant events in total");
         }
         catch (Exception ex)
         {
             var config = venue.Serialize();
-            string message = $"Failed to scrape venue {venue.Name}\n\nConfig\n\n{config}";
+            var log = eventPage.GetScrapeLog();
+            string message = $"Failed to scrape venue {venue.Name}\n\nConfig\n\n{config}\n\nLog\n\n{log}";
             errors.Add(new ScrapeJob.Error(message, ex));
         }
         finally
         {
+            if (eventPage.Venue.SaveScrapeLogs)
+                await eventPage.SaveScrapeLogAsync();
+
             eventPage.Dispose();
         }
 
         return (events, errors.ToArray());
     }
 
-    private static int ScrapeEvents(Venue venue, HashSet<Event> events, List<Exception> errors, DomDoc document)
+    private static int ScrapeEvents(EventPage eventPage, HashSet<Event> events, List<Exception> errors, DomDoc document)
     {
+        var venue = eventPage.Venue;
         var unfiltered = document.SelectEvents(venue).ToArray();
         var filtered = unfiltered.FilterEvents(venue).ToArray();
         int irrelevant = 0; // counts unscrapable and past events in unfiltered
@@ -125,6 +139,11 @@ public sealed partial class Scraper : IDisposable
             if (scraped.Url == null) scraped.ScrapedFrom = document.Url; // for reference
             events.Add(scraped);
         }
+
+        var msg = $"found {unfiltered.Length} events";
+        if (unfiltered.Length != filtered.Length) msg += $", {filtered.Length} matched by {venue.Event.Filter}";
+        if (irrelevant > 0) msg += $", {irrelevant} of them in the past or unscrapable";
+        eventPage.Log(msg);
 
         // return number of scrapable events that are not already past
         return unfiltered.Length - irrelevant;

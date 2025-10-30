@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FomoCal.Gui.Resources;
@@ -136,6 +137,19 @@ public partial class VenueEditor : ObservableObject
 
     public List<Venue.PagingStrategy> PagingStrategies { get; } = [.. Enum.GetValues<Venue.PagingStrategy>()];
 
+    public bool SaveScrapeLogs
+    {
+        get => venue.SaveScrapeLogs;
+        set
+        {
+            if (value == venue.SaveScrapeLogs) return;
+            venue.SaveScrapeLogs = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ObservableCollection<ScrapeLogFile.ForVenue> ScrapeLogs { get; }
+
     internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter)
     {
         this.venue = venue;
@@ -152,6 +166,8 @@ public partial class VenueEditor : ObservableObject
         eventDate = ScrapeJob("📆 Date", evt.Date, nameof(Venue.EventScrapeJob.Date));
         eventName.IsValidAsRequiredChanged += (_, _) => RevealMore();
         eventDate.IsValidAsRequiredChanged += (_, _) => RevealMore();
+
+        ScrapeLogs = new(ScrapeLogFile.GetAll(venue));
 
         PropertyChanged += (o, e) =>
         {
@@ -233,6 +249,16 @@ public partial class VenueEditor : ObservableObject
     [RelayCommand]
     private static async Task OpenUrlAsync(string url)
         => await WebViewPage.OpenUrlAsync(url);
+
+    [RelayCommand]
+    private static async Task OpenFileAsync(string path) => await FileHelper.OpenFileAsync(path);
+
+    [RelayCommand]
+    private void DeleteScrapeLog(ScrapeLogFile.ForVenue log)
+    {
+        File.Delete(log.Path);
+        ScrapeLogs!.Remove(log);
+    }
 
     private bool CanLoadMore()
         => SelectedEventCount > 0
@@ -323,7 +349,7 @@ public partial class VenueEditor : ObservableObject
             form = new ScrollView
             {
                 Content = VStack(20, venueFields, eventContainer,
-                    requiredEventFields, optionalEventFields, formControls)
+                    requiredEventFields, optionalEventFields, ScrapeLogs(model), formControls)
                     .Padding(20)
             };
 
@@ -484,6 +510,34 @@ public partial class VenueEditor : ObservableObject
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
                => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute),
                     RelativeSelectorEntry, () => model.visualSelectorHost);
+        }
+
+        private static FlexLayout ScrapeLogs(VenueEditor model)
+        {
+            var save = Swtch(nameof(SaveScrapeLogs));
+            save.Switch.ToolTip(HelpTexts.SaveScrapLogs);
+
+            DataTemplate itemTemplate = new(() =>
+            {
+                var deleteBtn = Lbl("🗑").BindTapGesture(nameof(DeleteScrapeLogCommand),
+                    commandSource: model, parameterPath: ".");
+
+                var label = BndLbl(nameof(ScrapeLogFile.ForVenue.TimeStamp)).Padding(10)
+                    .BindTapGesture(nameof(OpenFileCommand), commandSource: model,
+                        parameterPath: nameof(ScrapeLogFile.ForVenue.Path));
+
+                return HStack(5, deleteBtn, label);
+            });
+
+            var logs = new CollectionView
+            {
+                ItemsSource = model.ScrapeLogs,
+                ItemsLayout = LinearItemsLayout.Horizontal,
+                ItemTemplate = itemTemplate
+            }
+                .ToolTip("Tap any log to open it.");
+
+            return HWrap(5, Lbl("📜 Scrape logs").Bold(), Lbl("save"), save.Wrapper, logs).View;
         }
 
         private static HorizontalStackLayout LabeledStepper(string label, string valueProperty, int max, Action onValueChanged)

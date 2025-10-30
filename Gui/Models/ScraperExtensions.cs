@@ -52,7 +52,7 @@ internal static class ScraperExtensions
         => document.QuerySelector(venue.Event.NextPageSelector!);
 
     internal static async ValueTask<Task<DomDoc?>?> LoadMoreAsync(this IBrowsingContext browsingContext,
-        Venue venue, AutomatedEventPageView? loader, DomDoc currentPage)
+        Venue venue, AutomatedEventPageView? loader, DomDoc currentPage, Action<string, string?>? log = null)
     {
         switch (venue.Event.PagingStrategy)
         {
@@ -63,6 +63,7 @@ internal static class ScraperExtensions
             case Venue.PagingStrategy.NavigateLinkToLoadDifferent:
                 var nextPage = currentPage.GetNextPageElement(venue)!;
                 var href = nextPage.GetAttribute("href");
+                log?.Invoke("next page link goes to " + href, null);
                 if (href.IsNullOrWhiteSpace() || href == "#") return null; // to prevent loop
                 var url = nextPage.HyperReference(href!);
                 if (loader == null) return browsingContext.OpenAsync(url)!;

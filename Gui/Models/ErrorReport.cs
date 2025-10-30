@@ -29,7 +29,7 @@ public static class ErrorReport
                 {
                     var open = await App.CurrentPage.DisplayAlert(header, "Choose what to do with the report.", accept: "Open", cancel: "Share");
 
-                    if (open) await Launcher.OpenAsync(new OpenFileRequest { Title = header, File = new ReadOnlyFile(path) });
+                    if (open) await FileHelper.OpenFileAsync(path, header);
                     else FileHelper.ShareFile(path, MediaTypeNames.Text.Plain, title: AppInfo.Name + " error report");
                 }
             }
