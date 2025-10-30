@@ -161,8 +161,14 @@ date format and [culture](https://en.wikipedia.org/wiki/Language_code) to conver
 To run FOMOcal, make sure you have [.NET 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0/runtime) installed.
 On Windows 10+, chances are you have it already. Try installing it if FOMOcal doesn't run without.
 
-Look for the latest build for your Operating System in the Assets of the [latest release](https://github.com/h0lg/FOMOcal/releases/latest).
-E.g. If you're on Windows 10 or higher, try the `*.win10-x64.zip` download.
+Look for the latest build in the Assets of the [latest release](https://github.com/h0lg/FOMOcal/releases/latest).
+Currently, you'll always find a `FOMOcal.*.zip` with a build for Windows 10 or higher.
+
+### How do I build from source?
+
+You don't have to trust the uploaded bits. You can build from source, currently supported on Windows for Windows using the [.NET SDK](https://dotnet.microsoft.com/en-us/download/visual-studio-sdks) via the included [publish script](https://github.com/h0lg/FOMOcal/blob/master/Gui/Platforms/Windows/publish.cmd).
+
+Get the [current source](https://github.com/h0lg/FOMOcal/archive/refs/heads/master.zip) from the `Code` download widget above - and that for older [releases](https://github.com/h0lg/FOMOcal/releases) from the  github-generated `Source code` archives in the assets.
 
 ## What's this about?
 
