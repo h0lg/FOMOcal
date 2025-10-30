@@ -14,6 +14,7 @@ public class Venue
     public required string ProgramUrl { get; set; }
     public required EventScrapeJob Event { get; set; }
     public DateTime? LastRefreshed { get; set; }
+    public int? LastEventCount { get; set; }
     public bool SaveScrapeLogs { get; set; }
 
     /// <summary>Encoding overrides to use - for when <see cref="ProgramUrl"/>
@@ -183,6 +184,7 @@ internal static class VenueExtensions
             }
 
             import.LastRefreshed = null;
+            import.LastEventCount = null;
             import.SaveScrapeLogs = false;
             existing.Add(import);
         }

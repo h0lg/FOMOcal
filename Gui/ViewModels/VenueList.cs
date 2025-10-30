@@ -222,6 +222,7 @@ public partial class VenueList : ObservableObject
         {
             (HashSet<Event> events, Exception[] errors) = await scraper.ScrapeVenueAsync(venue);
             venue.LastRefreshed = DateTime.Now;
+            venue.LastEventCount = events.Count;
             var warning = events.Count > 0 || errors.Length > 0 ? null : $"Found no relevant events for {venue.Name}.";
             EventsScraped?.Invoke(venue, events); // notify subscribers
             return (errors, warning);
@@ -255,9 +256,13 @@ public partial class VenueList : ObservableObject
                     var name = BndLbl(nameof(Venue.Name)).FontSize(16).Wrap();
                     var location = BndLbl(nameof(Venue.Location)).StyleClass(Styles.Label.VenueRowDetail);
 
-                    var lastRefreshed = BndLbl(nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:g}")
+                    var lastEventCount = BndLbl(nameof(Venue.LastEventCount))
                         .StyleClass(Styles.Label.VenueRowDetail)
-                        .Bind(IsVisibleProperty, getter: static (Venue v) => v.LastRefreshed.HasValue);
+                        .BindIsVisibleToHasValueOf<Label, int>(nameof(Venue.LastEventCount));
+
+                    var lastRefreshed = BndLbl(nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:d MMM H:mm}")
+                        .StyleClass(Styles.Label.VenueRowDetail)
+                        .BindIsVisibleToHasValueOf<Label, DateTime>(nameof(Venue.LastRefreshed));
 
                     var refresh = Btn("⛏", nameof(RefreshVenueCommand), source: model);
                     SwingPickaxeDuring(refresh, model.RefreshVenueCommand);
@@ -269,7 +274,7 @@ public partial class VenueList : ObservableObject
                             name.ColumnSpan(2),
                             location.Row(1),
                             refresh.Row(1).Column(1).RowSpan(2).Bottom(),
-                            lastRefreshed.Row(2).End())
+                            HWrap(1, lastEventCount, lastRefreshed).View.Row(2).End())
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 

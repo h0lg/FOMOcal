@@ -91,6 +91,9 @@ internal static partial class ViewExtensions
     internal static T BindIsVisibleToValueOf<T>(this T vis, string textProperty) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, textProperty, converter: Converters.IsSignificant);
 
+    internal static T BindIsVisibleToHasValueOf<T, TProp>(this T vis, string textProperty) where T : VisualElement where TProp : struct
+        => vis.Bind(VisualElement.IsVisibleProperty, textProperty, converter: Converters<TProp>.HasValue);
+
     internal static T OnTextChanged<T>(this T input, Action<TextChangedEventArgs> handle) where T : InputView
     {
         input.TextChanged += (sender, e) => handle(e);
@@ -251,4 +254,9 @@ internal static class Converters
     internal static Func<ValueTuple<bool, bool>, bool> And = ((bool a, bool b) values) => values.a && values.b;
     internal static FuncConverter<string, bool> IsSignificant = new(value => value.IsSignificant());
     internal static FuncConverter<T, bool> Func<T>(Func<T?, bool> predicate) => new(predicate);
+}
+
+internal static class Converters<T> where T : struct
+{
+    internal static FuncConverter<T?, bool> HasValue = new(static value => value.HasValue);
 }
