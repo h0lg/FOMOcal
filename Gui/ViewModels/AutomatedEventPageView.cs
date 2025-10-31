@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
-using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FomoCal.Gui.ViewModels;
 
@@ -22,12 +21,6 @@ public partial class AutomatedEventPageView : WebView
 
     private readonly Venue venue;
     private readonly Action<string, string?>? Log;
-
-    /* check every 200ms for 25 resetting iterations,
-    * i.e. wait for approx. 5sec for JS rendering or scrolling down to load more before timing out
-    * while a change in the number of matched events resets the iterations (and wait time)
-    * until we time out or load at least 100 events. */
-    private readonly WaitForSelectorOptions waitForSelectorOptions = new() { IntervalDelayMs = 200, MaxMatches = 100, MaxTries = 25 };
 
     /// <summary>An event that notifies the subscriber about the DOM from <see cref="Venue.ProgramUrl"/>
     /// being ready for scraping and returning its HTML - or null if events are
@@ -73,9 +66,6 @@ public partial class AutomatedEventPageView : WebView
     /// (relative to the document root).</summary>
     internal Task PickRelativeTo(string selector, bool descendant)
         => EvaluateJavaScriptAsync($"{picking}relativeTo('{selector}', {descendant.ToString().ToLower()});");
-
-    private static readonly JsonSerializerOptions jsonOptionSerializerOptions
-        = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     internal Task SetPickedSelectorDetail(PickedSelectorOptions selectorDetail)
     {
@@ -170,14 +160,6 @@ public partial class AutomatedEventPageView : WebView
         await EvaluateJavaScriptAsync(script);
     }
 
-    private string GetWaitForSelectorOptions()
-    {
-        var isXpath = ScrapeJob.TryGetXPathSelector(venue.Event.Selector, out var xPathSelector);
-        waitForSelectorOptions.IsXpathSelector = isXpath;
-        waitForSelectorOptions.Selector = isXpath ? xPathSelector! : venue.Event.Selector;
-        return JsonSerializer.Serialize(waitForSelectorOptions, jsonOptionSerializerOptions);
-    }
-
     private static string NavigateTo(string quotedUrl) => $"location = {quotedUrl};";
 
     internal static string GetLeafSelector(string selector, bool isXpath)
@@ -187,44 +169,5 @@ public partial class AutomatedEventPageView : WebView
         if (lastIndex < 0) return selector;
         string displayed = selector[(lastIndex + pathDelimiter.Length)..];
         return isXpath ? "//" + displayed : displayed;
-    }
-
-    /*  Used to cache the loaded and pre-processed script while allowing for a
-     *  thread-safe asynchronous lazy initialization that only ever happens once. */
-    private static readonly Lazy<Task<string>> consoleHooksScript = new(() => LoadAndInlineScriptAsync("consoleHooks.js"));
-    private static readonly Lazy<Task<string>> waitForSelectorScript = new(() => LoadAndInlineScriptAsync("waitForSelector.js"));
-    private static readonly Lazy<Task<string>> pickingScript = new(() => LoadAndInlineScriptAsync("picking.js"));
-
-    private static async Task<string> LoadAndInlineScriptAsync(string fileName)
-    {
-        // see https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/storage/file-system-helpers#bundled-files
-        await using Stream fileStream = await FileSystem.Current.OpenAppPackageFileAsync(fileName);
-        using StreamReader reader = new(fileStream);
-        string script = await reader.ReadToEndAsync();
-
-        return script.RemoveJsComments() // so that in-line comments don't comment out code during normalization
-            .NormalizeWhitespace() // to in-line it; multi-line scripts seem to not be supported
-            .Replace("\\", "\\\\"); // to escape the JS for EvaluateJavaScriptAsync
-    }
-
-    internal partial class WaitForSelectorOptions : ObservableObject
-    {
-        [ObservableProperty] public partial string Selector { get; set; }
-        [ObservableProperty] public partial bool IsXpathSelector { get; set; }
-        [ObservableProperty] public partial uint IntervalDelayMs { get; set; }
-        [ObservableProperty] public partial uint MaxMatches { get; set; }
-        [ObservableProperty] public partial uint MaxTries { get; set; }
-    }
-
-    internal partial class PickedSelectorOptions : ObservableObject
-    {
-        [ObservableProperty] public partial bool XPathSyntax { get; set; }
-        [ObservableProperty] public partial bool TagName { get; set; }
-        [ObservableProperty] public partial bool Ids { get; set; }
-        [ObservableProperty] public partial bool SemanticClasses { get; set; }
-        [ObservableProperty] public partial bool LayoutClasses { get; set; }
-        [ObservableProperty] public partial bool OtherAttributes { get; set; }
-        [ObservableProperty] public partial bool OtherAttributeValues { get; set; }
-        [ObservableProperty] public partial bool Position { get; set; }
     }
 }
