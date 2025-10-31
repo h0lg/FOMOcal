@@ -1,6 +1,6 @@
 ﻿namespace FomoCal.Gui.ViewModels;
 
-internal partial class Debouncer
+internal class Debouncer
 {
     private readonly TimeSpan delay;
     private readonly Func<Task>? asyncAction;
