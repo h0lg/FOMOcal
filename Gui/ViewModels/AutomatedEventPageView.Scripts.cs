@@ -29,15 +29,18 @@ partial class AutomatedEventPageView
             .Replace("\\", "\\\\"); // to escape the JS for EvaluateJavaScriptAsync
     }
 
-    private static readonly JsonSerializerOptions jsonOptionSerializerOptions
+    private static readonly JsonSerializerOptions scriptOptionSerializerOptions
         = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    private static string ToJsonOptions<T>(T scriptOptions) where T : class
+        => JsonSerializer.Serialize(scriptOptions, scriptOptionSerializerOptions);
 
     private string GetWaitForSelectorOptions()
     {
         var isXpath = ScrapeJob.TryGetXPathSelector(venue.Event.Selector, out var xPathSelector);
         waitForSelectorOptions.IsXpathSelector = isXpath;
         waitForSelectorOptions.Selector = isXpath ? xPathSelector! : venue.Event.Selector;
-        return JsonSerializer.Serialize(waitForSelectorOptions, jsonOptionSerializerOptions);
+        return ToJsonOptions(waitForSelectorOptions);
     }
 
     internal partial class WaitForSelectorOptions : ObservableObject

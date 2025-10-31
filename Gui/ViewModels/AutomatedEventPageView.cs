@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using System.Web;
 
 namespace FomoCal.Gui.ViewModels;
@@ -68,10 +67,7 @@ public partial class AutomatedEventPageView : WebView
         => EvaluateJavaScriptAsync($"{picking}relativeTo('{selector}', {descendant.ToString().ToLower()});");
 
     internal Task SetPickedSelectorDetail(PickedSelectorOptions selectorDetail)
-    {
-        var json = JsonSerializer.Serialize(selectorDetail, jsonOptionSerializerOptions);
-        return EvaluateJavaScriptAsync($"{picking}withOptions({json});");
-    }
+        => EvaluateJavaScriptAsync($"{picking}withOptions({ToJsonOptions(selectorDetail)});");
 
     internal Task ClickElementToLoadMore(string selector)
         => EvaluateJavaScriptAsync($"{waitForSelector}afterClickingOn('{selector}', {GetWaitForSelectorOptions()});");
