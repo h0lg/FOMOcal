@@ -35,13 +35,15 @@ public partial class Settings : ObservableObject
                 .ToolTip("whether to column-align the plain text export using spaces and include column headers");
 
             Content = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
-                Lbl("Theme").StyleClass(Styles.Label.SubHeadline).CenterVertical().End(), ThemeSwitches().Column(1),
-                Lbl("HTML export").StyleClass(Styles.Label.SubHeadline).CenterVertical().End().Row(1),
+                SubHeadline("Theme"), ThemeSwitches().Column(1),
+
+                SubHeadline("HTML export").Row(1),
                 Lbl("included fields").CenterVertical().End().Row(2),
                 htmlExport.included.CenterVertical().Row(2).Column(1),
                 Lbl("excluded fields").StyleClass(Styles.Label.Demoted).CenterVertical().End().Row(3),
                 htmlExport.excluded.Row(3).Column(1),
-                Lbl("Text export").StyleClass(Styles.Label.SubHeadline).CenterVertical().End().Row(4),
+
+                SubHeadline("Text export").Row(4),
                 Lbl("aligned with headers").CenterVertical().End().Row(5),
                 exportTextAlignedWithHeaders.CenterVertical().Row(5).Column(1),
                 Lbl("included fields").CenterVertical().End().Row(6),
@@ -49,6 +51,9 @@ public partial class Settings : ObservableObject
                 Lbl("excluded fields").StyleClass(Styles.Label.Demoted).CenterVertical().End().Row(7),
                 textExport.excluded.Row(7).Column(1)).Center();
         }
+
+        private static Label SubHeadline(string text)
+            => Lbl(text).StyleClass(Styles.Label.SubHeadline).CenterVertical().End();
 
         private static HorizontalStackLayout ThemeSwitches()
             => HStack(0, ThemeVariantToggle("🌑 dark", AppTheme.Dark, "always use dark theme"),
