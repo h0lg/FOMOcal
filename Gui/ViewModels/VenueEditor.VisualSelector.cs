@@ -62,6 +62,10 @@ partial class VenueEditor
         return madeChanges;
     }
 
+    private void TogglePicking() => EnablePicking = !EnablePicking;
+    private void TogglePickedSelector() => ShowSelectorOptions = !ShowSelectorOptions;
+    private void ToggleSelectorDetail() => ShowSelectorDetail = !ShowSelectorDetail;
+
     private async Task OnHtmlWithEventsLoadedAsync(string? html, string timeOutMessage, string? url)
     {
         if (html.IsSignificant()) SetDocument(await scraper.CreateDocumentAsync(html!, venue, url));
@@ -150,7 +154,7 @@ partial class VenueEditor
                 Swtch(nameof(EnablePicking)).Wrapper
                     .BindVisible(showSelectorOptions, converter: Converters.Not)
                     .InlineTooltipOnFocus(HelpTexts.EnablePicking, help),
-                Lbl("Tap a page element to pick it.").TapGesture(TogglePicking)
+                Lbl("Tap a page element to pick it.").TapGesture(model.TogglePicking)
                     .BindVisible(showSelectorOptions, converter: Converters.Not),
                 Btn("⿴ Pick its container").TapGesture(PickParent)
                     .BindVisible(new Binding(displayedSelector, converter: Converters.IsSignificant),
@@ -158,7 +162,7 @@ partial class VenueEditor
                 Lbl("if you need.")
                     .BindVisible(new Binding(displayedSelector, converter: Converters.IsSignificant),
                         Converters.And, new Binding(showSelectorOptions, converter: Converters.Not)),
-                new Button().BindIsVisibleToValueOf(displayedSelector).TapGesture(TogglePickedSelector)
+                new Button().BindIsVisibleToValueOf(displayedSelector).TapGesture(model.TogglePickedSelector)
                     .Bind(Button.TextProperty, showSelectorOptions,
                         convert: static (bool showSelector) => showSelector ? "⏮ Back to ⛶ picking an element" : "🥢 Choose a selector next ⏭"));
 
@@ -187,7 +191,7 @@ partial class VenueEditor
                 Btn("➕ append").TapGesture(AppendSelectedQuery)
                     .InlineTooltipOnFocus(HelpTexts.AppendSelectedQuery, help),
                 Lbl("them to your query to try them out."),
-                Btn("🍜 selector options").BindVisible(showSelectorOptions).TapGesture(ToggleSelectorDetail)
+                Btn("🍜 selector options").BindVisible(showSelectorOptions).TapGesture(model.ToggleSelectorDetail)
                     .InlineTooltipOnFocus(HelpTexts.ToggleSelectorDetail, help)];
 
             foreach (var view in appendSelection)
@@ -240,10 +244,7 @@ partial class VenueEditor
             return display;
         }
 
-        private void TogglePicking() => model.EnablePicking = !model.EnablePicking;
         private async void PickParent() => await pageView!.PickParent();
-        private void TogglePickedSelector() => model.ShowSelectorOptions = !model.ShowSelectorOptions;
-        private void ToggleSelectorDetail() => model.ShowSelectorDetail = !model.ShowSelectorDetail;
 
         private void AppendSelectedQuery()
         {
