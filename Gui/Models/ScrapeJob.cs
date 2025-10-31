@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using AngleSharp.XPath;
@@ -101,7 +100,7 @@ public partial class ScrapeJob
         }
         catch (Exception ex)
         {
-            var jobJson = JsonSerializer.Serialize(this, JsonFileStore.JsonOptions);
+            var jobJson = JsonFileStore.Serialize(this);
             var error = new Error($"Failed while extracting value from {element} using {jobJson}", ex);
             return AddOrThrow<string?>(errors, error);
         }
