@@ -6,16 +6,26 @@ partial class AutomatedEventPageView
     {
         public string? Selector { get; set; }
         public bool IsXpathSelector { get; set; }
-        public uint MaxTries { get; set; }
-        public uint IntervalDelayMs { get; set; }
-        public uint MaxMatchesScrollingDown { get; set; }
+        public ushort MaxTries { get; set; }
+        public ushort IntervalDelayMs { get; set; }
+        public ushort MaxMatchesScrollingDown { get; set; }
+
+        internal static WaitForSelectorOptions LoadSettings() => new()
+        {
+            MaxTries = Remembered.MaxTries.Get(),
+            IntervalDelayMs = Remembered.IntervalDelayMs.Get(),
+            MaxMatchesScrollingDown = Remembered.MaxMatchesScrollingDown.Get()
+        };
+
+        internal static class Remembered
+        {
+            internal static readonly RememberedUshort MaxTries = new(nameof(WaitForSelectorOptions) + nameof(WaitForSelectorOptions.MaxTries), 25);
+            internal static readonly RememberedUshort IntervalDelayMs = new(nameof(WaitForSelectorOptions) + nameof(WaitForSelectorOptions.IntervalDelayMs), 200);
+            internal static readonly RememberedUshort MaxMatchesScrollingDown = new(nameof(WaitForSelectorOptions) + nameof(WaitForSelectorOptions.MaxMatchesScrollingDown), 100);
+        }
     }
 
-    /* check every 200ms for 25 resetting iterations,
-    * i.e. wait for approx. 5sec for JS rendering or scrolling down to load more before timing out
-    * while a change in the number of matched events resets the iterations (and wait time)
-    * until we time out or load at least 100 events. */
-    private readonly WaitForSelectorOptions waitForSelectorOptions = new() { MaxTries = 25, IntervalDelayMs = 200, MaxMatchesScrollingDown = 100 };
+    private readonly WaitForSelectorOptions waitForSelectorOptions = WaitForSelectorOptions.LoadSettings();
 
     private string GetWaitForSelectorOptions()
     {
