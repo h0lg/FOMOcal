@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FomoCal.Gui.Resources;
 using Microsoft.Maui.Layouts;
@@ -10,6 +11,9 @@ using SelectorOptionsRepo = SingletonJsonFileRepository<VenueEditor.SelectorOpti
 
 partial class VenueEditor
 {
+    private readonly Lazy<SelectorOptionsRepo> selectorOptionsRepo
+        = new(() => IPlatformApplication.Current!.Services.GetService<SelectorOptionsRepo>()!);
+
     private readonly SelectorOptions selectorOptions = new() { SemanticClasses = true, LayoutClasses = true }; // initialize with defaults
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial string? PickedSelector { get; set; }
@@ -25,6 +29,37 @@ partial class VenueEditor
             if (selectorOptions.IncludeAncestorPath) return ShowSelectorOptions ? PickedSelector : PickedSelector.NormalizeWhitespace();
             return AutomatedEventPageView.GetLeafSelector(PickedSelector!, selectorOptions.XPathSyntax);
         }
+    }
+
+    private Task<bool>? LazyLoadSelectorOptionsOnce()
+        => selectorOptionsRepo.IsValueCreated ? null : LazyLoadSelectorOptionsAsync();
+
+    private async Task<bool> LazyLoadSelectorOptionsAsync()
+    {
+        // load and restore remembered selectorOptions once from JSON file
+        var saved = await selectorOptionsRepo.Value.LoadAsync();
+
+        bool madeChanges = false;
+
+        if (saved != null)
+        {
+            madeChanges = selectorOptions.RestoreFrom(saved);
+
+            // notify potential subscribers
+            if (madeChanges) OnPropertyChanged(nameof(DisplayedSelector));
+        }
+
+        // hook up PropertyChanged handler saving changes only after options restore
+        selectorOptions.PropertyChanged += (o, e) =>
+        {
+            if (e.PropertyName == nameof(SelectorOptions.IncludeAncestorPath)
+                || e.PropertyName == nameof(SelectorOptions.XPathSyntax))
+                OnPropertyChanged(nameof(DisplayedSelector));
+
+            selectorOptionsRepo.Value.SaveAsync(selectorOptions);
+        };
+
+        return madeChanges;
     }
 
     private async Task OnHtmlWithEventsLoadedAsync(string? html, string timeOutMessage, string? url)
@@ -51,7 +86,7 @@ partial class VenueEditor
         RevealMore();
     }
 
-    // extends the PickedSelectorOptions with others that need persistence
+    // implements and extends the PickedSelectorOptions with others that need persistence
     internal partial class SelectorOptions : ObservableObject, AutomatedEventPageView.PickedSelectorOptions
     {
         [ObservableProperty] public partial bool IncludeAncestorPath { get; set; }
@@ -63,6 +98,19 @@ partial class VenueEditor
         [ObservableProperty] public partial bool OtherAttributes { get; set; }
         [ObservableProperty] public partial bool OtherAttributeValues { get; set; }
         [ObservableProperty] public partial bool Position { get; set; }
+
+        internal bool RestoreFrom(SelectorOptions saved)
+        {
+            bool madeChanges = false;
+            PropertyChangedEventHandler trackChanges = (o, e) => madeChanges = true;
+            PropertyChanged += trackChanges;
+
+            foreach (var prop in typeof(SelectorOptions).GetProperties())
+                prop.SetValue(this, prop.GetValue(saved, null));
+
+            PropertyChanged -= trackChanges;
+            return madeChanges;
+        }
     }
 
     partial class Page
@@ -70,7 +118,6 @@ partial class VenueEditor
         private readonly AbsoluteLayout visualSelector;
         private AutomatedEventPageView? pageView;
         private string? selectedQuery;
-        private SelectorOptionsRepo? selectorOptionsRepo;
 
         private AbsoluteLayout CreateVisualSelector()
         {
@@ -229,28 +276,15 @@ partial class VenueEditor
             model.ShowSelectorDetail = false;
             model.EnablePicking = true;
 
-            if (selectorOptionsRepo == null) // load and restore remembered selectorOptions once from JSON file
+            var loadingOnce = model.LazyLoadSelectorOptionsOnce();
+
+            if (loadingOnce != null)
             {
-                selectorOptionsRepo = IPlatformApplication.Current!.Services.GetService<SelectorOptionsRepo>();
-                var saved = await selectorOptionsRepo!.LoadAsync();
+                var madeChanges = await loadingOnce;
+                if (madeChanges) await pageView!.SetPickedSelectorDetail(model.selectorOptions); // apply restored options
 
-                if (saved != null)
-                {
-                    foreach (var prop in typeof(SelectorOptions).GetProperties())
-                        prop.SetValue(model.selectorOptions, prop.GetValue(saved, null));
-
-                    await pageView!.SetPickedSelectorDetail(model.selectorOptions);
-                }
-
-                model.selectorOptions.PropertyChanged += async (o, e) =>
-                {
-                    if (e.PropertyName == nameof(SelectorOptions.IncludeAncestorPath)
-                        || e.PropertyName == nameof(SelectorOptions.XPathSyntax))
-                        model.OnPropertyChanged(nameof(DisplayedSelector)); // notify of change
-
-                    await pageView!.SetPickedSelectorDetail(model.selectorOptions);
-                    await selectorOptionsRepo!.SaveAsync(model.selectorOptions);
-                };
+                // hook up PropertyChanged handler only after options restore triggered it, potentially more than once
+                model.selectorOptions.PropertyChanged += (o, e) => pageView!.SetPickedSelectorDetail(model.selectorOptions);
             }
 
             model.visualSelectorHost = entry;
