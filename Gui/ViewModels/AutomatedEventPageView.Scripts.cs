@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FomoCal.Gui.ViewModels;
 
@@ -43,24 +42,24 @@ partial class AutomatedEventPageView
         return ToJsonOptions(waitForSelectorOptions);
     }
 
-    internal partial class WaitForSelectorOptions : ObservableObject
+    internal class WaitForSelectorOptions
     {
-        [ObservableProperty] public partial string Selector { get; set; }
-        [ObservableProperty] public partial bool IsXpathSelector { get; set; }
-        [ObservableProperty] public partial uint IntervalDelayMs { get; set; }
-        [ObservableProperty] public partial uint MaxMatches { get; set; }
-        [ObservableProperty] public partial uint MaxTries { get; set; }
+        public string? Selector { get; set; }
+        public bool IsXpathSelector { get; set; }
+        public uint IntervalDelayMs { get; set; }
+        public uint MaxMatches { get; set; }
+        public uint MaxTries { get; set; }
     }
 
-    internal partial class PickedSelectorOptions : ObservableObject
+    internal interface PickedSelectorOptions
     {
-        [ObservableProperty] public partial bool XPathSyntax { get; set; }
-        [ObservableProperty] public partial bool TagName { get; set; }
-        [ObservableProperty] public partial bool Ids { get; set; }
-        [ObservableProperty] public partial bool SemanticClasses { get; set; }
-        [ObservableProperty] public partial bool LayoutClasses { get; set; }
-        [ObservableProperty] public partial bool OtherAttributes { get; set; }
-        [ObservableProperty] public partial bool OtherAttributeValues { get; set; }
-        [ObservableProperty] public partial bool Position { get; set; }
+        bool XPathSyntax { get; }
+        bool TagName { get; }
+        bool Ids { get; }
+        bool SemanticClasses { get; }
+        bool LayoutClasses { get; }
+        bool OtherAttributes { get; }
+        bool OtherAttributeValues { get; }
+        bool Position { get; }
     }
 }

@@ -16,14 +16,13 @@ partial class VenueEditor
     [ObservableProperty] public partial bool EnablePicking { get; set; } = false;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial bool ShowSelectorOptions { get; set; }
     [ObservableProperty] public partial bool ShowSelectorDetail { get; set; }
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial bool IncludePickedSelectorPath { get; set; }
 
     public string? DisplayedSelector
     {
         get
         {
             if (PickedSelector.IsNullOrWhiteSpace()) return null;
-            if (IncludePickedSelectorPath) return ShowSelectorOptions ? PickedSelector : PickedSelector.NormalizeWhitespace();
+            if (selectorOptions.IncludeAncestorPath) return ShowSelectorOptions ? PickedSelector : PickedSelector.NormalizeWhitespace();
             return AutomatedEventPageView.GetLeafSelector(PickedSelector!, selectorOptions.XPathSyntax);
         }
     }
@@ -53,9 +52,17 @@ partial class VenueEditor
     }
 
     // extends the PickedSelectorOptions with others that need persistence
-    internal partial class SelectorOptions : AutomatedEventPageView.PickedSelectorOptions
+    internal partial class SelectorOptions : ObservableObject, AutomatedEventPageView.PickedSelectorOptions
     {
-        public bool IncludeAncestorPath { get; set; }
+        [ObservableProperty] public partial bool IncludeAncestorPath { get; set; }
+        [ObservableProperty] public partial bool XPathSyntax { get; set; }
+        [ObservableProperty] public partial bool TagName { get; set; }
+        [ObservableProperty] public partial bool Ids { get; set; }
+        [ObservableProperty] public partial bool SemanticClasses { get; set; }
+        [ObservableProperty] public partial bool LayoutClasses { get; set; }
+        [ObservableProperty] public partial bool OtherAttributes { get; set; }
+        [ObservableProperty] public partial bool OtherAttributeValues { get; set; }
+        [ObservableProperty] public partial bool Position { get; set; }
     }
 
     partial class Page
@@ -116,7 +123,7 @@ partial class VenueEditor
 
             View[] selectorDetails = [syntax,
                 Lbl("detail").Bold(),
-                LbldView("ancestor path", Check(nameof(IncludePickedSelectorPath))
+                LbldView("ancestor path", Check(nameof(SelectorOptions.IncludeAncestorPath), source: model.selectorOptions)
                     .InlineTooltipOnFocus(HelpTexts.IncludePickedSelectorPath, help)),
                 SelectorOption("tag name", nameof(SelectorOptions.TagName), HelpTexts.TagName),
                 SelectorOption("id", nameof(SelectorOptions.Ids), HelpTexts.ElementId),
@@ -229,26 +236,18 @@ partial class VenueEditor
 
                 if (saved != null)
                 {
-                    model.IncludePickedSelectorPath = saved.IncludeAncestorPath;
-
                     foreach (var prop in typeof(SelectorOptions).GetProperties())
                         prop.SetValue(model.selectorOptions, prop.GetValue(saved, null));
 
                     await pageView!.SetPickedSelectorDetail(model.selectorOptions);
                 }
 
-                // hook up change handlers saving changes after restoration
-                model.PropertyChanged += async (o, e) =>
-                {
-                    if (e.PropertyName == nameof(IncludePickedSelectorPath))
-                    {
-                        model.selectorOptions.IncludeAncestorPath = model.IncludePickedSelectorPath;
-                        await selectorOptionsRepo!.SaveAsync(model.selectorOptions);
-                    }
-                };
-
                 model.selectorOptions.PropertyChanged += async (o, e) =>
                 {
+                    if (e.PropertyName == nameof(SelectorOptions.IncludeAncestorPath)
+                        || e.PropertyName == nameof(SelectorOptions.XPathSyntax))
+                        model.OnPropertyChanged(nameof(DisplayedSelector)); // notify of change
+
                     await pageView!.SetPickedSelectorDetail(model.selectorOptions);
                     await selectorOptionsRepo!.SaveAsync(model.selectorOptions);
                 };
