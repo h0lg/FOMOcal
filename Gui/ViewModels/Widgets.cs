@@ -54,6 +54,14 @@ internal static class Widgets
 
     internal static Grid SwtchWrp(Switch swtch) => Grd(cols: [42], rows: [Auto], children: swtch);
 
+    internal static HorizontalStackLayout LabeledStepper(string label, string valueProperty,
+        ushort max = ushort.MaxValue, Action? onValueChanged = null)
+    {
+        var stepper = new Stepper() { Minimum = 0, Maximum = max, Increment = 1 }.Bind(Stepper.ValueProperty, valueProperty);
+        if (onValueChanged != null) stepper.ValueChanged += (o, e) => onValueChanged(); // because Un/Focus events aren't firing
+        return HStack(5, Lbl(label), BndLbl(valueProperty), stepper).View;
+    }
+
     internal static Grid Grd(GridLength[] cols, GridLength[] rows, double spacing = 0, params IView[] children)
     {
         Grid grid = new()

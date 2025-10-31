@@ -32,8 +32,8 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial bool PreviewRelatedHasFocus { get; set; } // for when related controls have focus
     [ObservableProperty] public partial bool EventSelectorHasError { get; set; }
     [ObservableProperty] public partial string[]? PreviewedEventTexts { get; set; }
-    [ObservableProperty] public partial int SkipEvents { get; set; }
-    [ObservableProperty] public partial int TakeEvents { get; set; } = 5;
+    [ObservableProperty] public partial ushort SkipEvents { get; set; }
+    [ObservableProperty] public partial ushort TakeEvents { get; set; } = 5;
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))] public partial int SelectedEventCount { get; set; } = 0;
     [ObservableProperty] public partial int FilteredEventCount { get; set; } = 0;
 
@@ -464,7 +464,7 @@ public partial class VenueEditor : ObservableObject
         private static FlexLayout PreviewControls(Entry selectorText)
             => HWrap(5, Lbl("Preview events").Bold(),
                 // focus selectorText as the closest match to display the help text of while keeping the previewOrErrors open
-                LabeledStepper("skipping", nameof(SkipEvents), max: int.MaxValue, onValueChanged: () => selectorText.Focus()),
+                LabeledStepper("skipping", nameof(SkipEvents), onValueChanged: () => selectorText.Focus()),
                 LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus())).View;
 
         private FlexLayout PagingControls((Label label, Border layout) help)
@@ -551,13 +551,6 @@ public partial class VenueEditor : ObservableObject
                 .ToolTip("Tap any log to open it.");
 
             return HWrap(5, Lbl("📜 Scrape logs").Bold(), Lbl("save"), save.Wrapper, logs).View;
-        }
-
-        private static HorizontalStackLayout LabeledStepper(string label, string valueProperty, int max, Action onValueChanged)
-        {
-            var stepper = new Stepper() { Minimum = 0, Maximum = max, Increment = 1 }.Bind(Stepper.ValueProperty, valueProperty);
-            stepper.ValueChanged += (o, e) => onValueChanged(); // because Un/Focus events aren't firing
-            return HStack(5, Lbl(label), BndLbl(valueProperty), stepper).View;
         }
 
         private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)
