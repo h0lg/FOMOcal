@@ -60,6 +60,22 @@ public sealed partial class AllOnOnePage_Tests : PagingStrategyTests
     }
 
     [TestMethod]
+    public async Task HalfDuplicated()
+    {
+        browser.AddEvents(venue, 10);
+        browser.AddEvents(venue, 10, start: 1);
+
+        (var events, var errors) = await scraper.ScrapeVenueAsync(venue);
+        AssertEmpty(errors);
+
+        AssertLogLines(
+            "found 20 events, 10 already scraped - i.e. 10 irrelevant",
+            "found 10 relevant events in total");
+
+        Assert.HasCount(10, events);
+    }
+
+    [TestMethod]
     public async Task HalfExcludedByFilter()
     {
         browser.AddEvents(venue, 10);

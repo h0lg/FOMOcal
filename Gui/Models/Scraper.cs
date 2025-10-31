@@ -68,7 +68,7 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
         var venue = venueScrape.Venue;
         var selected = document.SelectEvents(venue).ToArray();
         var filtered = selected.FilterEvents(venue).ToArray();
-        ushort past = 0, missingNameOrDate = 0;
+        ushort past = 0, missingNameOrDate = 0, duplicate = 0; // count irrelevant events 
 
         foreach (var container in selected)
         {
@@ -100,7 +100,11 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
                 Url = venue.Event.Url?.GetUrl(container, errors)
             };
 
-            if (events.Contains(scraped)) continue; // duplicate
+            if (events.Contains(scraped))
+            {
+                duplicate++;
+                continue;
+            }
 
             // scrape details and add event
             scraped.SubTitle = venue.Event.SubTitle?.GetValue(container, errors);
@@ -117,16 +121,20 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
             events.Add(scraped);
         }
 
-        var irrelevant = missingNameOrDate + past;
+        /* exclusion by filter doesn't make events irrelevant,
+         * further pages may still contain events
+         * we want to know whether it makes sense to continue */
+        var irrelevant = missingNameOrDate + past + duplicate;
 
         var msg = $"found {selected.Length} events";
         if (selected.Length != filtered.Length) msg += $", {filtered.Length} matched by {venue.Event.Filter}";
         if (missingNameOrDate > 0) msg += $", {missingNameOrDate} missing a name or date";
         if (past > 0) msg += $", {past} in the past";
+        if (duplicate > 0) msg += $", {duplicate} already scraped";
         if (irrelevant > 0) msg += $" - i.e. {irrelevant} irrelevant";
         venueScrape.Log(msg);
 
-        // return number of scrapable events that are not already past
+        // return number of potentially scrapable events, disregarding the event filter
         return selected.Length - irrelevant;
     }
 
