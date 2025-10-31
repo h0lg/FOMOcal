@@ -135,7 +135,7 @@ Each box holds different parts of the page with different info. In the following
   </data>
   <data name="LazyLoaded" xml:space="preserve">
     <value>You may want to try this option if your event selector doesn't match anything without it even though it should*.
-It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn't after 10s.
+It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn't.
 
 ^^This works around pages that lazy-load events. Some web servers only return an empty template of a page on the first request to improve the response time, then fetch more data asynchronously and render it into the placeholders using a script running in your browser.
 ^^

@@ -428,7 +428,7 @@ public partial class VenueEditor : ObservableObject
                 Lbl("lazy"), lazyLoaded.Wrapper);
 
             var skip = NumericStepper.Create(nameof(SkipEvents), "skipping");
-            var take = NumericStepper.Create(nameof(TakeEvents), label: "and taking", max: 10);
+            var take = NumericStepper.Create(nameof(TakeEvents), startLabel: "and taking", max: 10);
             var previewControls = HWrap(5, Lbl("Preview events").Bold(), skip.Wrapper, take.Wrapper);
 
             VisualElement[] previewRelated = [selectorText, eventFilter, lazyLoaded.Switch, skip.Entry, take.Entry];

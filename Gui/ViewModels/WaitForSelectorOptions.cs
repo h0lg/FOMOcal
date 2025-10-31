@@ -1,4 +1,8 @@
-﻿namespace FomoCal.Gui.ViewModels;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using static FomoCal.Gui.ViewModels.AutomatedEventPageView.WaitForSelectorOptions;
+using static FomoCal.Gui.ViewModels.Widgets;
+
+namespace FomoCal.Gui.ViewModels;
 
 partial class AutomatedEventPageView
 {
@@ -72,7 +76,7 @@ partial class AutomatedEventPageView
         }
     }
 
-    private readonly WaitForSelectorOptions waitForSelectorOptions = WaitForSelectorOptions.LoadSettings();
+    private readonly WaitForSelectorOptions waitForSelectorOptions = LoadSettings();
 
     private string GetWaitForSelectorOptions()
     {
@@ -80,5 +84,63 @@ partial class AutomatedEventPageView
         waitForSelectorOptions.IsXpathSelector = isXpath;
         waitForSelectorOptions.Selector = isXpath ? xPathSelector! : venue.Event.Selector;
         return ToJsonOptions(waitForSelectorOptions);
+    }
+}
+
+partial class Settings
+{
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(WaitForMaxSecs))]
+    public partial ushort IntervalDelayMs { get; set; } = Remembered.IntervalDelayMs.Get();
+    partial void OnIntervalDelayMsChanged(ushort value) => Remembered.IntervalDelayMs.Set(value);
+
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(WaitForMaxSecs))]
+    public partial ushort MaxTries { get; set; } = Remembered.MaxTries.Get();
+    partial void OnMaxTriesChanged(ushort value) => Remembered.MaxTries.Set(value);
+
+    public decimal WaitForMaxSecs => IntervalDelayMs * MaxTries / 1000m;
+
+    // Venue.PagingStrategy.ScrollDownToLoadMore
+    [ObservableProperty] public partial ushort MaxMatchesScrollingDown { get; set; } = Remembered.MaxMatchesScrollingDown.Get();
+    partial void OnMaxMatchesScrollingDownChanged(ushort value) => Remembered.MaxMatchesScrollingDown.Set(value);
+
+    [ObservableProperty] public partial ushort TriggerScrollAfterMs { get; set; } = Remembered.TriggerScrollAfterMs.Get();
+    partial void OnTriggerScrollAfterMsChanged(ushort value) => Remembered.TriggerScrollAfterMs.Set(value);
+
+    [ObservableProperty] public partial ushort AjaxTimeoutMs { get; set; } = Remembered.AjaxTimeoutMs.Get();
+    partial void OnAjaxTimeoutMsChanged(ushort value) => Remembered.AjaxTimeoutMs.Set(value);
+
+    [ObservableProperty] public partial ushort MutationTimeoutMs { get; set; } = Remembered.MutationTimeoutMs.Get();
+    partial void OnMutationTimeoutMsChanged(ushort value) => Remembered.MutationTimeoutMs.Set(value);
+
+    [ObservableProperty] public partial ushort MutationDebounceMs { get; set; } = Remembered.MutationDebounceMs.Get();
+    partial void OnMutationDebounceMsChanged(ushort value) => Remembered.MutationDebounceMs.Set(value);
+
+    partial class Page
+    {
+        private static View LoadingLazyOrMore()
+            => HWrap(5,
+                ContextLabel($"When lazy-loading events, paging {Venue.PagingStrategy.ScrollDownToLoadMore.GetDescription()}"
+                    + $" or {Venue.PagingStrategy.ClickElementToLoadMore.GetDescription()} an element,"),
+                Stepper("check for events every", nameof(IntervalDelayMs), "ms"),
+                Stepper("for max.", nameof(MaxTries), "resetting times,"),
+                BndLbl(nameof(WaitForMaxSecs), stringFormat: "waiting up to {0}s in total.")).View;
+
+        private static View ScrollPaging()
+            => HWrap(5,
+                ContextLabel($"When loading {Venue.PagingStrategy.ScrollDownToLoadMore.GetDescription()},"),
+                Stepper("trigger the scroll event after", nameof(TriggerScrollAfterMs), "ms,"),
+                Stepper("consider async requests done after", nameof(AjaxTimeoutMs), "ms"),
+                Stepper("and stop scrolling after min.", nameof(MaxMatchesScrollingDown), "events are found.")).View;
+
+        private static View SwapPaging()
+            => HWrap(5,
+                ContextLabel($"When loading {Venue.PagingStrategy.ClickElementToLoadDifferent.GetDescription()} an element,"),
+                Stepper("wait max.", nameof(MutationTimeoutMs), "ms for a change"),
+                Stepper("and debounce it for", nameof(MutationDebounceMs), "ms .")).View;
+
+        private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted);
+
+        private static View Stepper(string startLabel, string property, string endLabel)
+            => NumericStepper.Create(startLabel: startLabel, property: property, endLabel: endLabel).Wrapper;
     }
 }

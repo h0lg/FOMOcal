@@ -7,7 +7,9 @@ namespace FomoCal.Gui.ViewModels;
 
 internal static class NumericStepper
 {
-    internal static (View Wrapper, Entry Entry) Create(string property, string? label = null, int min = 0, int max = int.MaxValue, int stepSize = 1)
+    internal static (View Wrapper, Entry Entry) Create(string property,
+        string? startLabel = null, string? endLabel = null,
+        int min = 0, int max = int.MaxValue, int stepSize = 1)
     {
         var entry = new Entry { Keyboard = Keyboard.Numeric }.TextCenterHorizontal();
 
@@ -15,7 +17,7 @@ internal static class NumericStepper
             stringFormat: "{0}", converter: new ClampedIntConverter(min, max));
 
         var layout = HStack();
-        if (label != null) layout.AddChild(Lbl(label).Margins(right: 5));
+        if (startLabel != null) layout.AddChild(Lbl(startLabel).Margins(right: 5));
 
         layout.AddChild(new Border
         {
@@ -31,6 +33,7 @@ internal static class NumericStepper
             Content = new Button { Text = "+", CornerRadius = 0 }.RepeatOnHold(DoStep)
         });
 
+        if (endLabel != null) layout.AddChild(Lbl(endLabel).Margins(left: 5));
         return (layout.View, entry);
 
         void DoStep(int ran)
