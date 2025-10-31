@@ -16,34 +16,38 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
             var pagingStrat = venue.Event.PagingStrategy;
             var nextPageSelector = pagingStrat.RequiresNextPageSelector() ? " " + venue.Event.NextPageSelector : null;
             venueScrape.Log($"loaded {document!.Url}, paging strategy loads {pagingStrat.GetDescription()}{nextPageSelector}");
-            int allRelevantEvents = ScrapeEvents(venueScrape, events, errors, document!);
+            ushort skippedTotal = ScrapeEvents(venueScrape, events, errors, document!);
 
-            /*  load more even if there are 0 relevantEvents on the first page -
+            /*  load more even if there are 0 scrapable events on the first page -
              *  in case it shows the current month with no gig until the end of the month */
-            while (document!.CanLoadMore(venue)) // does not reliably break loop for all loading strategies
+            while (document!.CanLoadMore(venue)) // does not reliably exit the loop for all loading strategies
             {
                 venueScrape.Log("can load more");
                 document = await venueScrape.LoadMoreAsync();
                 if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
                 venueScrape.Log($"loaded {document.Url}");
-                int containedRelevantEvents = ScrapeEvents(venueScrape, events, errors, document);
+                int scrapedBefore = events.Count;
+                ushort skipped = ScrapeEvents(venueScrape, events, errors, document);
 
-                // determine number of new, scrapable events that are not already past
-                int newRelevantEvents = pagingStrat.LoadsDifferentEvents()
-                    ? containedRelevantEvents // all contained relevant events are considered new
-                    : containedRelevantEvents - allRelevantEvents; // substract previously loaded relevant events
+                int skippedDiff = pagingStrat.LoadsDifferentEvents() ? skipped // all skipped events are considered different
+                    : skipped - skippedTotal; // when loading more, skipped contains previously skipped events
 
-                venueScrape.Log($"found {containedRelevantEvents} relevant events, {newRelevantEvents} of them new");
+                // sanity-check the paging strategy to make sure the loop exits
+                if (skippedDiff < 0) throw new InvalidOperationException(
+                    "The number of events excluded by the filter dropped during paging." +
+                    $" That's not expected behavior for the configured paging strategy loading {pagingStrat.GetDescription()}." +
+                    " Consider trying a different one.");
 
-                // stop loading more if scraping current page yielded no new relevant events to prevent loop
-                if (newRelevantEvents == 0) break;
+                /* stop loading more if scraping current page yielded no different scrapable events
+                 * to exit the loop early and avoid paging rubbish */
+                if (events.Count == scrapedBefore && skippedDiff == 0) break;
 
-                /*  count up total relevant events to hit break condition above
+                /*  keep track of total skipped events to enable exit condition above
                  *  for paging strats that load more instead of different events */
-                allRelevantEvents += newRelevantEvents;
+                skippedTotal += (ushort)skippedDiff;
             }
 
-            venueScrape.Log($"found {allRelevantEvents} relevant events in total");
+            venueScrape.Log($"scraped {events.Count} events in total");
         }
         catch (Exception ex)
         {
@@ -63,19 +67,35 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
         return (events, errors);
     }
 
-    private static int ScrapeEvents(VenueScrapeContext venueScrape, HashSet<Event> events, List<Exception> errors, IDomDocument document)
+    /// <summary>Searches the <paramref name="document"/> for event containers matching the <see cref="Venue.EventScrapeJob.Selector"/>,
+    /// discardes unscrapable (past, missing a name or date - or containing already scraped, duplicated event info),
+    /// excludes containers not matching <see cref="Venue.EventScrapeJob.Filter"/> and returning their count,
+    /// scrapes the remaining containers and adds their info to <paramref name="events"/> on success.</summary>
+    /// <param name="venueScrape">Provides the scrape config and a log shared across potentially multiple calls of this method
+    /// - depending on the <see cref="Venue.EventScrapeJob.PagingStrategy"/>.</param>
+    /// <param name="events">Accumulates the events that were successfully scraped from the venue, potentially from multiple pages.
+    /// I.e. the caller can compare the count before and after to find out if any event was scraped from the current page.</param>
+    /// <param name="errors">Accumulates the errors that happened scraping the venue, potentially from multiple pages.</param>
+    /// <param name="document">Represents the current page containing all, more or different events
+    /// depending on the <see cref="Venue.EventScrapeJob.PagingStrategy"/>.</param>
+    /// <returns>The number of event containers excluded by <see cref="Venue.EventScrapeJob.Filter"/>,
+    /// which the caller can use to decide whether it makes sense to continue paging for more events.</returns>
+    private static ushort ScrapeEvents(VenueScrapeContext venueScrape, HashSet<Event> events, List<Exception> errors, IDomDocument document)
     {
         var venue = venueScrape.Venue;
         var selected = document.SelectEvents(venue).ToArray();
         var filtered = selected.FilterEvents(venue).ToArray();
-        ushort past = 0, missingNameOrDate = 0, duplicate = 0; // count irrelevant events 
+
+        // skipped event counters
+        ushort past = 0, missingNameOrDate = 0, duplicate = 0, // unscrapable
+            excluded = 0; // scrapable
 
         foreach (var container in selected)
         {
             var name = venue.Event.Name.GetValue(container, errors);
             DateTime? date = venue.Event.Date.GetDate(container, errors);
 
-            // count before filtering so that filter doesn't distort the count
+            // count and skip unscrapable before filtering - so that filter doesn't distort the count
             if (name == null || date == null)
             {
                 missingNameOrDate++;
@@ -104,7 +124,11 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
                 continue;
             }
 
-            if (!filtered.Contains(container)) continue; // excluded by filter
+            if (!filtered.Contains(container))
+            {
+                excluded++;
+                continue;
+            }
 
             // scrape details and add event
             scraped.SubTitle = venue.Event.SubTitle?.GetValue(container, errors);
@@ -121,21 +145,18 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
             events.Add(scraped);
         }
 
-        /* exclusion by filter doesn't make events irrelevant,
-         * further pages may still contain events
-         * we want to know whether it makes sense to continue */
-        var irrelevant = missingNameOrDate + past + duplicate;
-
-        var msg = $"found {selected.Length} events";
-        if (selected.Length != filtered.Length) msg += $", {filtered.Length} matched by {venue.Event.Filter}";
-        if (missingNameOrDate > 0) msg += $", {missingNameOrDate} missing a name or date";
-        if (past > 0) msg += $", {past} in the past";
-        if (duplicate > 0) msg += $", {duplicate} already scraped";
-        if (irrelevant > 0) msg += $" - i.e. {irrelevant} irrelevant";
+        // log skipped events to help debug the scrape process
+        var msg = $"selected {selected.Length} events";
+        if (missingNameOrDate > 0) msg += $" -{missingNameOrDate} missing a name or date";
+        if (past > 0) msg += $" -{past} in the past";
+        if (duplicate > 0) msg += $" -{duplicate} already scraped";
+        if (excluded > 0) msg += $" -{excluded} not matching '{venue.Event.Filter}'";
         venueScrape.Log(msg);
 
-        // return number of potentially scrapable events, disregarding the event filter
-        return selected.Length - irrelevant;
+        /* The caller is only interested in scrapable, but skipped events to decide whether to continue paging.
+         * Unscrapable events are dropped as if they didn't exist.
+         * This allows the caller to detect when it's paging through rubbish and stop early. */
+        return excluded;
     }
 
     internal Task<IDomDocument> CreateDocumentAsync(string html, Venue venue, string? url)

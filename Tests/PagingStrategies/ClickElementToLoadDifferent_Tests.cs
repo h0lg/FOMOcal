@@ -18,9 +18,9 @@ public sealed partial class ClickElementToLoadDifferent_Tests : PagingStrategyTe
         AssertEmpty(errors);
 
         AssertLogLines("paging strategy loads different by clicking .next-page",
-            "found 10 events",
-            "found 10 events",
-            "found 20 relevant events in total");
+            "selected 10 events",
+            "selected 10 events",
+            "scraped 20 events in total");
 
         Assert.HasCount(20, events);
     }
@@ -35,10 +35,10 @@ public sealed partial class ClickElementToLoadDifferent_Tests : PagingStrategyTe
         AssertEmpty(errors);
 
         AssertLogLines(
-            "found 10 events",
+            "selected 10 events",
             "can load more",
-            "found 0 events",
-            "found 10 relevant events in total");
+            "selected 0 events",
+            "scraped 10 events in total");
 
         Assert.HasCount(10, events);
     }

@@ -15,8 +15,8 @@ public sealed partial class AllOnOnePage_Tests : PagingStrategyTests
         AssertEmpty(errors);
 
         AssertLogLines("paging strategy loads all on the first page",
-            "found 10 events",
-            "found 10 relevant events in total");
+            "selected 10 events",
+            "scraped 10 events in total");
 
         Assert.HasCount(10, events);
     }
@@ -35,8 +35,8 @@ public sealed partial class AllOnOnePage_Tests : PagingStrategyTests
         AssertEmpty(errors);
 
         AssertLogLines(
-            "found 20 events, 10 missing a name or date - i.e. 10 irrelevant",
-            "found 10 relevant events in total");
+            "selected 20 events -10 missing a name or date",
+            "scraped 10 events in total");
 
         Assert.HasCount(10, events);
     }
@@ -53,8 +53,8 @@ public sealed partial class AllOnOnePage_Tests : PagingStrategyTests
         AssertEmpty(errors);
 
         AssertLogLines(
-            "found 20 events, 10 in the past - i.e. 10 irrelevant",
-            "found 10 relevant events in total");
+            "selected 20 events -10 in the past",
+            "scraped 10 events in total");
 
         Assert.HasCount(10, events);
     }
@@ -69,8 +69,8 @@ public sealed partial class AllOnOnePage_Tests : PagingStrategyTests
         AssertEmpty(errors);
 
         AssertLogLines(
-            "found 20 events, 10 already scraped - i.e. 10 irrelevant",
-            "found 10 relevant events in total");
+            "selected 20 events -10 already scraped",
+            "scraped 10 events in total");
 
         Assert.HasCount(10, events);
     }
@@ -85,8 +85,8 @@ public sealed partial class AllOnOnePage_Tests : PagingStrategyTests
         AssertEmpty(errors);
 
         AssertLogLines(
-            "found 20 events, 10 matched by concert",
-            "found 20 relevant events in total");
+            "selected 20 events -10 not matching 'concert'",
+            "scraped 10 events in total");
 
         Assert.HasCount(10, events);
     }

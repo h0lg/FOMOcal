@@ -19,10 +19,10 @@ public sealed partial class NavigateLinkToLoadDifferent_Tests : PagingStrategyTe
         AssertEmpty(errors);
 
         AssertLogLines("paging strategy loads different by navigating link .next-page",
-            "found 10 events",
+            "selected 10 events",
             "next page link goes to #page-1",
-            "found 10 events",
-            "found 20 relevant events in total");
+            "selected 10 events",
+            "scraped 20 events in total");
 
         Assert.HasCount(20, events);
     }
@@ -44,12 +44,12 @@ public sealed partial class NavigateLinkToLoadDifferent_Tests : PagingStrategyTe
         AssertEmpty(errors);
 
         AssertLogLines(
-            "found 10 events, 0 matched by concert",
+            "selected 10 events -10 not matching 'concert'",
             "next page link goes to #page-1",
-            "found 10 events, 0 matched by concert",
+            "selected 10 events -10 not matching 'concert'",
             "next page link goes to #page-2",
-            "found 10 events",
-            "found 30 relevant events in total");
+            "selected 10 events",
+            "scraped 10 events in total");
 
         Assert.HasCount(10, events);
     }
@@ -69,12 +69,12 @@ public sealed partial class NavigateLinkToLoadDifferent_Tests : PagingStrategyTe
         AssertEmpty(errors);
 
         AssertLogLines(
-            "found 10 events",
+            "selected 10 events",
             "next page link goes to #page-1",
-            "found 10 events, 0 matched by concert, 10 already scraped",
+            "selected 10 events -10 already scraped",
             HasNoMore("can load more"),
             HasNoMore("next page link goes to #page-2"),
-            "found 10 relevant events in total");
+            "scraped 10 events in total");
 
         Assert.HasCount(10, events);
     }
@@ -93,10 +93,10 @@ public sealed partial class NavigateLinkToLoadDifferent_Tests : PagingStrategyTe
         AssertEmpty(errors);
 
         AssertLogLines(
-            "found 10 events, 10 in the past - i.e. 10 irrelevant",
+            "selected 10 events -10 in the past",
             "next page link goes to #page-1",
-            "found 10 events",
-            "found 10 relevant events in total");
+            "selected 10 events",
+            "scraped 10 events in total");
 
         Assert.HasCount(10, events);
     }
