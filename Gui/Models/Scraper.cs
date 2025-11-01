@@ -1,44 +1,17 @@
 ﻿using AngleSharp;
-using FomoCal.Gui;
-using FomoCal.Gui.ViewModels;
 using DomDoc = AngleSharp.Dom.IDocument;
 
 namespace FomoCal;
 
-public sealed partial class Scraper : IDisposable
+public sealed partial class Scraper(IBrowsingContext context, IBuildEventListingAutomators automatorFactory) : IDisposable
 {
-    private readonly IBrowsingContext context;
-    private Layout? topLayout;
-
-    private Layout TopLayout
-    {
-        get
-        {
-            if (topLayout == null)
-            {
-                topLayout = App.GetCurrentContentPage().FindTopLayout() as Layout;
-
-                if (topLayout == null) throw new InvalidOperationException(
-                    $"You need to use the {nameof(Scraper)} on a {nameof(ContentPage)} with a {nameof(Layout)} to attach the {nameof(AutomatedEventPageView)} to.");
-            }
-
-            return topLayout!;
-        }
-    }
-
-    public Scraper()
-    {
-        var config = Configuration.Default.WithDefaultLoader();
-        context = BrowsingContext.New(config);
-    }
-
     /// <summary>Scrapes <see cref="Event"/>s from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/>.</summary>
     public async Task<(HashSet<Event> events, List<Exception> errors)> ScrapeVenueAsync(Venue venue)
     {
         HashSet<Event> events = [];
         List<Exception> errors = [];
 
-        var venueScrape = GetScrapeContext(venue); // async errors are thrown when awaiting Loading below
+        VenueScrapeContext venueScrape = new(venue, context, automatorFactory); // async errors are thrown when awaiting Loading below
 
         try
         {
@@ -148,16 +121,6 @@ public sealed partial class Scraper : IDisposable
         // return number of scrapable events that are not already past
         return selected.Length - irrelevant;
     }
-
-    /// <summary>Loads the <see cref="DomDoc"/> from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/> for scraping.
-    /// If events are <see cref="Venue.EventScrapeJob.LazyLoaded"/>,
-    /// a new <see cref="AutomatedEventPageView"/> is added to <see cref="App.GetCurrentContentPage"/>.
-    /// That view loads the URL and waits until the <see cref="Venue.EventScrapeJob.Selector"/> matches anything,
-    /// which is when it is removed again.</summary>
-    private VenueScrapeContext GetScrapeContext(Venue venue)
-        => venue.Event.RequiresAutomation()
-            ? new VenueScrapeContext(venue, context, TopLayout)
-            : new VenueScrapeContext(venue, context);
 
     internal Task<DomDoc> CreateDocumentAsync(string html, Venue venue, string? url)
         => context.CreateDocumentAsync(html, venue, url);

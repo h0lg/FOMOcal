@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using AngleSharp;
 using CommunityToolkit.Maui.Markup;
 using FomoCal.Gui.ViewModels;
 using Microsoft.Extensions.Logging;
@@ -32,6 +33,8 @@ public static class MauiProgram
         builder.Services.AddSingleton(_ => new EventRepository(jsonFileStore, "events"));
         builder.Services.AddSingleton(_ => new SingletonJsonFileRepository<VenueEditor.SelectorOptions>(jsonFileStore, "selectorOptions"));
 
+        builder.Services.AddSingleton(BrowsingContext.New(Configuration.Default.WithDefaultLoader()));
+        builder.Services.AddSingleton<IBuildEventListingAutomators, MauiEventListingAutomatorFactory>();
         builder.Services.AddSingleton<Scraper>(); // just to have it disposed of properly by the service provider
 
         // register view models and views
