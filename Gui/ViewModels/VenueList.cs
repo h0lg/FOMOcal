@@ -131,10 +131,10 @@ public partial class VenueList : ObservableObject
     [RelayCommand(AllowConcurrentExecutions = true, CanExecute = nameof(CanRefreshVenue))]
     private async Task RefreshVenueAsync(Venue venue)
     {
-        (Exception[] errors, string? warning) = await RefreshEvents(venue);
+        (List<Exception> errors, string? warning) = await RefreshEvents(venue);
         RefreshList();
         await SaveVenues();
-        if (errors.Length > 0) await WriteErrorReportAsync(ReportErrors(errors, venue));
+        if (errors.Count > 0) await WriteErrorReportAsync(ReportErrors(errors, venue));
         if (warning != null) await App.CurrentPage.DisplayAlert("You may want to look into:", warning, "OK");
     }
 
@@ -146,7 +146,7 @@ public partial class VenueList : ObservableObject
         RefreshList();
         await SaveVenues();
 
-        var scrapesWithErrors = refreshs.Where(r => r.task.Result.errors.Length > 0).ToArray();
+        var scrapesWithErrors = refreshs.Where(r => r.task.Result.errors.Count > 0).ToArray();
 
         if (scrapesWithErrors.Length > 0)
         {
@@ -214,16 +214,16 @@ public partial class VenueList : ObservableObject
         RefreshVenueCommand.NotifyCanExecuteChanged();
     }
 
-    private async Task<(Exception[] errors, string? warning)> RefreshEvents(Venue venue)
+    private async Task<(List<Exception> errors, string? warning)> RefreshEvents(Venue venue)
     {
         SetVenueRefreshing(venue, true);
 
         try
         {
-            (HashSet<Event> events, Exception[] errors) = await scraper.ScrapeVenueAsync(venue);
+            (HashSet<Event> events, List<Exception> errors) = await scraper.ScrapeVenueAsync(venue);
             venue.LastRefreshed = DateTime.Now;
             venue.LastEventCount = events.Count;
-            var warning = events.Count > 0 || errors.Length > 0 ? null : $"Found no relevant events for {venue.Name}.";
+            var warning = events.Count > 0 || errors.Count > 0 ? null : $"Found no relevant events for {venue.Name}.";
             EventsScraped?.Invoke(venue, events); // notify subscribers
             return (errors, warning);
         }
@@ -235,7 +235,7 @@ public partial class VenueList : ObservableObject
 
     private Task SaveVenues() => venueRepo.SaveCompleteAsync(Venues.Migrate().ToHashSet());
 
-    private static string ReportErrors(Exception[] errors, Venue venue)
+    private static string ReportErrors(IEnumerable<Exception> errors, Venue venue)
         => errors.Select(ex => ex.ToString())
             .Prepend("Scraping " + venue.Name + " " + venue.ProgramUrl)
             .Join(ErrorReport.OutputSpacing);
