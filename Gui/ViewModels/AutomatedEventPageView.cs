@@ -33,10 +33,6 @@ public partial class AutomatedEventPageView : WebView
     /// having been picked and returning its selector.</summary>
     internal event Action<string>? PickedSelector;
 
-    /// <summary>A pre-formatted error message including <see cref="venue"/> details
-    /// - for when <see cref="HtmlWithEventsLoaded"/> returns null.</summary>
-    internal string EventLoadingTimedOut => $"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.";
-
     private string? url;
     internal string? Url { get => url; set => Source = url = value; }
 

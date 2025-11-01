@@ -9,6 +9,11 @@ namespace FomoCal;
 
 internal static class ScraperExtensions
 {
+    /// <summary>A pre-formatted error message including <see cref="venue"/> details
+    /// - for when <see cref="AutomatedEventPageView.HtmlWithEventsLoaded"/> returns null.</summary>
+    internal static string FormatEventLoadingTimedOut(this Venue venue)
+        => $"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.";
+
     internal static async Task<DomDoc> CreateDocumentAsync(this IBrowsingContext context, string html, Venue venue, string? url = null)
         => await context.OpenAsync(response =>
         {
@@ -103,7 +108,7 @@ internal static class ScraperExtensions
                 var doc = await browsingContext.CreateDocumentAsync(html!, venue, loader.Url);
                 eventHtmlLoading.TrySetResult(doc);
             }
-            else if (throwOnTimeout) eventHtmlLoading.TrySetException(new Exception(loader.EventLoadingTimedOut));
+            else if (throwOnTimeout) eventHtmlLoading.TrySetException(new Exception(venue.FormatEventLoadingTimedOut()));
             else eventHtmlLoading.TrySetResult(null);
         }
 

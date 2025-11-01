@@ -61,7 +61,7 @@ partial class VenueEditor
             pageView = new(model.venue);
 
             pageView.HtmlWithEventsLoaded += async html => await model.OnHtmlWithEventsLoadedAsync(html,
-                pageView.EventLoadingTimedOut, pageView.Url);
+                model.venue.FormatEventLoadingTimedOut(), pageView.Url);
 
             pageView.ErrorLoading += async navigationResult => await model.OnErrorLoadingEventsAsync(navigationResult);
             pageView.PickedSelector += selector => model.PickedSelector = selector;
