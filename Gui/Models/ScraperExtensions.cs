@@ -1,7 +1,6 @@
 ﻿using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.XPath;
-using FomoCal.Gui.ViewModels;
 using DomDoc = AngleSharp.Dom.IDocument;
 using DomElmt = AngleSharp.Dom.IElement;
 
@@ -10,7 +9,7 @@ namespace FomoCal;
 internal static class ScraperExtensions
 {
     /// <summary>A pre-formatted error message including <see cref="venue"/> details
-    /// - for when <see cref="AutomatedEventPageView.HtmlWithEventsLoaded"/> returns null.</summary>
+    /// - for when <see cref="IAutomateAnEventListing.HtmlWithEventsLoaded"/> returns null.</summary>
     internal static string FormatEventLoadingTimedOut(this Venue venue)
         => $"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.";
 
@@ -57,46 +56,46 @@ internal static class ScraperExtensions
         => document.QuerySelector(venue.Event.NextPageSelector!);
 
     internal static async ValueTask<Task<DomDoc?>?> LoadMoreAsync(this IBrowsingContext browsingContext,
-        Venue venue, AutomatedEventPageView? loader, DomDoc currentPage, Action<string, string?>? log = null)
+        Venue venue, IAutomateAnEventListing? automator, DomDoc currentPage, Action<string, string?>? log = null)
     {
         switch (venue.Event.PagingStrategy)
         {
             case Venue.PagingStrategy.ClickElementToLoadMore:
-                ArgumentNullException.ThrowIfNull(loader);
-                await loader.ClickElementToLoadMore(venue.Event.NextPageSelector!);
-                return loader.LoadAutomated(browsingContext, venue);
+                ArgumentNullException.ThrowIfNull(automator);
+                await automator.ClickElementToLoadMore(venue.Event.NextPageSelector!);
+                return automator.LoadAutomated(browsingContext, venue);
             case Venue.PagingStrategy.NavigateLinkToLoadDifferent:
                 var nextPage = currentPage.GetNextPageElement(venue)!;
                 var href = nextPage.GetAttribute("href");
                 log?.Invoke("next page link goes to " + href, null);
                 if (href.IsNullOrWhiteSpace() || href == "#") return null; // to prevent loop
                 var url = nextPage.HyperReference(href!);
-                if (loader == null) return browsingContext.OpenAsync(url)!;
-                loader!.Url = url.ToString();
-                return loader.LoadAutomated(browsingContext, venue);
+                if (automator == null) return browsingContext.OpenAsync(url)!;
+                automator!.Url = url.ToString();
+                return automator.LoadAutomated(browsingContext, venue);
             case Venue.PagingStrategy.ScrollDownToLoadMore:
-                ArgumentNullException.ThrowIfNull(loader);
-                await loader.ScrollDownToLoadMore();
-                return loader.LoadAutomated(browsingContext, venue);
+                ArgumentNullException.ThrowIfNull(automator);
+                await automator.ScrollDownToLoadMore();
+                return automator.LoadAutomated(browsingContext, venue);
             case Venue.PagingStrategy.ClickElementToLoadDifferent:
-                ArgumentNullException.ThrowIfNull(loader);
-                await loader.ClickElementToLoadDifferent(venue.Event.NextPageSelector!);
-                return loader.LoadAutomated(browsingContext, venue);
+                ArgumentNullException.ThrowIfNull(automator);
+                await automator.ClickElementToLoadDifferent(venue.Event.NextPageSelector!);
+                return automator.LoadAutomated(browsingContext, venue);
             default:
                 throw new InvalidOperationException($"{nameof(Venue.PagingStrategy)} {venue.Event.PagingStrategy} is not supported");
         }
     }
 
     /// <summary>Loads a <see cref="Venue.ProgramUrl"/> that <see cref="Venue.EventScrapeJob.RequiresAutomation"/>
-    /// using an <see cref="AutomatedEventPageView"/>.</summary>
+    /// using an <see cref="IAutomateAnEventListing"/>.</summary>
     /// <param name="throwOnTimeout">Whether to throw an exception on loading timeout.</param>
     /// <returns>The loading task.</returns>
-    internal static Task<DomDoc?> LoadAutomated(this AutomatedEventPageView loader,
+    internal static Task<DomDoc?> LoadAutomated(this IAutomateAnEventListing automator,
         IBrowsingContext browsingContext, Venue venue, bool throwOnTimeout = false)
     {
         TaskCompletionSource<DomDoc?> eventHtmlLoading = new();
-        loader!.HtmlWithEventsLoaded += HandleLoaded;
-        loader!.ErrorLoading += HandleError;
+        automator!.HtmlWithEventsLoaded += HandleLoaded;
+        automator!.ErrorLoading += HandleError;
         return eventHtmlLoading.Task;
 
         async void HandleLoaded(string? html)
@@ -105,7 +104,7 @@ internal static class ScraperExtensions
 
             if (html.IsSignificant())
             {
-                var doc = await browsingContext.CreateDocumentAsync(html!, venue, loader.Url);
+                var doc = await browsingContext.CreateDocumentAsync(html!, venue, automator.Url);
                 eventHtmlLoading.TrySetResult(doc);
             }
             else if (throwOnTimeout) eventHtmlLoading.TrySetException(new Exception(venue.FormatEventLoadingTimedOut()));
@@ -128,8 +127,8 @@ internal static class ScraperExtensions
 
         void DetachHandlers()
         {
-            loader!.HtmlWithEventsLoaded -= HandleLoaded;
-            loader!.ErrorLoading -= HandleError;
+            automator!.HtmlWithEventsLoaded -= HandleLoaded;
+            automator!.ErrorLoading -= HandleError;
         }
     }
 }

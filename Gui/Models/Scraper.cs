@@ -162,9 +162,9 @@ public sealed partial class Scraper : IDisposable
     internal Task<DomDoc> CreateDocumentAsync(string html, Venue venue, string? url)
         => context.CreateDocumentAsync(html, venue, url);
 
-    internal async Task<DomDoc?> LoadMoreAsync(AutomatedEventPageView loader, Venue venue, DomDoc currentPage)
+    internal async Task<DomDoc?> LoadMoreAsync(IAutomateAnEventListing automator, Venue venue, DomDoc currentPage)
     {
-        var loading = await context.LoadMoreAsync(venue, loader, currentPage);
+        var loading = await context.LoadMoreAsync(venue, automator, currentPage);
         if (loading == null) return null;
         return await loading;
     }
