@@ -51,7 +51,7 @@ internal class ResponseBuilder(VirtualResponse response) : IResponseBuilder
     }
 }
 
-internal class DomDocument(IDocument doc) : IDomDocument
+public class DomDocument(IDocument doc) : IDomDocument
 {
     public string Url => doc.Url;
     public string? Title => doc.Title;

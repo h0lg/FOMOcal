@@ -4,12 +4,12 @@ using System.Text.RegularExpressions;
 
 namespace FomoCal;
 
-internal static partial class StringExtensions
+public static partial class StringExtensions
 {
     internal static bool IsNullOrWhiteSpace(this string? str) => string.IsNullOrWhiteSpace(str);
     internal static bool IsSignificant(this string? str) => !string.IsNullOrWhiteSpace(str);
     internal static string Join(this IEnumerable<string?> strings, string separator) => string.Join(separator, strings);
-    internal static string LineJoin(this IEnumerable<string?> strings) => strings.Join(Environment.NewLine);
+    public static string LineJoin(this IEnumerable<string?> strings) => strings.Join(Environment.NewLine);
 
     private static readonly char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
 
