@@ -38,32 +38,32 @@ public sealed partial class Scraper : IDisposable
         HashSet<Event> events = [];
         List<Exception> errors = [];
 
-        var eventPage = GetEventPage(venue); // async errors are thrown when awaiting Loading below
+        var venueScrape = GetScrapeContext(venue); // async errors are thrown when awaiting Loading below
 
         try
         {
-            var document = await eventPage.Loading;
+            var document = await venueScrape.Loading;
             var pagingStrat = venue.Event.PagingStrategy;
             var nextPageSelector = pagingStrat.RequiresNextPageSelector() ? " " + venue.Event.NextPageSelector : null;
-            eventPage.Log($"loaded {document!.Url}, paging strategy loads {pagingStrat.GetDescription()}{nextPageSelector}");
-            int allRelevantEvents = ScrapeEvents(eventPage, events, errors, document!);
+            venueScrape.Log($"loaded {document!.Url}, paging strategy loads {pagingStrat.GetDescription()}{nextPageSelector}");
+            int allRelevantEvents = ScrapeEvents(venueScrape, events, errors, document!);
 
             /*  load more even if there are 0 relevantEvents on the first page -
              *  in case it shows the current month with no gig until the end of the month */
             while (document!.CanLoadMore(venue)) // does not reliably break loop for all loading strategies
             {
-                eventPage.Log("can load more");
-                document = await eventPage.LoadMoreAsync();
+                venueScrape.Log("can load more");
+                document = await venueScrape.LoadMoreAsync();
                 if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
-                eventPage.Log($"loaded {document.Url}");
-                int containedRelevantEvents = ScrapeEvents(eventPage, events, errors, document);
+                venueScrape.Log($"loaded {document.Url}");
+                int containedRelevantEvents = ScrapeEvents(venueScrape, events, errors, document);
 
                 // determine number of new, scrapable events that are not already past
                 int newRelevantEvents = pagingStrat.LoadsDifferentEvents()
                     ? containedRelevantEvents // all contained relevant events are considered new
                     : containedRelevantEvents - allRelevantEvents; // substract previously loaded relevant events
 
-                eventPage.Log($"found {containedRelevantEvents} relevant events, {newRelevantEvents} of them new");
+                venueScrape.Log($"found {containedRelevantEvents} relevant events, {newRelevantEvents} of them new");
 
                 // stop loading more if scraping current page yielded no new relevant events to prevent loop
                 if (newRelevantEvents == 0) break;
@@ -73,29 +73,29 @@ public sealed partial class Scraper : IDisposable
                 allRelevantEvents += newRelevantEvents;
             }
 
-            eventPage.Log($"found {allRelevantEvents} relevant events in total");
+            venueScrape.Log($"found {allRelevantEvents} relevant events in total");
         }
         catch (Exception ex)
         {
             var config = venue.Serialize();
-            var log = eventPage.GetScrapeLog();
+            var log = venueScrape.GetScrapeLog();
             string message = $"Failed to scrape venue {venue.Name}\n\nConfig\n\n{config}\n\nLog\n\n{log}";
             errors.Add(new ScrapeJob.Error(message, ex));
         }
         finally
         {
-            if (eventPage.Venue.SaveScrapeLogs)
-                await eventPage.SaveScrapeLogAsync();
+            if (venueScrape.Venue.SaveScrapeLogs)
+                await venueScrape.SaveScrapeLogAsync();
 
-            eventPage.Dispose();
+            venueScrape.Dispose();
         }
 
         return (events, errors);
     }
 
-    private static int ScrapeEvents(EventPage eventPage, HashSet<Event> events, List<Exception> errors, DomDoc document)
+    private static int ScrapeEvents(VenueScrapeContext venueScrape, HashSet<Event> events, List<Exception> errors, DomDoc document)
     {
-        var venue = eventPage.Venue;
+        var venue = venueScrape.Venue;
         var selected = document.SelectEvents(venue).ToArray();
         var filtered = selected.FilterEvents(venue).ToArray();
         int irrelevant = 0; // counts unscrapable and past events in selected
@@ -143,7 +143,7 @@ public sealed partial class Scraper : IDisposable
         var msg = $"found {selected.Length} events";
         if (selected.Length != filtered.Length) msg += $", {filtered.Length} matched by {venue.Event.Filter}";
         if (irrelevant > 0) msg += $", {irrelevant} of them in the past or unscrapable";
-        eventPage.Log(msg);
+        venueScrape.Log(msg);
 
         // return number of scrapable events that are not already past
         return selected.Length - irrelevant;
@@ -154,10 +154,10 @@ public sealed partial class Scraper : IDisposable
     /// a new <see cref="AutomatedEventPageView"/> is added to <see cref="App.GetCurrentContentPage"/>.
     /// That view loads the URL and waits until the <see cref="Venue.EventScrapeJob.Selector"/> matches anything,
     /// which is when it is removed again.</summary>
-    private EventPage GetEventPage(Venue venue)
+    private VenueScrapeContext GetScrapeContext(Venue venue)
         => venue.Event.RequiresAutomation()
-            ? new EventPage(venue, context, TopLayout)
-            : new EventPage(venue, context);
+            ? new VenueScrapeContext(venue, context, TopLayout)
+            : new VenueScrapeContext(venue, context);
 
     internal Task<DomDoc> CreateDocumentAsync(string html, Venue venue, string? url)
         => context.CreateDocumentAsync(html, venue, url);

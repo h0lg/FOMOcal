@@ -8,7 +8,7 @@ namespace FomoCal;
 
 /// <summary>An Adapter unifying the APIs for scraping <see cref="Venue.ProgramUrl"/>
 /// pages with or without automation.</summary>
-internal partial class EventPage : IDisposable // to support custom cleanup in order to detach the loader from the layout again
+internal partial class VenueScrapeContext : IDisposable // to support custom cleanup in order to detach the loader from the layout again
 {
     internal readonly Venue Venue;
     private readonly IBrowsingContext browsingContext; // not ours to dispose, just holding on to it
@@ -19,7 +19,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     internal Task<DomDoc?> Loading { get; private set; }
 
     /// <summary>For scraping a <paramref name="venue"/> that doesn't require automation.</summary>
-    internal EventPage(Venue venue, IBrowsingContext browsingContext)
+    internal VenueScrapeContext(Venue venue, IBrowsingContext browsingContext)
     {
         Venue = venue;
         this.browsingContext = browsingContext;
@@ -31,7 +31,7 @@ internal partial class EventPage : IDisposable // to support custom cleanup in o
     /// <summary>For scraping a <paramref name="venue"/> that requires automation.
     /// Takes care of adding an <see cref="AutomatedEventPageView"/> to the <paramref name="layout"/>
     /// and removing it again on disposal.</summary>
-    internal EventPage(Venue venue, IBrowsingContext browsingContext, Layout layout)
+    internal VenueScrapeContext(Venue venue, IBrowsingContext browsingContext, Layout layout)
     {
         Venue = venue;
         this.browsingContext = browsingContext;
