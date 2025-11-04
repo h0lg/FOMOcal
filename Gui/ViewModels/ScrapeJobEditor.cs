@@ -10,7 +10,7 @@ namespace FomoCal.Gui.ViewModels;
 public partial class ScrapeJobEditor : ObservableObject
 {
     private readonly string label;
-    private readonly Func<AngleSharp.Dom.IElement[]?> getEventsForPreview;
+    private readonly Func<IDomElement[]?> getEventsForPreview;
     private readonly Func<VisualElement?> getVisualSelectorHost;
     private readonly string? defaultAttribute;
     internal readonly bool IsOptional;
@@ -167,7 +167,7 @@ public partial class ScrapeJobEditor : ObservableObject
     }
 
     internal ScrapeJobEditor(string label, ScrapeJob scrapeJob,
-        Func<AngleSharp.Dom.IElement[]?> getEventsForPreview, Func<VisualElement?> getVisualSelectorHost,
+        Func<IDomElement[]?> getEventsForPreview, Func<VisualElement?> getVisualSelectorHost,
         string eventProperty, bool isOptional, string? defaultAttribute = null)
     {
         this.label = label;
@@ -245,7 +245,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 return;
             }
 
-            var results = events.Select<AngleSharp.Dom.IElement, (string? value, Exception? error)>(e =>
+            var results = events.Select<IDomElement, (string? value, Exception? error)>(e =>
             {
                 try
                 {

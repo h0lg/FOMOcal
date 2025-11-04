@@ -1,6 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using AngleSharp;
-using DomDoc = AngleSharp.Dom.IDocument;
 
 namespace FomoCal;
 
@@ -9,31 +7,31 @@ namespace FomoCal;
 public partial class VenueScrapeContext : IDisposable // to support custom cleanup in order to detach the loader from the layout again
 {
     internal readonly Venue Venue;
-    private readonly IBrowsingContext browsingContext; // not ours to dispose, just holding on to it
+    private readonly IBrowser browser; // not ours to dispose, just holding on to it
     private readonly IAutomateAnEventListing? automator;
     private readonly ConcurrentBag<string> log = [];
     private readonly Action? cleanup;
 
-    internal Task<DomDoc?> Loading { get; private set; }
+    internal Task<IDomDocument?> Loading { get; private set; }
 
-    internal VenueScrapeContext(Venue venue, IBrowsingContext browsingContext, IBuildEventListingAutomators automatorFactory)
+    internal VenueScrapeContext(Venue venue, IBrowser browser, IBuildEventListingAutomators automatorFactory)
     {
         Venue = venue;
-        this.browsingContext = browsingContext;
+        this.browser = browser;
 
         if (venue.Event.RequiresAutomation())
         {
             (automator, cleanup) = automatorFactory.BuildAutomator(this);
-            Loading = automator.LoadAutomated(browsingContext, venue, throwOnTimeout: true); // first page of events is required
+            Loading = automator.LoadAutomated(browser, venue, throwOnTimeout: true); // first page of events is required
         }
         else
             Loading = venue.TryGetDirectHtmlEncoding(out var encoding) ? LoadOverridingEncoding(encoding)
-                : browsingContext.OpenAsync(venue.ProgramUrl) as Task<DomDoc?>;
+                : browser.OpenAsync(venue.ProgramUrl) as Task<IDomDocument?>;
     }
 
-    internal async Task<DomDoc?> LoadMoreAsync()
+    internal async Task<IDomDocument?> LoadMoreAsync()
     {
-        var loading = await browsingContext.LoadMoreAsync(Venue, automator, Loading.Result!, Log);
+        var loading = await browser.LoadMoreAsync(Venue, automator, Loading.Result!, Log);
         if (loading == null) return null;
         Loading.Result?.Dispose(); // dispose previous document
         Loading = loading;
@@ -43,14 +41,14 @@ public partial class VenueScrapeContext : IDisposable // to support custom clean
     /// <summary>Loads the <see cref="Venue.ProgramUrl"/> using the <see cref="Venue.Encoding"/> override
     /// to re-interpret the character set of the response.</summary>
     /// <returns>The <see cref="Loading"/> task.</returns>
-    private async Task<DomDoc?> LoadOverridingEncoding(string encoding)
+    private async Task<IDomDocument?> LoadOverridingEncoding(string encoding)
     {
         using HttpClient httpClient = new();
         using var response = await httpClient.GetAsync(Venue.ProgramUrl, HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
         await using var stream = await response.Content.ReadAsStreamAsync();
 
-        return await browsingContext.OpenAsync(response =>
+        return await browser.OpenAsync(response =>
             response.Content(stream).Address(Venue.ProgramUrl).OverrideEncoding(encoding));
     }
 

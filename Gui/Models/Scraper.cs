@@ -1,9 +1,6 @@
-﻿using AngleSharp;
-using DomDoc = AngleSharp.Dom.IDocument;
+﻿namespace FomoCal;
 
-namespace FomoCal;
-
-public sealed partial class Scraper(IBrowsingContext context, IBuildEventListingAutomators automatorFactory) : IDisposable
+public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomators automatorFactory) : IDisposable
 {
     /// <summary>Scrapes <see cref="Event"/>s from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/>.</summary>
     public async Task<(HashSet<Event> events, List<Exception> errors)> ScrapeVenueAsync(Venue venue)
@@ -11,7 +8,7 @@ public sealed partial class Scraper(IBrowsingContext context, IBuildEventListing
         HashSet<Event> events = [];
         List<Exception> errors = [];
 
-        VenueScrapeContext venueScrape = new(venue, context, automatorFactory); // async errors are thrown when awaiting Loading below
+        VenueScrapeContext venueScrape = new(venue, browser, automatorFactory); // async errors are thrown when awaiting Loading below
 
         try
         {
@@ -66,7 +63,7 @@ public sealed partial class Scraper(IBrowsingContext context, IBuildEventListing
         return (events, errors);
     }
 
-    private static int ScrapeEvents(VenueScrapeContext venueScrape, HashSet<Event> events, List<Exception> errors, DomDoc document)
+    private static int ScrapeEvents(VenueScrapeContext venueScrape, HashSet<Event> events, List<Exception> errors, IDomDocument document)
     {
         var venue = venueScrape.Venue;
         var selected = document.SelectEvents(venue).ToArray();
@@ -122,15 +119,15 @@ public sealed partial class Scraper(IBrowsingContext context, IBuildEventListing
         return selected.Length - irrelevant;
     }
 
-    internal Task<DomDoc> CreateDocumentAsync(string html, Venue venue, string? url)
-        => context.CreateDocumentAsync(html, venue, url);
+    internal Task<IDomDocument> CreateDocumentAsync(string html, Venue venue, string? url)
+        => browser.CreateDocumentAsync(html, venue, url);
 
-    internal async Task<DomDoc?> LoadMoreAsync(IAutomateAnEventListing automator, Venue venue, DomDoc currentPage)
+    internal async Task<IDomDocument?> LoadMoreAsync(IAutomateAnEventListing automator, Venue venue, IDomDocument currentPage)
     {
-        var loading = await context.LoadMoreAsync(venue, automator, currentPage);
+        var loading = await browser.LoadMoreAsync(venue, automator, currentPage);
         if (loading == null) return null;
         return await loading;
     }
 
-    public void Dispose() => context.Dispose();
+    public void Dispose() => browser.Dispose();
 }
