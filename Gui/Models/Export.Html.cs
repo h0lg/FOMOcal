@@ -11,7 +11,7 @@ internal static partial class Export
 
     internal static IEnumerable<PropertyInfo> EventFieldsForHtml
     {
-        get => LoadEventProperties(htmlEventFields, () => [.. EventFields.Select(p => p.Name)]);
+        get => LoadEventProperties(htmlEventFields, () => [.. Event.Fields.Select(p => p.Name)]);
         set => SaveEventProperties(value, htmlEventFields);
     }
 

@@ -94,7 +94,7 @@ public partial class EventPropertySelection
     public EventPropertySelection(IEnumerable<PropertyInfo> exportedFields, Action<IEnumerable<PropertyInfo>> save)
     {
         ExportedFields = new(exportedFields);
-        AvailableFields = new(Export.EventFields.Except(ExportedFields));
+        AvailableFields = new(Event.Fields.Except(ExportedFields));
 
         // used for saving after the last CollectionChanged, which fires more than once when re-ordering
         Debouncer saveExportedEventFields = new(TimeSpan.FromMilliseconds(100), () => save(ExportedFields),
