@@ -244,6 +244,7 @@ public partial class VenueEditor : ObservableObject
 
     private void SetDocument(AngleSharp.Dom.IDocument? document)
     {
+        programDocument?.Dispose();
         programDocument = document;
         previewedEvents = null;
         LoadMoreCommand.NotifyCanExecuteChanged();

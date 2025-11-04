@@ -57,6 +57,7 @@ internal partial class VenueScrapeContext : IDisposable // to support custom cle
     {
         var loading = await browsingContext.LoadMoreAsync(Venue, loader, Loading.Result!, Log);
         if (loading == null) return null;
+        Loading.Result?.Dispose(); // dispose previous document
         Loading = loading;
         return await Loading;
     }
@@ -84,6 +85,7 @@ internal partial class VenueScrapeContext : IDisposable // to support custom cle
     public void Dispose()
     {
         if (isDisposed) return;
+        Loading.Result?.Dispose();
         Loading.Dispose();
         cleanup?.Invoke();
         isDisposed = true; // allow GC to clean up the rest

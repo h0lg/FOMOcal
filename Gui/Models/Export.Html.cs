@@ -18,8 +18,8 @@ internal static partial class Export
     internal static async Task ExportToHtml(this IEnumerable<Event> events)
     {
         PropertyInfo[] eventFields = [.. EventFieldsForHtml];
-        var context = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
-        var doc = await context.OpenNewAsync();
+        using var context = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
+        using var doc = await context.OpenNewAsync();
 
         // styling
         var link = (IHtmlLinkElement)doc.CreateElement("link");
