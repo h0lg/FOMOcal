@@ -25,6 +25,7 @@ public abstract class PagingStrategyTests : IDisposable
                 Filter = "concert",
                 Name = new ScrapeJob { Selector = "." + nameof(Event.Name) },
                 Date = new DateScrapeJob { Selector = "." + nameof(Event.Date), Format = "yyyy-MM-dd" },
+                NextPageSelector = ".next-page",
                 PagingStrategy = pagingStrategy
             }
         };
@@ -52,4 +53,19 @@ public abstract class PagingStrategyTests : IDisposable
     }
 
     public void Dispose() => scraper.Dispose();
+}
+
+internal static class TestExtensions
+{
+    internal static bool TryGetAt<T>(this List<T> list, uint index, out T value)
+    {
+        if (index < list.Count)
+        {
+            value = list[(int)index];
+            return true;
+        }
+
+        value = default!;
+        return false;
+    }
 }
