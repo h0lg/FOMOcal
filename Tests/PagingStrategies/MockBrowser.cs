@@ -9,6 +9,7 @@ enum EventPageError { NoName, NoDate, Past }
 
 class InputEvent
 {
+    public string? Category { get; set; }
     public string? Date { get; set; }
     public string? Name { get; set; }
     public string? Venue { get; set; }
@@ -32,10 +33,11 @@ public partial class MockBrowser : FomoCal.IBrowser
     }
 
 
-    internal void AddEvents(Venue venue, int count, int? start = null, EventPageError? error = null)
+    internal void AddEvents(Venue venue, int count, int? start = null, EventPageError? error = null, string category = "concert")
     {
         events.AddRange(Enumerable.Range(start ?? (events.Count + 1), count).Select(n => new InputEvent
         {
+            Category = category,
             Name = error == EventPageError.NoName ? string.Empty : "event " + n,
             Date = (error == EventPageError.NoDate ? null as DateTime?
                 : error == EventPageError.Past ? DateTime.Today.AddDays(-n)

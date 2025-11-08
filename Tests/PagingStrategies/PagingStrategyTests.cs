@@ -22,6 +22,7 @@ public abstract class PagingStrategyTests : IDisposable
             Event = new()
             {
                 Selector = ".event",
+                Filter = "concert",
                 Name = new ScrapeJob { Selector = "." + nameof(Event.Name) },
                 Date = new DateScrapeJob { Selector = "." + nameof(Event.Date), Format = "yyyy-MM-dd" },
                 PagingStrategy = pagingStrategy

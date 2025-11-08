@@ -58,4 +58,20 @@ public sealed partial class AllOnOnePage_Tests : PagingStrategyTests
 
         Assert.HasCount(10, events);
     }
+
+    [TestMethod]
+    public async Task HalfExcludedByFilter()
+    {
+        browser.AddEvents(venue, 10);
+        browser.AddEvents(venue, 10, category: "boring party");
+
+        (var events, var errors) = await scraper.ScrapeVenueAsync(venue);
+        AssertEmpty(errors);
+
+        AssertLogLines(
+            "found 20 events, 10 matched by concert",
+            "found 20 relevant events in total");
+
+        Assert.HasCount(10, events);
+    }
 }
