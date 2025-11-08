@@ -34,6 +34,7 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<IBrowser>(new Browser());
         builder.Services.AddSingleton<IBuildEventListingAutomators, MauiEventListingAutomatorFactory>();
+        builder.Services.AddSingleton<ISaveScrapeLogFiles, DefaultScrapeLogFileSaver>();
         builder.Services.AddSingleton<Scraper>(); // just to have it disposed of properly by the service provider
 
         // register view models and views

@@ -54,7 +54,6 @@ public partial class VenueScrapeContext : IDisposable // to support custom clean
 
     internal void Log(string message, string? level = null) => log.Add($"{DateTime.UtcNow:o} {level ?? "INFO"} {message}");
     internal string GetScrapeLog() => log.Reverse().LineJoin();
-    internal Task<string?> SaveScrapeLogAsync() => ScrapeLogFile.Save(Venue, GetScrapeLog());
 
     private bool isDisposed;
 

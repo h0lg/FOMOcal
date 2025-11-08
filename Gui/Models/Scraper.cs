@@ -1,6 +1,6 @@
 ﻿namespace FomoCal;
 
-public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomators automatorFactory) : IDisposable
+public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomators automatorFactory, ISaveScrapeLogFiles logFileSaver) : IDisposable
 {
     /// <summary>Scrapes <see cref="Event"/>s from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/>.</summary>
     public async Task<(HashSet<Event> events, List<Exception> errors)> ScrapeVenueAsync(Venue venue)
@@ -55,7 +55,7 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
         finally
         {
             if (venueScrape.Venue.SaveScrapeLogs)
-                await venueScrape.SaveScrapeLogAsync();
+                await logFileSaver.SaveScrapeLogAsync(venueScrape.Venue, venueScrape.GetScrapeLog());
 
             venueScrape.Dispose();
         }
