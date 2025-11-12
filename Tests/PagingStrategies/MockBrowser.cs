@@ -25,6 +25,8 @@ public partial class MockBrowser : FomoCal.IBrowser
 {
     private readonly IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
     private readonly List<EventPage> eventPages = [];
+    private int eventPageIndex = 0;
+    private Venue.PagingStrategy pagingStrategy;
 
     public async Task<IDomDocument> OpenAsync(Action<IResponseBuilder> request, CancellationToken cancel = default)
     {
@@ -41,6 +43,10 @@ public partial class MockBrowser : FomoCal.IBrowser
 
     internal void AddEvents(Venue venue, int count, int? start = null, EventPageError? error = null, string category = "concert", uint page = 0)
     {
+        if (eventPages.Any(p => p.Events.Any(e => e.Venue != venue.Name)))
+            throw new InvalidProgramException("adding events for different venues is not supported");
+
+        pagingStrategy = venue.Event.PagingStrategy;
         EventPage eventPage = GetOrCreatePage(page);
 
         eventPage.Events.AddRange(Enumerable.Range(start ?? (eventPage.Events.Count + 1), count).Select(n => new InputEvent
@@ -119,17 +125,15 @@ public partial class MockBrowser : FomoCal.IBrowser
         table.AppendChild(thead);
         var tbody = doc.CreateElement("tbody");
 
-        EventPage eventPage;
+        EventPage eventPage = eventPageIndex < eventPages.Count ? eventPages[eventPageIndex] : new();
 
-        if (eventPages.Count > 0)
-        {
-            eventPage = eventPages[0];
-            eventPages.Remove(eventPage);
-        }
-        else eventPage = new();
+        var events = pagingStrategy.LoadsDifferentEvents() ? eventPage.Events
+            : eventPages.Take(eventPageIndex + 1).SelectMany(p => p.Events);
+
+        eventPageIndex++;
 
         // table body
-        foreach (var evt in eventPage.Events)
+        foreach (var evt in events)
         {
             var row = doc.CreateElement("tr");
             row.ClassName = "event";

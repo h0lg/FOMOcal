@@ -152,7 +152,7 @@ public class Venue
     }
 }
 
-internal static class VenueExtensions
+public static class VenueExtensions
 {
     internal static T Migrate<T>(this T venues) where T : IEnumerable<Venue>
     {
@@ -197,7 +197,7 @@ internal static class VenueExtensions
         => strategy == PagingStrategy.ClickElementToLoadMore
         || strategy == PagingStrategy.ClickElementToLoadDifferent;
 
-    internal static bool LoadsDifferentEvents(this PagingStrategy strategy)
+    public static bool LoadsDifferentEvents(this PagingStrategy strategy)
         => strategy == PagingStrategy.NavigateLinkToLoadDifferent
         || strategy == PagingStrategy.ClickElementToLoadDifferent;
 

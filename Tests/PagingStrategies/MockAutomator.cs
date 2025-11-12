@@ -22,7 +22,7 @@ class MockAutomator(VenueScrapeContext venueScrape, MockBrowser browser) : IAuto
 
     public Task ClickElementToLoadDifferent(string selector) => SimulateHtmlLoadedAsync();
     public Task ClickElementToLoadMore(string selector) => throw new NotImplementedException();
-    public Task ScrollDownToLoadMore() => throw new NotImplementedException();
+    public Task ScrollDownToLoadMore() => SimulateHtmlLoadedAsync();
 
     private async Task SimulateHtmlLoadedAsync()
     {

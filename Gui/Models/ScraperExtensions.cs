@@ -91,8 +91,8 @@ internal static class ScraperExtensions
         IBrowser browser, Venue venue, bool throwOnTimeout = false)
     {
         TaskCompletionSource<IDomDocument?> eventHtmlLoading = new();
-        automator!.HtmlWithEventsLoaded += HandleLoaded;
-        automator!.ErrorLoading += HandleError;
+        automator.HtmlWithEventsLoaded += HandleLoaded;
+        automator.ErrorLoading += HandleError;
         return eventHtmlLoading.Task;
 
         async void HandleLoaded(string? html)
@@ -124,8 +124,8 @@ internal static class ScraperExtensions
 
         void DetachHandlers()
         {
-            automator!.HtmlWithEventsLoaded -= HandleLoaded;
-            automator!.ErrorLoading -= HandleError;
+            automator.HtmlWithEventsLoaded -= HandleLoaded;
+            automator.ErrorLoading -= HandleError;
         }
     }
 }
