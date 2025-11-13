@@ -96,11 +96,11 @@ public sealed partial class Scraper : IDisposable
     private static int ScrapeEvents(EventPage eventPage, HashSet<Event> events, List<Exception> errors, DomDoc document)
     {
         var venue = eventPage.Venue;
-        var unfiltered = document.SelectEvents(venue).ToArray();
-        var filtered = unfiltered.FilterEvents(venue).ToArray();
-        int irrelevant = 0; // counts unscrapable and past events in unfiltered
+        var selected = document.SelectEvents(venue).ToArray();
+        var filtered = selected.FilterEvents(venue).ToArray();
+        int irrelevant = 0; // counts unscrapable and past events in selected
 
-        foreach (var container in unfiltered)
+        foreach (var container in selected)
         {
             var name = venue.Event.Name.GetValue(container, errors);
             DateTime? date = venue.Event.Date.GetDate(container, errors);
@@ -140,13 +140,13 @@ public sealed partial class Scraper : IDisposable
             events.Add(scraped);
         }
 
-        var msg = $"found {unfiltered.Length} events";
-        if (unfiltered.Length != filtered.Length) msg += $", {filtered.Length} matched by {venue.Event.Filter}";
+        var msg = $"found {selected.Length} events";
+        if (selected.Length != filtered.Length) msg += $", {filtered.Length} matched by {venue.Event.Filter}";
         if (irrelevant > 0) msg += $", {irrelevant} of them in the past or unscrapable";
         eventPage.Log(msg);
 
         // return number of scrapable events that are not already past
-        return unfiltered.Length - irrelevant;
+        return selected.Length - irrelevant;
     }
 
     /// <summary>Loads the <see cref="DomDoc"/> from the <paramref name="venue"/>'s <see cref="Venue.ProgramUrl"/> for scraping.
