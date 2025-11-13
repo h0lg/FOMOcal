@@ -24,4 +24,22 @@ public sealed partial class ClickElementToLoadDifferent_Tests : PagingStrategyTe
 
         Assert.HasCount(20, events);
     }
+
+    [TestMethod]
+    public async Task PagingStopsWhenEventsDo()
+    {
+        browser.AddEvents(venue, 10);
+        browser.AddNextPageButton();
+
+        (var events, var errors) = await scraper.ScrapeVenueAsync(venue);
+        AssertEmpty(errors);
+
+        AssertLogLines(
+            "found 10 events",
+            "can load more",
+            "found 0 events",
+            "found 10 relevant events in total");
+
+        Assert.HasCount(10, events);
+    }
 }

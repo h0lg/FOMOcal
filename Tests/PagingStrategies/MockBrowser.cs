@@ -126,7 +126,7 @@ public partial class MockBrowser : FomoCal.IBrowser
             eventPage = eventPages[0];
             eventPages.Remove(eventPage);
         }
-        else throw new InvalidOperationException("Out of event pages");
+        else eventPage = new();
 
         // table body
         foreach (var evt in eventPage.Events)
