@@ -35,7 +35,7 @@ public sealed partial class AllOnOnePage_Tests : PagingStrategyTests
         AssertEmpty(errors);
 
         AssertLogLines(
-            "found 20 events, 10 of them in the past or unscrapable",
+            "found 20 events, 10 missing a name or date - i.e. 10 irrelevant",
             "found 10 relevant events in total");
 
         Assert.HasCount(10, events);
@@ -53,7 +53,7 @@ public sealed partial class AllOnOnePage_Tests : PagingStrategyTests
         AssertEmpty(errors);
 
         AssertLogLines(
-            "found 20 events, 10 of them in the past or unscrapable",
+            "found 20 events, 10 in the past - i.e. 10 irrelevant",
             "found 10 relevant events in total");
 
         Assert.HasCount(10, events);

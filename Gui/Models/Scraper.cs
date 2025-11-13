@@ -68,16 +68,23 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
         var venue = venueScrape.Venue;
         var selected = document.SelectEvents(venue).ToArray();
         var filtered = selected.FilterEvents(venue).ToArray();
-        int irrelevant = 0; // counts unscrapable and past events in selected
+        ushort past = 0, missingNameOrDate = 0;
 
         foreach (var container in selected)
         {
             var name = venue.Event.Name.GetValue(container, errors);
             DateTime? date = venue.Event.Date.GetDate(container, errors);
 
-            if (name == null || date == null || date < DateTime.Today)
+            // count before filtering so that filter doesn't distort the count
+            if (name == null || date == null)
             {
-                irrelevant++; // count before filtering so that filter doesn't distort the count
+                missingNameOrDate++;
+                continue;
+            }
+
+            if (date < DateTime.Today)
+            {
+                past++;
                 continue;
             }
 
@@ -110,9 +117,13 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
             events.Add(scraped);
         }
 
+        var irrelevant = missingNameOrDate + past;
+
         var msg = $"found {selected.Length} events";
         if (selected.Length != filtered.Length) msg += $", {filtered.Length} matched by {venue.Event.Filter}";
-        if (irrelevant > 0) msg += $", {irrelevant} of them in the past or unscrapable";
+        if (missingNameOrDate > 0) msg += $", {missingNameOrDate} missing a name or date";
+        if (past > 0) msg += $", {past} in the past";
+        if (irrelevant > 0) msg += $" - i.e. {irrelevant} irrelevant";
         venueScrape.Log(msg);
 
         // return number of scrapable events that are not already past
