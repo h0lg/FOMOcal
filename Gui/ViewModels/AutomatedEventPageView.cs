@@ -39,9 +39,6 @@ public partial class AutomatedEventPageView : WebView, IAutomateAnEventListing
         this.venue = venue;
         Log = log;
 
-        // avoid navigation error caused by setting Source to empty string when adding a venue
-        if (venue.ProgramUrl.IsSignificant()) Url = venue.ProgramUrl;
-
         Navigating += OnNavigatingAsync;
         Navigated += OnNavigatedAsync;
     }

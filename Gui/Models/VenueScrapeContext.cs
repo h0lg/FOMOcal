@@ -23,6 +23,7 @@ public partial class VenueScrapeContext : IDisposable // to support custom clean
         {
             (automator, cleanup) = automatorFactory.BuildAutomator(this);
             Loading = automator.LoadAutomated(browser, venue, throwOnTimeout: true); // first page of events is required
+            automator.Url = venue.ProgramUrl;
         }
         else
             Loading = venue.TryGetDirectHtmlEncoding(out var encoding) ? LoadOverridingEncoding(encoding)
@@ -52,7 +53,7 @@ public partial class VenueScrapeContext : IDisposable // to support custom clean
             response.Content(stream).Address(Venue.ProgramUrl).OverrideEncoding(encoding));
     }
 
-    internal void Log(string message, string? level = null) => log.Add($"{DateTime.UtcNow:o} {level ?? "INFO"} {message}");
+    public void Log(string message, string? level = null) => log.Add($"{DateTime.UtcNow:o} {level ?? "INFO"} {message}");
     internal string GetScrapeLog() => log.Reverse().LineJoin();
 
     private bool isDisposed;

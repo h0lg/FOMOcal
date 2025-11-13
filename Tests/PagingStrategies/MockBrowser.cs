@@ -26,9 +26,10 @@ public partial class MockBrowser : FomoCal.IBrowser
     private readonly IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
     private readonly List<EventPage> eventPages = [];
 
-    public Task<IDomDocument> OpenAsync(Action<IResponseBuilder> request, CancellationToken cancel = default)
+    public async Task<IDomDocument> OpenAsync(Action<IResponseBuilder> request, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        var doc = await browsingContext.OpenAsync(response => request(new ResponseBuilder(response)), cancel);
+        return new DomDocument(doc);
     }
 
     public async Task<IDomDocument> OpenAsync(string url, CancellationToken cancel = default)
@@ -81,7 +82,22 @@ public partial class MockBrowser : FomoCal.IBrowser
         };
     }
 
-    private async Task<AngleSharp.Dom.IDocument> CreateDocumentAsync()
+    internal void AddNextPageButton(uint page = 0)
+    {
+        EventPage eventPage = GetOrCreatePage(page);
+
+        eventPage.AddNextPageNavigator = doc =>
+        {
+            var button = (IHtmlButtonElement)doc.CreateElement("button");
+            button.Type = "button";
+            button.TextContent = "next page";
+            button.ClassName = "next-page";
+            button.Dataset["page"] = (page + 1).ToString();
+            return button;
+        };
+    }
+
+    internal async Task<AngleSharp.Dom.IDocument> CreateDocumentAsync()
     {
         PropertyInfo[] eventFields = typeof(InputEvent).GetProperties();
         var doc = await browsingContext.OpenNewAsync();

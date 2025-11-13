@@ -1,23 +1,48 @@
-﻿using FomoCal;
+﻿using AngleSharp;
+using FomoCal;
 
 namespace Tests.PagingStrategies;
 
-class MockAutomator : IAutomateAnEventListing
+class MockAutomator(VenueScrapeContext venueScrape, MockBrowser browser) : IAutomateAnEventListing
 {
-    public string? Url { get; set; }
+    private string? url;
+
+    public string? Url
+    {
+        get => url;
+        set
+        {
+            url = value;
+            SimulateHtmlLoadedAsync().GetAwaiter().GetResult();
+        }
+    }
 
     public event Action<string?>? HtmlWithEventsLoaded;
     public event Action<WebNavigationResult>? ErrorLoading;
 
-    public Task ClickElementToLoadDifferent(string selector) => throw new NotImplementedException();
+    public Task ClickElementToLoadDifferent(string selector) => SimulateHtmlLoadedAsync();
     public Task ClickElementToLoadMore(string selector) => throw new NotImplementedException();
     public Task ScrollDownToLoadMore() => throw new NotImplementedException();
+
+    private async Task SimulateHtmlLoadedAsync()
+    {
+        try
+        {
+            var doc = await browser.CreateDocumentAsync();
+            HtmlWithEventsLoaded?.Invoke(doc.ToHtml());
+        }
+        catch (Exception ex)
+        {
+            venueScrape.Log(ex.ToString(), "ERROR");
+            ErrorLoading?.Invoke(WebNavigationResult.Failure);
+        }
+    }
 }
 
-class MockAutomatorFactory : IBuildEventListingAutomators
+class MockAutomatorFactory(MockBrowser browser) : IBuildEventListingAutomators
 {
     public (IAutomateAnEventListing automator, Action? cleanup) BuildAutomator(VenueScrapeContext venueScrape)
-        => (new MockAutomator(), null);
+        => (new MockAutomator(venueScrape, browser), null);
 }
 
 public class MockScrapeLogFileSaver : ISaveScrapeLogFiles

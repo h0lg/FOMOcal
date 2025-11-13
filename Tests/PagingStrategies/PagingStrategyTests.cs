@@ -4,14 +4,15 @@ namespace Tests.PagingStrategies;
 
 public abstract class PagingStrategyTests : IDisposable
 {
-    private readonly MockAutomatorFactory factory = new();
     protected readonly MockScrapeLogFileSaver logFileSaver = new();
     protected readonly MockBrowser browser = new();
+    private readonly MockAutomatorFactory factory;
     protected readonly Scraper scraper;
     protected readonly Venue venue;
 
     public PagingStrategyTests(Venue.PagingStrategy pagingStrategy)
     {
+        factory = new(browser);
         scraper = new(browser, factory, logFileSaver);
 
         venue = new()

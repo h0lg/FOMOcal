@@ -55,8 +55,9 @@ internal static class ScraperExtensions
         {
             case Venue.PagingStrategy.ClickElementToLoadMore:
                 ArgumentNullException.ThrowIfNull(automator);
+                Task<IDomDocument?> loadingMore = automator.LoadAutomated(browser, venue);
                 await automator.ClickElementToLoadMore(venue.Event.NextPageSelector!);
-                return automator.LoadAutomated(browser, venue);
+                return loadingMore;
             case Venue.PagingStrategy.NavigateLinkToLoadDifferent:
                 var nextPage = currentPage.GetNextPageElement(venue)!;
                 var href = nextPage.GetAttribute("href");
@@ -64,16 +65,19 @@ internal static class ScraperExtensions
                 if (href.IsNullOrWhiteSpace() || href == "#") return null; // to prevent loop
                 var url = nextPage.HyperReference(href!);
                 if (automator == null) return browser.OpenAsync(url!)!;
+                Task<IDomDocument?> loadingPage = automator.LoadAutomated(browser, venue);
                 automator!.Url = url;
-                return automator.LoadAutomated(browser, venue);
+                return loadingPage;
             case Venue.PagingStrategy.ScrollDownToLoadMore:
                 ArgumentNullException.ThrowIfNull(automator);
+                Task<IDomDocument?> loadingScrolled = automator.LoadAutomated(browser, venue);
                 await automator.ScrollDownToLoadMore();
-                return automator.LoadAutomated(browser, venue);
+                return loadingScrolled;
             case Venue.PagingStrategy.ClickElementToLoadDifferent:
                 ArgumentNullException.ThrowIfNull(automator);
+                Task<IDomDocument?> loadingReplaced = automator.LoadAutomated(browser, venue);
                 await automator.ClickElementToLoadDifferent(venue.Event.NextPageSelector!);
-                return automator.LoadAutomated(browser, venue);
+                return loadingReplaced;
             default:
                 throw new InvalidOperationException($"{nameof(Venue.PagingStrategy)} {venue.Event.PagingStrategy} is not supported");
         }

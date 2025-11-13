@@ -24,7 +24,7 @@ internal partial class Browser() : IBrowser
     public void Dispose() => browsingContext.Dispose();
 }
 
-internal class ResponseBuilder(VirtualResponse response) : IResponseBuilder
+public class ResponseBuilder(VirtualResponse response) : IResponseBuilder
 {
     public IResponseBuilder Address(string url)
     {
