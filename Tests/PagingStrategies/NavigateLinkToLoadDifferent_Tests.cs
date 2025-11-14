@@ -54,6 +54,31 @@ public sealed partial class NavigateLinkToLoadDifferent_Tests : PagingStrategyTe
         Assert.HasCount(10, events);
     }
 
+    [TestMethod]
+    public async Task PagingVerifiesDuplicatesBeforeExlcuded()
+    {
+        browser.AddEvents(venue, 10);
+        browser.AddNextPageLink("#page-1");
+
+        browser.AddEvents(venue, 10, page: 1, start: 1, category: "gig"); // duplicates in a different, excluded category
+        browser.AddNextPageLink("#page-2", page: 1);
+
+        browser.AddEvents(venue, 10, page: 2); // more events that shouldn't be scraped because page 1 contains only duplicates
+
+        (var events, var errors) = await scraper.ScrapeVenueAsync(venue);
+        AssertEmpty(errors);
+
+        AssertLogLines(
+            "found 10 events",
+            "next page link goes to #page-1",
+            "found 10 events, 0 matched by concert, 10 already scraped",
+            HasNoMore("can load more"),
+            HasNoMore("next page link goes to #page-2"),
+            "found 10 relevant events in total");
+
+        Assert.HasCount(10, events);
+    }
+
     /* some venues show only events in the current month on the first page
      * - which may all already be in the past when visited towards the end of the month */
     [TestMethod]

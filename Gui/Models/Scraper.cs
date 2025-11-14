@@ -88,8 +88,6 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
                 continue;
             }
 
-            if (!filtered.Contains(container)) continue; // excluded by filter
-
             // scrape and set properties required for equality comparison
             Event scraped = new()
             {
@@ -105,6 +103,8 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
                 duplicate++;
                 continue;
             }
+
+            if (!filtered.Contains(container)) continue; // excluded by filter
 
             // scrape details and add event
             scraped.SubTitle = venue.Event.SubTitle?.GetValue(container, errors);

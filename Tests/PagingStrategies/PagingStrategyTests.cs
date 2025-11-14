@@ -35,23 +35,35 @@ public abstract class PagingStrategyTests : IDisposable
     protected static void AssertEmpty(List<Exception> errors)
         => Assert.IsEmpty(errors, errors.Select(ex => ex.ToString()).LineJoin());
 
+    private const string unexpectedLinePrefix = "NOT! ";
+
     protected void AssertLogLines(params string[] expectedLines)
     {
         var actual = logFileSaver.Log;
         Assert.IsNotNull(actual);
 
         var actualLines = actual.Split(Environment.NewLine).ToList();
-        int skip = 0;
+        int skipped = 0;
 
-        foreach (string expected in expectedLines)
+        foreach (string line in expectedLines)
         {
-            var first = actualLines.Skip(skip).FirstOrDefault(l => l.Contains(expected));
-            Assert.IsNotNull(first, $"\n\n'{expected}' was not found after skipping {skip} lines in\n\n{actual}");
-            skip = actualLines.IndexOf(first, skip) + 1;
+            var isUnexpected = line.StartsWith(unexpectedLinePrefix);
+            var expected = isUnexpected ? line[unexpectedLinePrefix.Length..] : line;
+            var firstMatch = actualLines.Skip(skipped).FirstOrDefault(l => l.Contains(expected));
+            string error = $"\n\n'{expected}' was {(isUnexpected ? null : "not ")}found after skipping {skipped} lines in\n\n{actual}";
+
+            if (isUnexpected) Assert.IsNull(firstMatch, error); // assert expected is not contained in any line after skipped
+            else // make sure expected line is found and update skipped to skip it on next iteration
+            {
+                Assert.IsNotNull(firstMatch, error);
+                skipped = actualLines.IndexOf(firstMatch, skipped) + 1;
+            }
         }
 
-        Assert.HasCount(skip, actualLines, $"log has more lines:\n{actualLines.Skip(skip).LineJoin()}");
+        Assert.HasCount(skipped, actualLines, $"log has more lines:\n{actualLines.Skip(skipped).LineJoin()}");
     }
+
+    protected string HasNoMore(string unexpectedLine) => unexpectedLinePrefix + unexpectedLine;
 
     public void Dispose() => scraper.Dispose();
 }
