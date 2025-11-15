@@ -8,7 +8,7 @@ partial class AutomatedEventPageView
     * i.e. wait for approx. 5sec for JS rendering or scrolling down to load more before timing out
     * while a change in the number of matched events resets the iterations (and wait time)
     * until we time out or load at least 100 events. */
-    private readonly WaitForSelectorOptions waitForSelectorOptions = new() { IntervalDelayMs = 200, MaxMatches = 100, MaxTries = 25 };
+    private readonly WaitForSelectorOptions waitForSelectorOptions = new() { MaxTries = 25, IntervalDelayMs = 200, MaxMatchesScrollingDown = 100 };
 
     /*  Used to cache the loaded and pre-processed script while allowing for a
      *  thread-safe asynchronous lazy initialization that only ever happens once. */
@@ -46,9 +46,9 @@ partial class AutomatedEventPageView
     {
         public string? Selector { get; set; }
         public bool IsXpathSelector { get; set; }
-        public uint IntervalDelayMs { get; set; }
-        public uint MaxMatches { get; set; }
         public uint MaxTries { get; set; }
+        public uint IntervalDelayMs { get; set; }
+        public uint MaxMatchesScrollingDown { get; set; }
     }
 
     internal interface PickedSelectorOptions

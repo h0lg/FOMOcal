@@ -2,9 +2,9 @@
     const settings = {
         selector: null,
         isXpathSelector: false,
+        maxTries: 25,
         intervalDelayMs: 200,
-        maxMatches: 100,
-        maxTries: 25
+        maxMatchesScrollingDown: 100
     };
 
     const triggerScroll = () => { dispatchEvent(new Event('scroll')); },
@@ -169,13 +169,17 @@
             console.debug('waitForSelector.afterScrollingDown', options);
             withOptions(options);
             let lastFound = getMatchCount();
-            if (settings.maxMatches <= lastFound) return notifyFound(true); // succeeded because we found maxMatches or more
+
+            if (settings.maxMatchesScrollingDown <= lastFound)
+                return notifyFound(true); // succeeded because we found maxMatchesScrollingDown or more
+
             scrollDown(); // once initially
 
             waitUntil((found, runningRequests, resetTries) => {
                 console.debug('afterScrollingDown found', found, 'events with', runningRequests, 'requests still running');
-                // enough matches loaded
-                if (settings.maxMatches <= found) return true; // succeeded because we found maxMatches or more
+
+                if (settings.maxMatchesScrollingDown <= found)
+                    return true; // stop early with success by loading maxMatchesScrollingDown or more
 
                 if (lastFound !== found) { // more matches loaded
                     console.debug('loaded more. resetting tries.');
