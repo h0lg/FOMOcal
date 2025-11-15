@@ -36,8 +36,8 @@ internal static class Widgets
     internal static Label BndLbl(string path = ".", string? stringFormat = null, object? source = null)
         => new Label().Bind(Label.TextProperty, path, stringFormat: stringFormat, source: source);
 
-    internal static Entry Entr(string path, string? placeholder = null)
-        => new Entry { Placeholder = placeholder }.Bind(Entry.TextProperty, path);
+    internal static Entry Entr(string path, string? placeholder = null, Keyboard? keybord = null)
+        => new Entry { Placeholder = placeholder, Keyboard = keybord }.Bind(Entry.TextProperty, path);
 
     internal static Editor SelectableMultiLineLabel(string textPropertyPath = ".")
         => new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }
@@ -54,12 +54,13 @@ internal static class Widgets
 
     internal static Grid SwtchWrp(Switch swtch) => Grd(cols: [42], rows: [Auto], children: swtch);
 
-    internal static HorizontalStackLayout LabeledStepper(string label, string valueProperty,
-        ushort max = ushort.MaxValue, Action? onValueChanged = null)
+    internal static (Entry Entry, HorizontalStackLayout Wrapper) LabeledStepper(string label, string valueProperty,
+        ushort max = ushort.MaxValue)
     {
         var stepper = new Stepper() { Minimum = 0, Maximum = max, Increment = 1 }.Bind(Stepper.ValueProperty, valueProperty);
-        if (onValueChanged != null) stepper.ValueChanged += (o, e) => onValueChanged(); // because Un/Focus events aren't firing
-        return HStack(5, Lbl(label), BndLbl(valueProperty), stepper).View;
+        var entry = Entr(valueProperty, keybord: Keyboard.Numeric);
+        stepper.ValueChanged += (o, e) => entry.Focus();
+        return (entry, HStack(5, Lbl(label), entry, stepper).View);
     }
 
     internal static Grid Grd(GridLength[] cols, GridLength[] rows, double spacing = 0, params IView[] children)
