@@ -25,19 +25,21 @@
     }
 
     function scrollDown() {
-        /*  scroll to the bottom, delay to allow scroll position to update,
-            then dispatch scroll event to trigger attached JS handlers */
+        // scroll page to the bottom - fires multiple scroll events
         scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+        /*  delay to allow scroll position to update, then dispatch a global scroll event manually
+            as a fall-back to trigger attached handlers if scrollTo above didn't for some reason */
         setTimeout(triggerScroll, 500);
 
         // if the page itself doesn't scroll, maybe a container does
         document.querySelectorAll('*').forEach(el => {
-            // if element is scrollable, scroll it to the bottom
+            // if element is scrollable, scroll it to the bottom - fires scroll event if scrollTop changes
             if (el.scrollHeight > el.clientHeight) el.scrollTop = el.scrollHeight;
         });
     }
 
-    function start(stopIf) {
+    function waitUntil(shouldStop) {
         let tries = 0,
             runningRequests = 0; // running AJAX requests
 
@@ -57,6 +59,7 @@
         });
 
         observer.observe({ entryTypes: ['resource'] });
+        const resetTries = () => tries = 0;
 
         const stopTrying = succeeded => {
             clearInterval(intervalID);
@@ -71,8 +74,8 @@
             console.debug('selecting', settings.selector, 'found', found, 'matching elements');
             tries++; // important to eventually time out
 
-            const stop = stopIf(found, runningRequests, () => tries = 0);
-            if (stop) stopTrying(true);
+            const stop = shouldStop(found, runningRequests, resetTries);
+            if (stop) stopTrying(true); // stop trying if supplied stop condition is met
         }, settings.intervalDelayMs);
     }
 
@@ -154,7 +157,7 @@
         onLoad: options => {
             console.debug('waitForSelector.onLoad', options);
             withOptions(options);
-            const startWaiting = () => { start(found => found > 0); };
+            const startWaiting = () => { waitUntil(found => found > 0); }; // notifyFound(true) if any are found
 
             // start waiting for matches immediately or when DOM loads
             if (document.readyState === 'complete') startWaiting();
@@ -169,7 +172,7 @@
             if (settings.maxMatches <= lastFound) return notifyFound(true); // succeeded because we found maxMatches or more
             scrollDown(); // once initially
 
-            start((found, runningRequests, resetTries) => {
+            waitUntil((found, runningRequests, resetTries) => {
                 console.debug('afterScrollingDown found', found, 'events with', runningRequests, 'requests still running');
                 // enough matches loaded
                 if (settings.maxMatches <= found) return true; // succeeded because we found maxMatches or more
@@ -200,7 +203,7 @@
                 const alreadyLoaded = getMatchCount();
                 console.debug('already loaded', alreadyLoaded.length, 'elements matching', settings.selector);
                 // should only notifyFound(true) when loading more matches than alreadyLoaded were loaded
-                start(found => alreadyLoaded < found);
+                waitUntil(found => alreadyLoaded < found);
             } else {
                 notifyFound(false);
             }
@@ -218,7 +221,7 @@
 
                 waitForMutation().then(() => {
                     notifyFound(true);
-                }).catch((error) => {
+                }).catch(error => {
                     console.error(error);
                     notifyFound(false);
                 });
