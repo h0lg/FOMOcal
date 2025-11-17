@@ -54,15 +54,6 @@ internal static class Widgets
 
     internal static Grid SwtchWrp(Switch swtch) => Grd(cols: [42], rows: [Auto], children: swtch);
 
-    internal static (Entry Entry, HorizontalStackLayout Wrapper) LabeledStepper(string label, string valueProperty,
-        ushort max = ushort.MaxValue)
-    {
-        var stepper = new Stepper() { Minimum = 0, Maximum = max, Increment = 1 }.Bind(Stepper.ValueProperty, valueProperty);
-        var entry = Entr(valueProperty, keybord: Keyboard.Numeric);
-        stepper.ValueChanged += (o, e) => entry.Focus();
-        return (entry, HStack(5, Lbl(label), entry, stepper).View);
-    }
-
     internal static Grid Grd(GridLength[] cols, GridLength[] rows, double spacing = 0, params IView[] children)
     {
         Grid grid = new()

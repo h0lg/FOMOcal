@@ -377,7 +377,7 @@
             <ContentPresenter VerticalOptions="Center" />
         </Border>
     </ControlTemplate>
-    
+
     <Style TargetType="RadioButton" Class="SingleSelectToggleButton">
         <Setter Property="ControlTemplate" Value="{StaticResource SingleSelectToggleButtonTemplate}" />
     </Style>
