@@ -58,9 +58,9 @@ internal static partial class ViewExtensions
         }
         else if (help.label.BindingContext == host) // only react to unfocused if remembered host matches
         {
-            await Task.Delay(100); // defer unfocus reaction to allow another control to take focus
-            if (help.label.BindingContext != host) return; // another host took focus, do not hide
             help.label.BindingContext = null; // reset remembered host
+            await Task.Delay(100); // defer unfocus reaction to allow another control to take focus
+            if (help.label.BindingContext != null) return; // another host took focus, do not hide
             await Task.WhenAll(help.layout.FadeTo(0, 300), help.layout.ScaleTo(0, 300, Easing.CubicIn)); // hide label
             if (help.label.BindingContext == null) help.label.FormattedText = null; // only reset content if no other host took focus
         }
