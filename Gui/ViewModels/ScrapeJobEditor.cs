@@ -185,7 +185,9 @@ public partial class ScrapeJobEditor : ObservableObject
             if (scrapeJobStringPropertyNames.Contains(e.PropertyName))
             {
                 UpdateEmpty();
-                if (!IsEmpty && Attribute.IsNullOrWhiteSpace()) Attribute = defaultAttribute;
+
+                if (!IsEmpty && e.PropertyName != nameof(Attribute) && Attribute.IsNullOrWhiteSpace())
+                    Attribute = defaultAttribute; // init attribute with default
             }
 
             UpdatePreview();
