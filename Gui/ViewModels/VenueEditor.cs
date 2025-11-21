@@ -29,7 +29,7 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial bool ShowOptionalEventFields { get; set; }
     [ObservableProperty] public partial double Progress { get; set; } = 0;
 
-    [ObservableProperty] public partial bool EventSelectorRelatedHasFocus { get; set; } // for when related controls have focus
+    [ObservableProperty] public partial bool PreviewRelatedHasFocus { get; set; } // for when related controls have focus
     [ObservableProperty] public partial bool EventSelectorHasError { get; set; }
     [ObservableProperty] public partial string[]? PreviewedEventTexts { get; set; }
     [ObservableProperty] public partial int SkipEvents { get; set; }
@@ -413,7 +413,7 @@ public partial class VenueEditor : ObservableObject
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
             selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help,
-                onFocusChanged: async (_, focused) => await ToggleSelectorRelatedFocus(focused),
+                onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused),
                 /*  Only propagate the loss of focus to the property
                     if entry has not currently opened the visualSelector
                     to keep the help visible while working there */
@@ -423,14 +423,14 @@ public partial class VenueEditor : ObservableObject
             (Switch Switch, Grid Wrapper) lazyLoaded = Swtch(nameof(LazyLoaded));
 
             lazyLoaded.Switch.InlineTooltipOnFocus(HelpTexts.LazyLoaded, help,
-                onFocusChanged: async (_, focused) => await ToggleSelectorRelatedFocus(focused));
+                onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
 
             var eventFilter = Entr(nameof(EventFilter), placeholder: "text or XPath")
                 .InlineTooltipOnFocus(string.Format(HelpTexts.EventContainerFilterFormat, FomoCal.ScrapeJob.XPathSelectorPrefix),
-                    help, onFocusChanged: async (_, focused) => await ToggleSelectorRelatedFocus(focused));
+                    help, onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
-                itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(EventSelectorRelatedHasFocus),
+                itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(PreviewRelatedHasFocus),
                 hasError: nameof(EventSelectorHasError), source: model);
 
             var controls = HWrap(5,
@@ -450,13 +450,13 @@ public partial class VenueEditor : ObservableObject
                 PreviewControls(selectorText).Row(4).ColumnSpan(4),
                 PagingControls(help).Row(5).ColumnSpan(4));
 
-            async Task ToggleSelectorRelatedFocus(bool focused)
+            async Task TogglePreviewRelatedFocus(bool focused)
             {
-                if (focused) model.EventSelectorRelatedHasFocus = true;
+                if (focused) model.PreviewRelatedHasFocus = true;
                 else
                 {
                     await Task.Delay(300); // to allow for using the skip/take steppers without flickering
-                    if (!selectorText.IsFocused) model.EventSelectorRelatedHasFocus = false;
+                    if (!selectorText.IsFocused) model.PreviewRelatedHasFocus = false;
                 }
             }
         }
