@@ -190,7 +190,7 @@ public static class VenueExtensions
         }
     }
 
-    internal static bool RequiresNextPageSelector(this PagingStrategy strategy)
+    public static bool RequiresNextPageSelector(this PagingStrategy strategy)
         => strategy == PagingStrategy.NavigateLinkToLoadDifferent || strategy.ClicksElementToLoad();
 
     internal static bool ClicksElementToLoad(this PagingStrategy strategy)

@@ -6,7 +6,7 @@ namespace FomoCal;
 /// pages with or without automation.</summary>
 public partial class VenueScrapeContext : IDisposable // to support custom cleanup in order to detach the loader from the layout again
 {
-    internal readonly Venue Venue;
+    public readonly Venue Venue;
     private readonly IBrowser browser; // not ours to dispose, just holding on to it
     private readonly IAutomateAnEventListing? automator;
     private readonly ConcurrentBag<string> log = [];

@@ -28,8 +28,24 @@ class MockAutomator(VenueScrapeContext venueScrape, MockBrowser browser) : IAuto
     {
         try
         {
-            var doc = await browser.CreateDocumentAsync();
-            HtmlWithEventsLoaded?.Invoke(doc.ToHtml());
+            var eventPage = browser.GetCurrentEventPage();
+            string? html = null;
+
+            if (eventPage == null /* none loaded yet */
+                // either paging requires no next page selector
+                || !venueScrape.Venue.Event.PagingStrategy.RequiresNextPageSelector()
+                // or there is one
+                || eventPage.AddNextPageNavigator != null)
+            {
+                var doc = await browser.CreateDocumentAsync();
+                html = doc.ToHtml();
+            }
+            /* Otherwise, return null html. This simulates the script behavior
+             * when notifyFound(false) is returned in case the NextPageSelector matches no element.
+             * That should never occur though - CanLoadMore(this IDomDocument document, Venue venue)
+             * stops the paging in that scenario. */
+
+            HtmlWithEventsLoaded?.Invoke(html);
         }
         catch (Exception ex)
         {

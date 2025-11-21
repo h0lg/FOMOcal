@@ -103,6 +103,12 @@ public partial class MockBrowser : FomoCal.IBrowser
         };
     }
 
+    internal EventPage? GetCurrentEventPage()
+        => eventPageIndex == 0 ? null : GetEventPage(eventPageIndex - 1);
+
+    internal EventPage? GetEventPage(int index)
+        => index < eventPages.Count ? eventPages[index] : null;
+
     internal async Task<AngleSharp.Dom.IDocument> CreateDocumentAsync()
     {
         PropertyInfo[] eventFields = typeof(InputEvent).GetProperties();
@@ -125,7 +131,7 @@ public partial class MockBrowser : FomoCal.IBrowser
         table.AppendChild(thead);
         var tbody = doc.CreateElement("tbody");
 
-        EventPage eventPage = eventPageIndex < eventPages.Count ? eventPages[eventPageIndex] : new();
+        EventPage eventPage = GetEventPage(eventPageIndex) ?? new(); // next or empty
 
         var events = pagingStrategy.LoadsDifferentEvents() ? eventPage.Events
             : eventPages.Take(eventPageIndex + 1).SelectMany(p => p.Events);
