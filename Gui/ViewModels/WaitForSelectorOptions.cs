@@ -121,26 +121,26 @@ partial class Settings
             => HWrap(5,
                 ContextLabel($"When lazy-loading events, paging {Venue.PagingStrategy.ScrollDownToLoadMore.GetDescription()}"
                     + $" or {Venue.PagingStrategy.ClickElementToLoadMore.GetDescription()} an element,"),
-                Stepper("check for events every", nameof(IntervalDelayMs), "ms"),
-                Stepper("for max.", nameof(MaxTries), "resetting times,"),
+                Stepper("check for events every", nameof(IntervalDelayMs), "ms", max: 1000),
+                Stepper("for max.", nameof(MaxTries), "resetting times,", max: 1000),
                 BndLbl(nameof(WaitForMaxSecs), stringFormat: "waiting up to {0}s in total.")).View;
 
         private static View ScrollPaging()
             => HWrap(5,
                 ContextLabel($"When loading {Venue.PagingStrategy.ScrollDownToLoadMore.GetDescription()},"),
-                Stepper("trigger the scroll event after", nameof(TriggerScrollAfterMs), "ms,"),
-                Stepper("consider async requests done after", nameof(AjaxTimeoutMs), "ms"),
-                Stepper("and stop scrolling after min.", nameof(MaxMatchesScrollingDown), "events are found.")).View;
+                Stepper("trigger the scroll event after", nameof(TriggerScrollAfterMs), "ms,", max: 10000),
+                Stepper("consider async requests done after", nameof(AjaxTimeoutMs), "ms", max: 30000),
+                Stepper("and stop scrolling after min.", nameof(MaxMatchesScrollingDown), "events are found.", max: 1000)).View;
 
         private static View SwapPaging()
             => HWrap(5,
                 ContextLabel($"When loading {Venue.PagingStrategy.ClickElementToLoadDifferent.GetDescription()} an element,"),
-                Stepper("wait max.", nameof(MutationTimeoutMs), "ms for a change"),
-                Stepper("and debounce it for", nameof(MutationDebounceMs), "ms .")).View;
+                Stepper("wait max.", nameof(MutationTimeoutMs), "ms for a change", max: 30000),
+                Stepper("and debounce it for", nameof(MutationDebounceMs), "ms .", max: 2000)).View;
 
         private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted);
 
-        private static View Stepper(string startLabel, string property, string endLabel)
-            => NumericStepper.Create(startLabel: startLabel, property: property, endLabel: endLabel).Wrapper;
+        private static View Stepper(string startLabel, string property, string endLabel, int max)
+            => NumericStepper.Create(startLabel: startLabel, property: property, endLabel: endLabel, max: max).Wrapper;
     }
 }
