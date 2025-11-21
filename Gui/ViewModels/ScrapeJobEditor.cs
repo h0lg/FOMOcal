@@ -321,7 +321,7 @@ public partial class ScrapeJobEditor : ObservableObject
             HintedInput(ignoreNestedText.Switch, HelpTexts.ScrapeJobIgnoreNestedText);
 
             List<IView> children = [
-                HStack(5, Lbl(model.label).Bold(), displayInputs.Wrapper.BindVisible(nameof(IsEmpty))),
+                HStack(5, Lbl(model.label).Bold(), displayInputs.Wrapper.BindVisible(nameof(IsEmpty))).View,
 
                 SelectorEntry("closest", nameof(Closest),
                     null, // for picking common ancestor of clicked element and event container

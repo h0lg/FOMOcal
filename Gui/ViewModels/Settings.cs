@@ -59,7 +59,7 @@ public partial class Settings : ObservableObject
             => HStack(0, ThemeVariantToggle("🌑 dark", AppTheme.Dark, "always use dark theme"),
                 ThemeVariantToggle("🌓 switch with OS", AppTheme.Unspecified,
                     "use light or dark depending on the theme variant selected on the operating system level"),
-                ThemeVariantToggle("🌕 light", AppTheme.Light, "always use light theme"));
+                ThemeVariantToggle("🌕 light", AppTheme.Light, "always use light theme")).View;
 
         private static RadioButton ThemeVariantToggle(string label, AppTheme theme, string tooltip)
             => new RadioButton { Content = label, StyleClass = ["SingleSelectToggleButton"] }.ToolTip(tooltip)

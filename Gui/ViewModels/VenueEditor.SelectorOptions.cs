@@ -86,7 +86,7 @@ partial class VenueEditor
 
             var syntax = HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath"));
 
-            return [syntax,
+            return [syntax.View,
                 Lbl("detail").Bold(),
                 LbldView("ancestor path", Check(nameof(SelectorOptions.IncludeAncestorPath), source: model.selectorOptions)
                     .InlineTooltipOnFocus(HelpTexts.IncludePickedSelectorPath, help)),

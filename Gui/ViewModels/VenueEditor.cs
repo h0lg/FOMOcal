@@ -539,7 +539,7 @@ public partial class VenueEditor : ObservableObject
                     .BindTapGesture(nameof(OpenFileCommand), commandSource: model,
                         parameterPath: nameof(ScrapeLogFile.ForVenue.Path));
 
-                return HStack(5, deleteBtn, label);
+                return HStack(5, deleteBtn, label).View;
             });
 
             var logs = new CollectionView
@@ -557,7 +557,7 @@ public partial class VenueEditor : ObservableObject
         {
             var stepper = new Stepper() { Minimum = 0, Maximum = max, Increment = 1 }.Bind(Stepper.ValueProperty, valueProperty);
             stepper.ValueChanged += (o, e) => onValueChanged(); // because Un/Focus events aren't firing
-            return HStack(5, Lbl(label), BndLbl(valueProperty), stepper);
+            return HStack(5, Lbl(label), BndLbl(valueProperty), stepper).View;
         }
 
         private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)
@@ -574,7 +574,7 @@ public partial class VenueEditor : ObservableObject
                 await ShowVisualSelectorForAsync(entry, selector, pickDescendant);
             });
 
-            return HStack(0, entry, layout);
+            return HStack(0, entry, layout).View;
         }
 
         private HorizontalStackLayout RelativeSelectorEntry(Entry entry, Func<string?>? maybeGetDescendantOfClosest)
