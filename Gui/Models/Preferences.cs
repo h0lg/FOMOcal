@@ -2,6 +2,7 @@
 
 internal class RememberedUshort(string preferencesKey, ushort defaultValue)
 {
+    internal ushort Default => defaultValue;
     internal ushort Get() => (ushort)Preferences.Get(preferencesKey, defaultValue);
     internal void Set(ushort value) => Preferences.Set(preferencesKey, value);
 }

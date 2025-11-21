@@ -61,6 +61,18 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to How long to wait before considering a started [asynchronous request](https://en.wikipedia.org/wiki/Ajax_(programming%29) to have ended.
+        ///
+        ///^^This helps count active async requests, used as an indicator of whether waiting for more events to be loaded makes sense.
+        ///^^There is a way to detect the start of such requests, but not their end..
+        /// </summary>
+        internal static string AjaxTimeoutMs {
+            get {
+                return ResourceManager.GetString("AjaxTimeoutMs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Appends to the existing query if it matches the syntax, otherwise replaces it..
         /// </summary>
         internal static string AppendSelectedQuery {
@@ -193,6 +205,15 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The interval at which to check the document for the configured event container selector..
+        /// </summary>
+        internal static string IntervalDelayMs {
+            get {
+                return ResourceManager.GetString("IntervalDelayMs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You may want to try this option if your event selector doesn&apos;t match anything without it even though it should*.
         ///It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn&apos;t.
         ///
@@ -201,6 +222,48 @@ namespace FomoCal.Gui.Resources {
         internal static string LazyLoaded {
             get {
                 return ResourceManager.GetString("LazyLoaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Used as an early escape condition to avoid waiting for the global load more timeout configured above.
+        ///
+        ///For odd venue listings that page into unscrapable events, e.g. into the past instead of the future, this also prevents paging deep into unscrapable events unnecessarily.
+        ///
+        ///^^This is required for this paging strategy because it automatically scrolls the page down again on each retry, which helps to make the rather flaky nature of the scroll trigger in a blind, automated browser a bit more reliable..
+        /// </summary>
+        internal static string MaxMatchesScrollingDown {
+            get {
+                return ResourceManager.GetString("MaxMatchesScrollingDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How many times to retry the selector check before timing out, while every change in the number of found events resets the number of tries..
+        /// </summary>
+        internal static string MaxTries {
+            get {
+                return ResourceManager.GetString("MaxTries", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How long to wait after the last document mutation before returning the updated document for scraping.
+        ///
+        ///^^Used to prevent returning the document early, before all mutations are completed..
+        /// </summary>
+        internal static string MutationDebounceMs {
+            get {
+                return ResourceManager.GetString("MutationDebounceMs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How long to wait for the document to update after clicking the next page element before timing out..
+        /// </summary>
+        internal static string MutationTimeoutMs {
+            get {
+                return ResourceManager.GetString("MutationTimeoutMs", resourceCulture);
             }
         }
         
@@ -404,6 +467,18 @@ namespace FomoCal.Gui.Resources {
         internal static string ToggleSelectorDetail {
             get {
                 return ResourceManager.GetString("ToggleSelectorDetail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How long to wait for the scroll position to update between scrolling down the page and manually triggering a scroll event - in case scrolling down fails for some reason and doesn&apos;t do that.
+        ///
+        ///^^This event is one of the fall-back mechanisms this paging strategy tries to trigger the loading of more events reliably.
+        ///^^They&apos;re necessary because we can&apos;t be sure what effect of the scrolling triggers the loading..
+        /// </summary>
+        internal static string TriggerScrollAfterMs {
+            get {
+                return ResourceManager.GetString("TriggerScrollAfterMs", resourceCulture);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using FomoCal.Gui.Resources;
 using static FomoCal.Gui.ViewModels.AutomatedEventPageView.WaitForSelectorOptions;
 using static FomoCal.Gui.ViewModels.Widgets;
 
@@ -117,30 +118,52 @@ partial class Settings
 
     partial class Page
     {
-        private static View LoadingLazyOrMore()
-            => HWrap(5,
+        private View LoadingLazyOrMore()
+        {
+            var help = HelpLabel();
+
+            return HWrap(5,
                 ContextLabel($"When lazy-loading events, paging {Venue.PagingStrategy.ScrollDownToLoadMore.GetDescription()}"
                     + $" or {Venue.PagingStrategy.ClickElementToLoadMore.GetDescription()} an element,"),
-                Stepper("check for events every", nameof(IntervalDelayMs), "ms", max: 1000),
-                Stepper("for max.", nameof(MaxTries), "resetting times,", max: 1000),
-                BndLbl(nameof(WaitForMaxSecs), stringFormat: "waiting up to {0}s in total.")).View;
+                Stepper("check for events every", nameof(IntervalDelayMs), "ms", max: 1000, help, Remembered.IntervalDelayMs, HelpTexts.IntervalDelayMs),
+                Stepper("for max.", nameof(MaxTries), "resetting times,", max: 1000, help, Remembered.MaxTries, HelpTexts.MaxTries),
+                BndLbl(nameof(WaitForMaxSecs), stringFormat: "waiting up to {0}s in total."),
+                help.layout).View;
+        }
 
-        private static View ScrollPaging()
-            => HWrap(5,
+        private View ScrollPaging()
+        {
+            var help = HelpLabel();
+
+            return HWrap(5,
                 ContextLabel($"When loading {Venue.PagingStrategy.ScrollDownToLoadMore.GetDescription()},"),
-                Stepper("trigger the scroll event after", nameof(TriggerScrollAfterMs), "ms,", max: 10000),
-                Stepper("consider async requests done after", nameof(AjaxTimeoutMs), "ms", max: 30000),
-                Stepper("and stop scrolling after min.", nameof(MaxMatchesScrollingDown), "events are found.", max: 1000)).View;
+                Stepper("trigger the scroll event after", nameof(TriggerScrollAfterMs), "ms,", max: 10000, help,
+                    Remembered.TriggerScrollAfterMs, HelpTexts.TriggerScrollAfterMs),
+                Stepper("consider async requests done after", nameof(AjaxTimeoutMs), "ms", max: 30000, help, Remembered.AjaxTimeoutMs, HelpTexts.AjaxTimeoutMs),
+                Stepper("and stop scrolling after min.", nameof(MaxMatchesScrollingDown), "events are found.", max: 1000,
+                    help, Remembered.MaxMatchesScrollingDown, HelpTexts.MaxMatchesScrollingDown),
+                help.layout).View;
+        }
 
-        private static View SwapPaging()
-            => HWrap(5,
+        private View SwapPaging()
+        {
+            var help = HelpLabel();
+
+            return HWrap(5,
                 ContextLabel($"When loading {Venue.PagingStrategy.ClickElementToLoadDifferent.GetDescription()} an element,"),
-                Stepper("wait max.", nameof(MutationTimeoutMs), "ms for a change", max: 30000),
-                Stepper("and debounce it for", nameof(MutationDebounceMs), "ms .", max: 2000)).View;
+                Stepper("wait max.", nameof(MutationTimeoutMs), "ms for a change", max: 30000, help, Remembered.MutationTimeoutMs, HelpTexts.MutationTimeoutMs),
+                Stepper("and debounce it for", nameof(MutationDebounceMs), "ms .", max: 2000, help, Remembered.MutationDebounceMs, HelpTexts.MutationDebounceMs),
+                help.layout).View;
+        }
 
         private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted);
 
-        private static View Stepper(string startLabel, string property, string endLabel, int max)
-            => NumericStepper.Create(startLabel: startLabel, property: property, endLabel: endLabel, max: max).Wrapper;
+        private View Stepper(string startLabel, string property, string endLabel, int max,
+            (Label label, Border layout) help, RememberedUshort remembered, string helpText)
+        {
+            var stepper = NumericStepper.Create(startLabel: startLabel, property: property, endLabel: endLabel, max: max);
+            stepper.Entry.InlineTooltipOnFocus(helpText + $" Default: {remembered.Default} .", help);
+            return stepper.Wrapper;
+        }
     }
 }
