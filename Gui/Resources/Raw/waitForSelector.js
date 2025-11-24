@@ -2,9 +2,16 @@
     const settings = {
         selector: null,
         isXpathSelector: false,
+
         maxTries: 25,
         intervalDelayMs: 200,
-        maxMatchesScrollingDown: 100
+        ajaxTimeoutMs: 3000,
+
+        maxMatchesScrollingDown: 100,
+        triggerScrollAfterMs: 500,
+
+        mutationTimeoutMs: 5000,
+        mutationDebounceMs: 200
     };
 
     const triggerScroll = () => { dispatchEvent(new Event('scroll')); },
@@ -30,7 +37,7 @@
 
         /*  delay to allow scroll position to update, then dispatch a global scroll event manually
             as a fall-back to trigger attached handlers if scrollTo above didn't for some reason */
-        setTimeout(triggerScroll, 500);
+        setTimeout(triggerScroll, settings.triggerScrollAfterMs);
 
         // if the page itself doesn't scroll, maybe a container does
         document.querySelectorAll('*').forEach(el => {
@@ -53,7 +60,7 @@
                     setTimeout(() => {
                         runningRequests--; // make sure to count down again because we don't know when they end
                         console.debug('AJAX request probably finished,', runningRequests, 'running');
-                    }, 3000); // trying to give slow requests enough time before counting them out
+                    }, settings.ajaxTimeoutMs); // trying to give slow requests enough time before counting them out
                 }
             });
         });
@@ -112,7 +119,7 @@
         return commonAncestor;
     }
 
-    function waitForMutation(timeoutMs = 5000, options = { childList: true, subtree: true, attributes: true }) {
+    function waitForMutation(options = { childList: true, subtree: true, attributes: true }) {
         return new Promise((resolve, reject) => {
             let timeoutId,
                 successTimeoutId;
@@ -130,7 +137,7 @@
                     clearTimeout(timeoutId); // Prevent timeout rejection
                     obs.disconnect(); // Stop observing
                     resolve();
-                }, 200); // to enable further mutations to cancel the resolution
+                }, settings.mutationDebounceMs); // to enable further mutations to cancel the resolution
             });
 
             console.info('starting to observe the DOM for mutations');
@@ -139,8 +146,8 @@
             timeoutId = setTimeout(() => {
                 console.info('waiting for DOM changes timed out');
                 observer.disconnect();
-                reject(new Error(`Timeout: No mutation detected for selector '${settings.selector}' within ${timeoutMs}ms`));
-            }, timeoutMs);
+                reject(new Error(`Timeout: No mutation detected for selector '${settings.selector}' within ${settings.mutationTimeoutMs}ms`));
+            }, settings.mutationTimeoutMs);
         });
     }
 

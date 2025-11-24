@@ -34,26 +34,44 @@ public partial class Settings : ObservableObject
             var exportTextAlignedWithHeaders = Swtch(nameof(ExportTextAlignedWithHeaders)).Wrapper
                 .ToolTip("whether to column-align the plain text export using spaces and include column headers");
 
-            Content = Grd(cols: [Auto, Star], rows: [Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
-                SubHeadline("Theme"), ThemeSwitches().Column(1),
+            var sectionEnd = 20;
+            GridLength[] rows = [Auto, sectionEnd, Auto, Auto, Auto, sectionEnd, Auto, Auto, Auto, Auto, sectionEnd, Auto, Auto, Auto, Auto];
 
-                SubHeadline("HTML export").Row(1),
-                Lbl("included fields").CenterVertical().End().Row(2),
-                htmlExport.included.CenterVertical().Row(2).Column(1),
-                Lbl("excluded fields").StyleClass(Styles.Label.Demoted).CenterVertical().End().Row(3),
-                htmlExport.excluded.Row(3).Column(1),
+            var layout = Grd(cols: [Auto, Star], rows, spacing: 5,
+                SubHeadline("🎨 Theme"), ThemeSwitches().Column(1),
 
-                SubHeadline("Text export").Row(4),
-                Lbl("aligned with headers").CenterVertical().End().Row(5),
-                exportTextAlignedWithHeaders.CenterVertical().Row(5).Column(1),
-                Lbl("included fields").CenterVertical().End().Row(6),
-                textExport.included.CenterVertical().Row(6).Column(1),
-                Lbl("excluded fields").StyleClass(Styles.Label.Demoted).CenterVertical().End().Row(7),
-                textExport.excluded.Row(7).Column(1)).Center();
+                SubHeadline("🖺 HTML export").Row(2),
+                Section("included fields").Row(3),
+                htmlExport.included.CenterVertical().Row(3).Column(1),
+                Section("excluded fields").StyleClass(Styles.Label.Demoted).Row(4),
+                htmlExport.excluded.Row(4).Column(1),
+
+                SubHeadline("🖹 Text export").Row(6),
+                Section("aligned with headers").Row(7),
+                exportTextAlignedWithHeaders.CenterVertical().Row(7).Column(1),
+                Section("included fields").Row(8),
+                textExport.included.CenterVertical().Row(8).Column(1),
+                Section("excluded fields").StyleClass(Styles.Label.Demoted).Row(9),
+                textExport.excluded.Row(9).Column(1),
+
+                SubHeadline("⏱ Browser timing").Row(11),
+                ContextLabel("You can tweak the automation engine here if you experience problems, e.g. due to a slow internet connection."
+                    + " Tread lightly - footguns ahead!").Center().Row(11).Column(1),
+                TimingSection("loading lazy or more").Row(12),
+                LoadingLazyOrMore().Top().Row(12).Column(1),
+                TimingSection("scroll paging").Row(13),
+                ScrollPaging().Top().Row(13).Column(1),
+                TimingSection("swap paging").Row(14),
+                SwapPaging().Top().Row(14).Column(1));
+
+            Content = new ScrollView { Content = layout.Center() };
         }
 
         private static Label SubHeadline(string text)
             => Lbl(text).StyleClass(Styles.Label.SubHeadline).CenterVertical().End();
+
+        private static Label Section(string text, int topMargin = 10) => Lbl(text).Margins(top: topMargin).End();
+        private static Label TimingSection(string text) => Section(text, topMargin: 24);
 
         private static HorizontalStackLayout ThemeSwitches()
             => HStack(0, ThemeVariantToggle("🌑 dark", AppTheme.Dark, "always use dark theme"),
@@ -106,7 +124,7 @@ public partial class EventPropertySelection
         DataTemplate itemTemplate = new(() => BndLbl(nameof(PropertyInfo.Name)).Padding(10)
             .BindTapGesture(nameof(ToggleFieldCommand), commandSource: model, parameterPath: "."));
 
-        LinearItemsLayout itemsLayout = new(ItemsLayoutOrientation.Horizontal);
+        var itemsLayout = LinearItemsLayout.Horizontal;
 
         var included = new CollectionView
         {

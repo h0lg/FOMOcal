@@ -135,7 +135,7 @@ Each box holds different parts of the page with different info. In the following
   </data>
   <data name="LazyLoaded" xml:space="preserve">
     <value>You may want to try this option if your event selector doesn't match anything without it even though it should*.
-It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn't after 10s.
+It will load the page and wait for an element matching your selector to become available, return when it does and time out if it doesn't.
 
 ^^This works around pages that lazy-load events. Some web servers only return an empty template of a page on the first request to improve the response time, then fetch more data asynchronously and render it into the placeholders using a script running in your browser.
 ^^
@@ -279,5 +279,38 @@ If you test a strategy that involves clicking, make sure to disable the option "
 Automatically included in the error log if an error occurs.
 
 This option saves the scrape logs even without error to debug your scrape config - e.g. if it's unreliable or doesn't yield the expected number of results.</value>
+  </data>
+  <data name="IntervalDelayMs" xml:space="preserve">
+    <value>The interval at which to check the document for the configured event container selector.</value>
+  </data>
+  <data name="MaxTries" xml:space="preserve">
+    <value>How many times to retry the selector check before timing out, while every change in the number of found events resets the number of tries.</value>
+  </data>
+  <data name="TriggerScrollAfterMs" xml:space="preserve">
+    <value>How long to wait for the scroll position to update between scrolling down the page and manually triggering a scroll event - in case scrolling down fails for some reason and doesn't do that.
+
+^^This event is one of the fall-back mechanisms this paging strategy tries to trigger the loading of more events reliably.
+^^They're necessary because we can't be sure what effect of the scrolling triggers the loading.</value>
+  </data>
+  <data name="AjaxTimeoutMs" xml:space="preserve">
+    <value>How long to wait before considering a started [asynchronous request](https://en.wikipedia.org/wiki/Ajax_(programming%29) to have ended.
+
+^^This helps count active async requests, used as an indicator of whether waiting for more events to be loaded makes sense.
+^^There is a way to detect the start of such requests, but not their end.</value>
+  </data>
+  <data name="MaxMatchesScrollingDown" xml:space="preserve">
+    <value>Used as an early escape condition to avoid waiting for the global load more timeout configured above.
+
+For odd venue listings that page into unscrapable events, e.g. into the past instead of the future, this also prevents paging deep into unscrapable events unnecessarily.
+
+^^This is required for this paging strategy because it automatically scrolls the page down again on each retry, which helps to make the rather flaky nature of the scroll trigger in a blind, automated browser a bit more reliable.</value>
+  </data>
+  <data name="MutationTimeoutMs" xml:space="preserve">
+    <value>How long to wait for the document to update after clicking the next page element before timing out.</value>
+  </data>
+  <data name="MutationDebounceMs" xml:space="preserve">
+    <value>How long to wait after the last document mutation before returning the updated document for scraping.
+
+^^Used to prevent returning the document early, before all mutations are completed.</value>
   </data>
 </root>
