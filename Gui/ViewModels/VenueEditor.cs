@@ -32,8 +32,8 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial bool PreviewRelatedHasFocus { get; set; } // for when related controls have focus
     [ObservableProperty] public partial bool EventSelectorHasError { get; set; }
     [ObservableProperty] public partial string[]? PreviewedEventTexts { get; set; }
-    [ObservableProperty] public partial int SkipEvents { get; set; }
-    [ObservableProperty] public partial int TakeEvents { get; set; } = 5;
+    [ObservableProperty] public partial ushort SkipEvents { get; set; }
+    [ObservableProperty] public partial ushort TakeEvents { get; set; } = 5;
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))] public partial int SelectedEventCount { get; set; } = 0;
     [ObservableProperty] public partial int FilteredEventCount { get; set; } = 0;
 
@@ -412,22 +412,10 @@ public partial class VenueEditor : ObservableObject
 
             var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
 
-            selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help,
-                onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused),
-                /*  Only propagate the loss of focus to the property
-                    if entry has not currently opened the visualSelector
-                    to keep the help visible while working there */
-                cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis);
-
             var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
             (Switch Switch, Grid Wrapper) lazyLoaded = Swtch(nameof(LazyLoaded));
 
-            lazyLoaded.Switch.InlineTooltipOnFocus(HelpTexts.LazyLoaded, help,
-                onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
-
-            var eventFilter = Entr(nameof(EventFilter), placeholder: "text or XPath")
-                .InlineTooltipOnFocus(string.Format(HelpTexts.EventContainerFilterFormat, FomoCal.ScrapeJob.XPathSelectorPrefix),
-                    help, onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
+            var eventFilter = Entr(nameof(EventFilter), placeholder: "text or XPath");
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(PreviewRelatedHasFocus),
@@ -439,6 +427,31 @@ public partial class VenueEditor : ObservableObject
                 BndLbl(nameof(FilteredEventCount), "{0} filtered by"), eventFilter,
                 Lbl("lazy"), lazyLoaded.Wrapper);
 
+            var skip = NumericStepper.Create(nameof(SkipEvents), "skipping");
+            var take = NumericStepper.Create(nameof(TakeEvents), label: "and taking", max: 10);
+            var previewControls = HWrap(5, Lbl("Preview events").Bold(), skip.Wrapper, take.Wrapper);
+
+            VisualElement[] previewRelated = [selectorText, eventFilter, lazyLoaded.Switch, skip.Entry, take.Entry];
+
+            selectorText.InlineTooltipOnFocus(HelpTexts.EventContainerSelector, help,
+                onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused),
+                /*  Only propagate the loss of focus to the property
+                    if entry has not currently opened the visualSelector
+                    to keep the help visible while working there */
+                cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis);
+
+            eventFilter.InlineTooltipOnFocus(string.Format(HelpTexts.EventContainerFilterFormat, FomoCal.ScrapeJob.XPathSelectorPrefix),
+                help, onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
+
+            lazyLoaded.Switch.InlineTooltipOnFocus(HelpTexts.LazyLoaded, help,
+                onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
+
+            skip.Entry.InlineTooltipOnFocus("how many selected events to skip for the preview", help,
+                onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
+
+            take.Entry.InlineTooltipOnFocus("the maximum number of selected events to show in the preview", help,
+                onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
+
             return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),
                 scrapeConfigInfo.CenterVertical().Column(1),
@@ -446,9 +459,9 @@ public partial class VenueEditor : ObservableObject
                 lastRefreshed.Column(3),
                 help.layout.Row(1).ColumnSpan(4),
                 controls.View.Row(2).ColumnSpan(4),
-                previewOrErrors.Row(3).ColumnSpan(4),
-                PreviewControls(selectorText).Row(4).ColumnSpan(4),
-                PagingControls(help).Row(5).ColumnSpan(4));
+                PagingControls(help).Row(3).ColumnSpan(4),
+                previewControls.View.Row(4).ColumnSpan(4),
+                previewOrErrors.Row(5).ColumnSpan(4));
 
             async Task TogglePreviewRelatedFocus(bool focused)
             {
@@ -456,16 +469,10 @@ public partial class VenueEditor : ObservableObject
                 else
                 {
                     await Task.Delay(300); // to allow for using the skip/take steppers without flickering
-                    if (!selectorText.IsFocused) model.PreviewRelatedHasFocus = false;
+                    if (!previewRelated.Any(vis => vis.IsFocused)) model.PreviewRelatedHasFocus = false;
                 }
             }
         }
-
-        private static FlexLayout PreviewControls(Entry selectorText)
-            => HWrap(5, Lbl("Preview events").Bold(),
-                // focus selectorText as the closest match to display the help text of while keeping the previewOrErrors open
-                LabeledStepper("skipping", nameof(SkipEvents), max: int.MaxValue, onValueChanged: () => selectorText.Focus()),
-                LabeledStepper("and taking", nameof(TakeEvents), max: 10, onValueChanged: () => selectorText.Focus())).View;
 
         private FlexLayout PagingControls((Label label, Border layout) help)
         {
@@ -551,13 +558,6 @@ public partial class VenueEditor : ObservableObject
                 .ToolTip("Tap any log to open it.");
 
             return HWrap(5, Lbl("📜 Scrape logs").Bold(), Lbl("save"), save.Wrapper, logs).View;
-        }
-
-        private static HorizontalStackLayout LabeledStepper(string label, string valueProperty, int max, Action onValueChanged)
-        {
-            var stepper = new Stepper() { Minimum = 0, Maximum = max, Increment = 1 }.Bind(Stepper.ValueProperty, valueProperty);
-            stepper.ValueChanged += (o, e) => onValueChanged(); // because Un/Focus events aren't firing
-            return HStack(5, Lbl(label), BndLbl(valueProperty), stepper).View;
         }
 
         private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)

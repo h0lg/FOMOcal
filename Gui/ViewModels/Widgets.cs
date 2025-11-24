@@ -36,8 +36,8 @@ internal static class Widgets
     internal static Label BndLbl(string path = ".", string? stringFormat = null, object? source = null)
         => new Label().Bind(Label.TextProperty, path, stringFormat: stringFormat, source: source);
 
-    internal static Entry Entr(string path, string? placeholder = null)
-        => new Entry { Placeholder = placeholder }.Bind(Entry.TextProperty, path);
+    internal static Entry Entr(string path, string? placeholder = null, Keyboard? keybord = null)
+        => new Entry { Placeholder = placeholder, Keyboard = keybord }.Bind(Entry.TextProperty, path);
 
     internal static Editor SelectableMultiLineLabel(string textPropertyPath = ".")
         => new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }
