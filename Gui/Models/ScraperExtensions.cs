@@ -1,29 +1,26 @@
-﻿using AngleSharp;
-using AngleSharp.Dom;
-using AngleSharp.XPath;
-using FomoCal.Gui.ViewModels;
-using DomDoc = AngleSharp.Dom.IDocument;
-using DomElmt = AngleSharp.Dom.IElement;
-
-namespace FomoCal;
+﻿namespace FomoCal;
 
 internal static class ScraperExtensions
 {
-    internal static async Task<DomDoc> CreateDocumentAsync(this IBrowsingContext context, string html, Venue venue, string? url = null)
-        => await context.OpenAsync(response =>
+    /// <summary>A pre-formatted error message including <see cref="venue"/> details
+    /// - for when <see cref="IAutomateAnEventListing.HtmlWithEventsLoaded"/> returns null.</summary>
+    internal static string FormatEventLoadingTimedOut(this Venue venue)
+        => $"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.";
+
+    internal static async Task<IDomDocument> CreateDocumentAsync(this IBrowser browser, string html, Venue venue, string? url = null)
+        => await browser.OpenAsync(response =>
         {
             response.Content(html).Address(url ?? venue.ProgramUrl);
             string? encodingOverride = venue.TryGetAutomationHtmlEncoding(out var encoding) ? encoding : null;
             if (encoding.IsSignificant()) response.OverrideEncoding(encoding);
         });
 
-    internal static IEnumerable<DomElmt> SelectEvents(this DomDoc document, Venue venue)
+    internal static IEnumerable<IDomElement> SelectEvents(this IDomDocument document, Venue venue)
         => ScrapeJob.TryGetXPathSelector(venue.Event.Selector, out var xPathSelector)
-            // see https://github.com/AngleSharp/AngleSharp.XPath
-            ? document.Body.SelectNodes(xPathSelector).OfType<DomElmt>()
+            ? document.SelectNodes(xPathSelector).OfType<IDomElement>()
             : document.QuerySelectorAll(venue.Event.Selector);
 
-    internal static IEnumerable<DomElmt> FilterEvents(this IEnumerable<DomElmt> unfiltered, Venue venue)
+    internal static IEnumerable<IDomElement> FilterEvents(this IEnumerable<IDomElement> unfiltered, Venue venue)
     {
         if (venue.Event.Filter.IsNullOrWhiteSpace()) return unfiltered;
 
@@ -36,62 +33,66 @@ internal static class ScraperExtensions
             : events.Where(el => el.TextContent?.Contains(filter, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
-    /// <summary>Adds a HTTP header to the <paramref name="response"/> that overrides
+    /// <summary>Adds a HTTP header to the <paramref name="builder"/> that overrides
     /// e.g. a meta tag in the document source that claims an incorrect encoding
     /// with the specified <paramref name="encoding"/>,
     /// avoiding incorrect interpretation of characters when extracting text.
     /// See https://github.com/AngleSharp/AngleSharp/blob/main/docs/tutorials/06-Questions.md#how-can-i-specify-encoding-for-loading-a-document</summary>
-    /// <returns>The modified <paramref name="response"/>.</returns>
-    internal static AngleSharp.Io.VirtualResponse OverrideEncoding(this AngleSharp.Io.VirtualResponse response, string? encoding)
-        => response.Header("content-type", "text/html; charset=" + encoding);
+    /// <returns>The modified <paramref name="builder"/>.</returns>
+    internal static IResponseBuilder OverrideEncoding(this IResponseBuilder builder, string? encoding)
+        => builder.Header("content-type", "text/html; charset=" + encoding);
 
-    internal static bool CanLoadMore(this DomDoc document, Venue venue) => venue.Event.LoadsMoreOnScrollDown()
+    internal static bool CanLoadMore(this IDomDocument document, Venue venue) => venue.Event.LoadsMoreOnScrollDown()
         || (venue.Event.LoadsMoreOrDifferentOnNextPage() && document.GetNextPageElement(venue) != null);
 
-    private static DomElmt? GetNextPageElement(this DomDoc document, Venue venue)
+    private static IDomElement? GetNextPageElement(this IDomDocument document, Venue venue)
         => document.QuerySelector(venue.Event.NextPageSelector!);
 
-    internal static async ValueTask<Task<DomDoc?>?> LoadMoreAsync(this IBrowsingContext browsingContext,
-        Venue venue, AutomatedEventPageView? loader, DomDoc currentPage, Action<string, string?>? log = null)
+    internal static async ValueTask<Task<IDomDocument?>?> LoadMoreAsync(this IBrowser browser,
+        Venue venue, IAutomateAnEventListing? automator, IDomDocument currentPage, Action<string, string?>? log = null)
     {
         switch (venue.Event.PagingStrategy)
         {
             case Venue.PagingStrategy.ClickElementToLoadMore:
-                ArgumentNullException.ThrowIfNull(loader);
-                await loader.ClickElementToLoadMore(venue.Event.NextPageSelector!);
-                return loader.LoadAutomated(browsingContext, venue);
+                ArgumentNullException.ThrowIfNull(automator);
+                Task<IDomDocument?> loadingMore = automator.LoadAutomated(browser, venue);
+                await automator.ClickElementToLoadMore(venue.Event.NextPageSelector!);
+                return loadingMore;
             case Venue.PagingStrategy.NavigateLinkToLoadDifferent:
                 var nextPage = currentPage.GetNextPageElement(venue)!;
                 var href = nextPage.GetAttribute("href");
                 log?.Invoke("next page link goes to " + href, null);
                 if (href.IsNullOrWhiteSpace() || href == "#") return null; // to prevent loop
                 var url = nextPage.HyperReference(href!);
-                if (loader == null) return browsingContext.OpenAsync(url)!;
-                loader!.Url = url.ToString();
-                return loader.LoadAutomated(browsingContext, venue);
+                if (automator == null) return browser.OpenAsync(url!)!;
+                Task<IDomDocument?> loadingPage = automator.LoadAutomated(browser, venue);
+                automator!.Url = url;
+                return loadingPage;
             case Venue.PagingStrategy.ScrollDownToLoadMore:
-                ArgumentNullException.ThrowIfNull(loader);
-                await loader.ScrollDownToLoadMore();
-                return loader.LoadAutomated(browsingContext, venue);
+                ArgumentNullException.ThrowIfNull(automator);
+                Task<IDomDocument?> loadingScrolled = automator.LoadAutomated(browser, venue);
+                await automator.ScrollDownToLoadMore();
+                return loadingScrolled;
             case Venue.PagingStrategy.ClickElementToLoadDifferent:
-                ArgumentNullException.ThrowIfNull(loader);
-                await loader.ClickElementToLoadDifferent(venue.Event.NextPageSelector!);
-                return loader.LoadAutomated(browsingContext, venue);
+                ArgumentNullException.ThrowIfNull(automator);
+                Task<IDomDocument?> loadingReplaced = automator.LoadAutomated(browser, venue);
+                await automator.ClickElementToLoadDifferent(venue.Event.NextPageSelector!);
+                return loadingReplaced;
             default:
                 throw new InvalidOperationException($"{nameof(Venue.PagingStrategy)} {venue.Event.PagingStrategy} is not supported");
         }
     }
 
     /// <summary>Loads a <see cref="Venue.ProgramUrl"/> that <see cref="Venue.EventScrapeJob.RequiresAutomation"/>
-    /// using an <see cref="AutomatedEventPageView"/>.</summary>
+    /// using an <see cref="IAutomateAnEventListing"/>.</summary>
     /// <param name="throwOnTimeout">Whether to throw an exception on loading timeout.</param>
     /// <returns>The loading task.</returns>
-    internal static Task<DomDoc?> LoadAutomated(this AutomatedEventPageView loader,
-        IBrowsingContext browsingContext, Venue venue, bool throwOnTimeout = false)
+    internal static Task<IDomDocument?> LoadAutomated(this IAutomateAnEventListing automator,
+        IBrowser browser, Venue venue, bool throwOnTimeout = false)
     {
-        TaskCompletionSource<DomDoc?> eventHtmlLoading = new();
-        loader!.HtmlWithEventsLoaded += HandleLoaded;
-        loader!.ErrorLoading += HandleError;
+        TaskCompletionSource<IDomDocument?> eventHtmlLoading = new();
+        automator.HtmlWithEventsLoaded += HandleLoaded;
+        automator.ErrorLoading += HandleError;
         return eventHtmlLoading.Task;
 
         async void HandleLoaded(string? html)
@@ -100,10 +101,10 @@ internal static class ScraperExtensions
 
             if (html.IsSignificant())
             {
-                var doc = await browsingContext.CreateDocumentAsync(html!, venue, loader.Url);
+                var doc = await browser.CreateDocumentAsync(html!, venue, automator.Url);
                 eventHtmlLoading.TrySetResult(doc);
             }
-            else if (throwOnTimeout) eventHtmlLoading.TrySetException(new Exception(loader.EventLoadingTimedOut));
+            else if (throwOnTimeout) eventHtmlLoading.TrySetException(new Exception(venue.FormatEventLoadingTimedOut()));
             else eventHtmlLoading.TrySetResult(null);
         }
 
@@ -123,8 +124,8 @@ internal static class ScraperExtensions
 
         void DetachHandlers()
         {
-            loader!.HtmlWithEventsLoaded -= HandleLoaded;
-            loader!.ErrorLoading -= HandleError;
+            automator.HtmlWithEventsLoaded -= HandleLoaded;
+            automator.ErrorLoading -= HandleError;
         }
     }
 }

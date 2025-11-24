@@ -9,13 +9,11 @@ internal static partial class Export
 {
     private const string textAlignedWithHeadersPreferencesKey = "Export.TextAlignedWithHeaders";
 
-    internal static readonly PropertyInfo[] EventFields = [.. typeof(Event).GetProperties().Where(p => p.Name != nameof(Event.IsPast))];
-
     private static IEnumerable<PropertyInfo> LoadEventProperties(RememberedStrings remembered, Func<string[]> getDefaults)
     {
         var saved = remembered.Get();
         if (saved.Length == 0) saved = getDefaults();
-        return saved.Select(name => EventFields.First(p => p.Name == name));
+        return saved.Select(name => Event.Fields.First(p => p.Name == name));
     }
 
     private static void SaveEventProperties(IEnumerable<PropertyInfo> value, RememberedStrings remembered)
@@ -24,10 +22,10 @@ internal static partial class Export
     internal static async Task ExportToCsv(this IEnumerable<Event> events)
     {
         var sb = new StringBuilder();
-        sb.AppendLine(EventFields.Select(p => p.Name).Join(","));
+        sb.AppendLine(Event.Fields.Select(p => p.Name).Join(","));
 
         foreach (var evt in events)
-            sb.AppendLine(EventFields.Select(c =>
+            sb.AppendLine(Event.Fields.Select(c =>
             {
                 var value = c.GetValue(evt, null);
                 if (value is string str) return str.CsvEscape();

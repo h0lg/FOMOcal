@@ -20,8 +20,8 @@ public partial class VenueEditor : ObservableObject
     private readonly ScrapeJobEditor eventName, eventDate;
 
     private Entry? visualSelectorHost;
-    private AngleSharp.Dom.IDocument? programDocument;
-    private AngleSharp.Dom.IElement[]? previewedEvents;
+    private IDomDocument? programDocument;
+    private IDomElement[]? previewedEvents;
 
     [ObservableProperty] public partial bool IsEventPageLoading { get; set; } = true;
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(SaveCommand))] public partial bool HasRequiredInfo { get; set; }
@@ -242,7 +242,7 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
-    private void SetDocument(AngleSharp.Dom.IDocument? document)
+    private void SetDocument(IDomDocument? document)
     {
         programDocument?.Dispose();
         programDocument = document;

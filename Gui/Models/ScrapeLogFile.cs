@@ -2,6 +2,19 @@
 
 namespace FomoCal;
 
+public interface ISaveScrapeLogFiles
+{
+    Task<string?> SaveScrapeLogAsync(Venue venue, string log);
+}
+
+internal class DefaultScrapeLogFileSaver : ISaveScrapeLogFiles
+{
+    public Task<string?> SaveScrapeLogAsync(VenueScrapeContext venueScrape)
+        => ScrapeLogFile.Save(venueScrape.Venue, venueScrape.GetScrapeLog());
+
+    public Task<string?> SaveScrapeLogAsync(Venue venue, string log) => ScrapeLogFile.Save(venue, log);
+}
+
 public static class ScrapeLogFile
 {
     private const string timeFormat = "yyyy-MM-dd HH-mm-ss", extension = ".txt";

@@ -61,10 +61,13 @@ partial class VenueEditor
             pageView = new(model.venue);
 
             pageView.HtmlWithEventsLoaded += async html => await model.OnHtmlWithEventsLoadedAsync(html,
-                pageView.EventLoadingTimedOut, pageView.Url);
+                model.venue.FormatEventLoadingTimedOut(), pageView.Url);
 
             pageView.ErrorLoading += async navigationResult => await model.OnErrorLoadingEventsAsync(navigationResult);
             pageView.PickedSelector += selector => model.PickedSelector = selector;
+
+            // avoid navigation error caused by setting Source to empty string when adding a venue
+            if (model.venue.ProgramUrl.IsSignificant()) pageView.Url = model.venue.ProgramUrl;
 
             model.PropertyChanged += async (o, e) =>
             {

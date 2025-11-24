@@ -9,7 +9,7 @@ namespace FomoCal.Gui.ViewModels;
 /// in order to load <see cref="Event"/>s from it
 /// e.g. by waiting for lazy-loaded ones via <see cref="HtmlWithEventsLoaded"/>
 /// or loading more depending on the <see cref="Venue.EventScrapeJob.PagingStrategy"/>.</summary>
-public partial class AutomatedEventPageView : WebView
+public partial class AutomatedEventPageView : WebView, IAutomateAnEventListing
 {
     const string interopMessagePrefix = "fomocal://",
         eventsLoaded = interopMessagePrefix + "events.loaded",
@@ -21,32 +21,23 @@ public partial class AutomatedEventPageView : WebView
     private readonly Venue venue;
     private readonly Action<string, string?>? Log;
 
-    /// <summary>An event that notifies the subscriber about the DOM from <see cref="Venue.ProgramUrl"/>
-    /// being ready for scraping and returning its HTML - or null if events are
-    /// <see cref="Venue.EventScrapeJob.LazyLoaded"/> and that times out.</summary>
-    internal event Action<string?>? HtmlWithEventsLoaded;
+    /// <inheritdoc />
+    public event Action<string?>? HtmlWithEventsLoaded;
 
-    /// <summary>An event that notifies the subscriber about an error loading the <see cref="Venue.ProgramUrl"/>.</summary>
-    internal event Action<WebNavigationResult>? ErrorLoading;
+    /// <inheritdoc />
+    public event Action<WebNavigationResult>? ErrorLoading;
 
     /// <summary>An event that notifies the subscriber about a DOM node
     /// having been picked and returning its selector.</summary>
     internal event Action<string>? PickedSelector;
 
-    /// <summary>A pre-formatted error message including <see cref="venue"/> details
-    /// - for when <see cref="HtmlWithEventsLoaded"/> returns null.</summary>
-    internal string EventLoadingTimedOut => $"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.";
-
     private string? url;
-    internal string? Url { get => url; set => Source = url = value; }
+    public string? Url { get => url; set => Source = url = value; }
 
     public AutomatedEventPageView(Venue venue, Action<string, string?>? log = null)
     {
         this.venue = venue;
         Log = log;
-
-        // avoid navigation error caused by setting Source to empty string when adding a venue
-        if (venue.ProgramUrl.IsSignificant()) Url = venue.ProgramUrl;
 
         Navigating += OnNavigatingAsync;
         Navigated += OnNavigatedAsync;
@@ -69,13 +60,13 @@ public partial class AutomatedEventPageView : WebView
     internal Task SetPickedSelectorDetail(PickedSelectorOptions selectorDetail)
         => EvaluateJavaScriptAsync($"{picking}withOptions({ToJsonOptions(selectorDetail)});");
 
-    internal Task ClickElementToLoadMore(string selector)
+    public Task ClickElementToLoadMore(string selector)
         => EvaluateJavaScriptAsync($"{waitForSelector}afterClickingOn('{selector}', {GetWaitForSelectorOptions()});");
 
-    internal Task ClickElementToLoadDifferent(string selector)
+    public Task ClickElementToLoadDifferent(string selector)
         => EvaluateJavaScriptAsync($"{waitForSelector}mutationAfterClickingOn('{selector}', {GetWaitForSelectorOptions()});");
 
-    internal Task ScrollDownToLoadMore()
+    public Task ScrollDownToLoadMore()
         => EvaluateJavaScriptAsync($"{waitForSelector}afterScrollingDown({GetWaitForSelectorOptions()});");
 
     private async void OnNavigatingAsync(object? sender, WebNavigatingEventArgs args)

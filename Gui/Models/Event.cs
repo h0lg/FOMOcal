@@ -1,9 +1,12 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace FomoCal;
 
 public class Event
 {
+    public static readonly PropertyInfo[] Fields = [.. typeof(Event).GetProperties().Where(p => p.Name != nameof(IsPast))];
+
     public required string Name { get; set; }
     public string? SubTitle { get; set; }
     public string? Genres { get; set; }

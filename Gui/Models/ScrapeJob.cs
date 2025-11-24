@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using AngleSharp.Dom;
-using AngleSharp.XPath;
 
 namespace FomoCal;
 
@@ -63,11 +61,11 @@ public partial class ScrapeJob
     public string? Match { get; set; }
     public string? Comment { get; set; }
 
-    public virtual string? GetValue(AngleSharp.Dom.IElement element, List<Exception>? errors = null)
+    public virtual string? GetValue(IDomElement element, List<Exception>? errors = null)
     {
         try
         {
-            INode? node = element;
+            IDomNode? node = element;
 
             if (Closest.IsSignificant())
                 node = TryGetXPathSelector(Closest!, out var xPathClosest)
@@ -79,17 +77,17 @@ public partial class ScrapeJob
 
             if (node == null) return null;
 
-            List<INode> nodes = Selector.IsSignificant() && node is AngleSharp.Dom.IElement selectable
+            List<IDomNode> nodes = Selector.IsSignificant() && node is IDomElement selectable
                 ? TryGetXPathSelector(Selector!, out var xPathSelector)
                     ? selectable.SelectNodes(xPathSelector)
-                    : [.. selectable.QuerySelectorAll(Selector!).Cast<INode>()]
+                    : [.. selectable.QuerySelectorAll(Selector!).Cast<IDomNode>()]
                 : [node];
 
             if (nodes.Count == 0) return null;
 
             var text = nodes.Select(node =>
-                Attribute.IsSignificant() && node is AngleSharp.Dom.IElement attributed ? attributed.GetAttribute(Attribute!)
-                    : IgnoreNestedText ? node.ChildNodes.Where(n => n.NodeType == NodeType.Text).Select(n => n.TextContent).LineJoin()
+                Attribute.IsSignificant() && node is IDomElement attributed ? attributed.GetAttribute(Attribute!)
+                    : IgnoreNestedText ? node.GetTextNodes().Select(n => n.TextContent).LineJoin()
                     : node.TextContent)
                 .LineJoin();
 
@@ -108,7 +106,7 @@ public partial class ScrapeJob
 
     /// <summary>Returns an absolute URL for relative or root-relative paths
     /// scraped from <paramref name="element"/>, like from href or src attributes.</summary>
-    internal string? GetUrl(AngleSharp.Dom.IElement element, List<Exception>? errors = null)
+    internal string? GetUrl(IDomElement element, List<Exception>? errors = null)
     {
         string? maybeRelativeUri = GetValue(element, errors);
 

@@ -1,0 +1,93 @@
+﻿using FomoCal;
+
+namespace Tests.PagingStrategies;
+
+[TestClass]
+public sealed partial class AllOnOnePage_Tests : PagingStrategyTests
+{
+    public AllOnOnePage_Tests() : base(Venue.PagingStrategy.AllOnOne) { }
+
+    [TestMethod]
+    public async Task AllScrapable()
+    {
+        browser.AddEvents(venue, 10);
+        (var events, var errors) = await scraper.ScrapeVenueAsync(venue);
+        AssertEmpty(errors);
+
+        AssertLogLines("paging strategy loads all on the first page",
+            "selected 10 events",
+            "scraped 10 events in total");
+
+        Assert.HasCount(10, events);
+    }
+
+    [TestMethod]
+    public async Task HalfMissingRequiredInfo()
+    {
+        browser.AddEvents(venue, 2);
+        browser.AddEvents(venue, 2, error: EventPageError.NoDate);
+        browser.AddEvents(venue, 3);
+        browser.AddEvents(venue, 3, error: EventPageError.NoDate);
+        browser.AddEvents(venue, 5);
+        browser.AddEvents(venue, 5, error: EventPageError.NoName);
+
+        (var events, var errors) = await scraper.ScrapeVenueAsync(venue);
+        AssertEmpty(errors);
+
+        AssertLogLines(
+            "selected 20 events -10 missing a name or date",
+            "scraped 10 events in total");
+
+        Assert.HasCount(10, events);
+    }
+
+    [TestMethod]
+    public async Task HalfInThePast()
+    {
+        browser.AddEvents(venue, 5);
+        browser.AddEvents(venue, 5, error: EventPageError.Past);
+        browser.AddEvents(venue, 5);
+        browser.AddEvents(venue, 5, error: EventPageError.Past);
+
+        (var events, var errors) = await scraper.ScrapeVenueAsync(venue);
+        AssertEmpty(errors);
+
+        AssertLogLines(
+            "selected 20 events -10 in the past",
+            "scraped 10 events in total");
+
+        Assert.HasCount(10, events);
+    }
+
+    [TestMethod]
+    public async Task HalfDuplicated()
+    {
+        browser.AddEvents(venue, 10);
+        browser.AddEvents(venue, 10, start: 1);
+
+        (var events, var errors) = await scraper.ScrapeVenueAsync(venue);
+        AssertEmpty(errors);
+
+        AssertLogLines(
+            "selected 20 events -10 already scraped",
+            "scraped 10 events in total");
+
+        Assert.HasCount(10, events);
+    }
+
+    [TestMethod]
+    public async Task HalfExcludedByFilter()
+    {
+        browser.AddEvents(venue, 10);
+        browser.AddEvents(venue, 10, category: "boring party");
+
+        (var events, var errors) = await scraper.ScrapeVenueAsync(venue);
+        AssertEmpty(errors);
+
+        AssertLogLines(
+            "selected 20 events -10 not matching 'concert'",
+            "scraped 10 events in total");
+
+        Assert.HasCount(10, events);
+    }
+}
