@@ -1,14 +1,13 @@
+import js from "@eslint/js";
 import globals from "globals";
-import pluginJs from "@eslint/js";
+import { defineConfig } from "eslint/config";
 
-/** @type {import('eslint').Linter.Config[]} */
-export default [
+export default defineConfig([
+    { files: ["**/*.{js,mjs,cjs}"], plugins: { js }, extends: ["js/recommended"], languageOptions: { globals: globals.browser } },
     { files: ["**/*.js"], languageOptions: { sourceType: "script" } },
-    { languageOptions: { globals: globals.browser } },
-    pluginJs.configs.recommended,
     {
         rules: {
             semi: ["error", "always"]
         }
     }
-];
+]);
