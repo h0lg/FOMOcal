@@ -424,13 +424,13 @@ public partial class ScrapeJobEditor : ObservableObject
                 {
                     list.IsVisible = true;
 
-                    await Task.WhenAll(list.FadeTo(1, 300),
-                        list.ScaleTo(1, 300, Easing.CubicOut));
+                    await Task.WhenAll(list.FadeToAsync(1, 300),
+                        list.ScaleToAsync(1, 300, Easing.CubicOut));
                 }
                 else if (!shouldBeVisible && list.IsVisible)
                 {
-                    await Task.WhenAll(list.FadeTo(0, 300),
-                        list.ScaleTo(0, 300, Easing.CubicIn));
+                    await Task.WhenAll(list.FadeToAsync(0, 300),
+                        list.ScaleToAsync(0, 300, Easing.CubicIn));
 
                     list.IsVisible = false;
                 }

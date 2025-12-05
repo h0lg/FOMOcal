@@ -29,7 +29,7 @@ partial class VenueEditor
     private async Task OnHtmlWithEventsLoadedAsync(string? html, string timeOutMessage, string? url)
     {
         if (html.IsSignificant()) SetDocument(await scraper.CreateDocumentAsync(html!, venue, url));
-        else await App.CurrentPage.DisplayAlert("Event loading timed out.", timeOutMessage, "OK");
+        else await App.CurrentPage.DisplayAlertAsync("Event loading timed out.", timeOutMessage, "OK");
 
         IsEventPageLoading = false;
         RevealMore();
@@ -46,7 +46,7 @@ partial class VenueEditor
         if (navigationResult == WebNavigationResult.Failure && !ProgramUrl.IsValidHttpUrl())
             message += $" '{ProgramUrl}' is not a valid HTTP URL.";
 
-        await App.CurrentPage.DisplayAlert("Error loading event page.", message, "OK");
+        await App.CurrentPage.DisplayAlertAsync("Error loading event page.", message, "OK");
         RevealMore();
     }
 

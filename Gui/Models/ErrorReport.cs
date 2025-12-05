@@ -20,14 +20,14 @@ public static class ErrorReport
         {
             if (!App.CurrentPage.IsLoaded) return; // displaying alerts won't work
 
-            if (path == null) await App.CurrentPage.DisplayAlert($"{header} and writing report.", report, "OK");
+            if (path == null) await App.CurrentPage.DisplayAlertAsync($"{header} and writing report.", report, "OK");
             else
             {
-                var seeReport = await App.CurrentPage.DisplayAlert(header, "A report has been generated.", "To the report", "Ignore");
+                var seeReport = await App.CurrentPage.DisplayAlertAsync(header, "A report has been generated.", "To the report", "Ignore");
 
                 if (seeReport)
                 {
-                    var open = await App.CurrentPage.DisplayAlert(header, "Choose what to do with the report.", accept: "Open", cancel: "Share");
+                    var open = await App.CurrentPage.DisplayAlertAsync(header, "Choose what to do with the report.", accept: "Open", cancel: "Share");
 
                     if (open) await FileHelper.OpenFileAsync(path, header);
                     else FileHelper.ShareFile(path, MediaTypeNames.Text.Plain, title: AppInfo.Name + " error report");

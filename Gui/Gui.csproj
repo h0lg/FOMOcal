@@ -2,8 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
-    <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-    <!-- <TargetFrameworks>$(TargetFrameworks);net10.0-tizen</TargetFrameworks> -->
+
     <!-- Note for MacCatalyst:
     The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
     When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
@@ -43,7 +42,7 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+
     <AssemblyName>FOMOcal</AssemblyName>
     <Product>FOMOcal</Product>
     <AssemblyTitle>FOMOcal - Find, sync and share events on the web pages of local venues.</AssemblyTitle>
@@ -87,9 +86,9 @@
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="1.4.0" />
     <PackageReference Include="AngleSharp.XPath" Version="2.0.5" />
-    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.1" />
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="7.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.120" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.1" />
   </ItemGroup>
 

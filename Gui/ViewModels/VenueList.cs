@@ -135,7 +135,7 @@ public partial class VenueList : ObservableObject
         RefreshList();
         await SaveVenues();
         if (errors.Count > 0) await WriteErrorReportAsync(ReportErrors(errors, venue));
-        if (warning != null) await App.CurrentPage.DisplayAlert("You may want to look into:", warning, "OK");
+        if (warning != null) await App.CurrentPage.DisplayAlertAsync("You may want to look into:", warning, "OK");
     }
 
     [RelayCommand]
@@ -159,7 +159,7 @@ public partial class VenueList : ObservableObject
         if (scrapesWithWarnings.Length > 0)
         {
             string warnings = scrapesWithWarnings.Select(r => r.task.Result.warning).LineJoin();
-            await App.CurrentPage.DisplayAlert("You may want to look into:", warnings, "OK");
+            await App.CurrentPage.DisplayAlertAsync("You may want to look into:", warnings, "OK");
         }
     }
 
@@ -185,7 +185,7 @@ public partial class VenueList : ObservableObject
             }
             catch (Exception ex)
             {
-                await App.CurrentPage.DisplayAlert("Error importing venues", ex.Message, "OK");
+                await App.CurrentPage.DisplayAlertAsync("Error importing venues", ex.Message, "OK");
                 return;
             }
 
@@ -326,7 +326,7 @@ public partial class VenueList : ObservableObject
                 {
                     while (!token.IsCancellationRequested && !cmd.CanExecute(btn.CommandParameter))
                     {
-                        await btn.RotateTo(90, 1500, Easing.SinInOut); // retract animation
+                        await btn.RotateToAsync(90, 1500, Easing.SinInOut); // retract animation
                         await AnimateHit();
                     }
                 }
@@ -336,7 +336,7 @@ public partial class VenueList : ObservableObject
                 }
             };
 
-            Task<bool> AnimateHit() => btn.RotateTo(0, 300, Easing.SpringOut);
+            Task<bool> AnimateHit() => btn.RotateToAsync(0, 300, Easing.SpringOut);
         }
     }
 

@@ -17,10 +17,23 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkitMarkup()
+            .ConfigureMauiHandlers(_ =>
+            {
+#if WINDOWS
+                Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("KeyboardAccessibleCollectionView",
+                    (handler, _) => handler.PlatformView.SingleSelectionFollowsFocus = false);
+
+                /*  hide tick / check mark shown on Windows for CollectionView with SelectionMode Multiple,
+                    https://github.com/dotnet/maui/issues/16066#issuecomment-2058487452 */
+                Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("DisableMultiselectCheckbox",
+                    (handler, _) => handler.PlatformView.IsMultiSelectCheckBoxEnabled = false);
+#endif
+            })
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                fonts.AddFont("SegoeUI-Semibold.ttf", "SegoeSemibold");
             });
 
         // set up storage
@@ -45,15 +58,9 @@ public static class MauiProgram
         builder.Services.AddTransient<Settings.Page>();
         builder.Services.AddSingleton<MainPage>();
 
-#if WINDOWS
-        /*  hide tick / check mark shown on Windows for CollectionView with SelectionMode Multiple,
-            https://github.com/dotnet/maui/issues/16066#issuecomment-2058487452 */
-        Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping(
-            "DisableMultiselectCheckbox", (handler, _) => handler.PlatformView.IsMultiSelectCheckBoxEnabled = false);
-#endif
-
 #if DEBUG
         builder.Logging.AddDebug();
+        builder.Services.AddLogging(configure => configure.AddDebug());
 #endif
 
         return builder.Build();

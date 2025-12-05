@@ -295,7 +295,7 @@ public partial class VenueEditor : ObservableObject
     [RelayCommand]
     private async Task DeleteAsync()
     {
-        bool isConfirmed = await App.CurrentPage.DisplayAlert("Confirm Deletion",
+        bool isConfirmed = await App.CurrentPage.DisplayAlertAsync("Confirm Deletion",
             $"Are you sure you want to delete the venue {venue.Name}?",
             "Yes", "No");
 
