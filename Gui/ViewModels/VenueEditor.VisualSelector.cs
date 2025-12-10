@@ -248,7 +248,7 @@ partial class VenueEditor
         private async Task UndebouncedUpdateHeightAsync()
         {
             var maxHeight = Height - 100;
-            double height = 0;
+            double height;
 
             if (model.ShowSelectorOptions) // calculate dynamic height based on measured selectorControls sizes
             {
