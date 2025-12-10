@@ -297,7 +297,7 @@ public partial class VenueList : ObservableObject
                 openSettings.Row(3), addVenue.Row(3).Column(1), refreshAll.Row(3).Column(3).ColumnSpan(2));
         }
 
-        private void SwingPickaxeDuring(Button btn, ICommand cmd)
+        private static void SwingPickaxeDuring(Button btn, ICommand cmd)
         {
             /* square up & round up btn, so that its rotation is not noticable
              * because we cannot access and rotate only its label */
