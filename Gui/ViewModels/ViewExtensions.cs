@@ -143,7 +143,7 @@ internal static partial class ViewExtensions
 
             if (headerMatch.Success)
             {
-                int level = headerMatch.Groups[1].Value.Length;
+                // also available if useful: int level = headerMatch.Groups[1].Value.Length;
                 string headerText = headerMatch.Groups[2].Value;
 
                 formatted.Spans.Add(new Span
