@@ -2,7 +2,7 @@
 
 internal static class ScraperExtensions
 {
-    /// <summary>A pre-formatted error message including <see cref="venue"/> details
+    /// <summary>A pre-formatted error message including <paramref name="venue"/> details
     /// - for when <see cref="IAutomateAnEventListing.HtmlWithEventsLoaded"/> returns null.</summary>
     internal static string FormatEventLoadingTimedOut(this Venue venue)
         => $"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.";
