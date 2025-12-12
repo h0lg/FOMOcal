@@ -42,8 +42,8 @@ public static class ScrapeLogFile
     internal static IEnumerable<ForVenue> GetAll(Venue venue)
     {
         string prefix = GetNamePrefix(venue);
+        if (prefix.IsNullOrWhiteSpace()) return [];
         string[] paths = Directory.GetFiles(folder, $"{prefix}*{extension}");
-
         if (paths.Length == 0) return [];
 
         /* number of chars preceding the time in the file path,

@@ -170,7 +170,8 @@ public partial class VenueEditor : ObservableObject
         eventName.IsValidAsRequiredChanged += (_, _) => RevealMore();
         eventDate.IsValidAsRequiredChanged += (_, _) => RevealMore();
 
-        ScrapeLogs = new(ScrapeLogFile.GetAll(venue));
+        // only load scrape logs if ProgramUrl is set; use isDeletable as indicator
+        ScrapeLogs = new(isDeletable ? ScrapeLogFile.GetAll(venue): []);
 
         PropertyChanged += (o, e) =>
         {
