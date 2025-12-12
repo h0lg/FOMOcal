@@ -19,7 +19,7 @@ internal static class Styles
 
     internal static class Span
     {
-        internal static Style LinkSpan = Get(), HelpHeaderSpan = Get(), HelpSpan = Get(),
+        internal static Style LinkSpan = Get(), HighlitSpan = Get(), HelpHeaderSpan = Get(), HelpSpan = Get(),
             HelpLinkSpan = Get(), HelpFooterSpan = Get(),
             HelpFooterLinkSpan = MergedStyle.Combine(HelpFooterSpan, HelpLinkSpan)!;
     }
@@ -85,11 +85,14 @@ internal static partial class ViewExtensions
         Func<ValueTuple<bool, bool>, bool> convert, BindingBase binding2) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, binding1, binding2, convert: convert);
 
+    internal static T BindVisibleToNotNullOf<T>(this T vis, string property) where T : VisualElement
+        => vis.Bind(VisualElement.IsVisibleProperty, property, converter: Converters.NotNull);
+
     internal static T BindIsVisibleToValueOf<T>(this T vis, string textProperty) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, textProperty, converter: Converters.IsSignificant);
 
-    internal static T BindIsVisibleToHasValueOf<T, TProp>(this T vis, string textProperty) where T : VisualElement where TProp : struct
-        => vis.Bind(VisualElement.IsVisibleProperty, textProperty, converter: Converters<TProp>.HasValue);
+    internal static T BindIsVisibleToHasValueOf<T, TProp>(this T vis, string property) where T : VisualElement where TProp : struct
+        => vis.Bind(VisualElement.IsVisibleProperty, property, converter: Converters<TProp>.HasValue);
 
     internal static Label Wrap(this Label label)
     {
@@ -155,29 +158,22 @@ internal static partial class ViewExtensions
             // only append empty line if there are more lines, don't end on one
             if (lineIndex < lines.Length - 1) formatted.Spans.Add(new Span { Text = Environment.NewLine });
         }
-    }
 
-    internal static FormattedString LinkifyUrls(this string text, Style linkStyle, Style? normalStyle = null)
-    {
-        FormattedString formatted = new();
-        AppendWithLinks(formatted, text, linkStyle, normalStyle);
-        return formatted;
-    }
-
-    private static void AppendWithLinks(FormattedString target, string text, Style linkStyle, Style? normalStyle)
-    {
-        foreach ((string display, string? url) in text.ChunkByLinksAndUrls())
+        static void AppendWithLinks(FormattedString target, string text, Style linkStyle, Style? normalStyle)
         {
-            Span chunk = new() { Text = display };
-
-            if (url == null) chunk.Style = normalStyle;
-            else
+            foreach ((string display, string? url) in text.ChunkByLinksAndUrls())
             {
-                chunk.Style = linkStyle;
-                chunk.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
-            }
+                Span chunk = new() { Text = display };
 
-            target.Spans.Add(chunk);
+                if (url == null) chunk.Style = normalStyle;
+                else
+                {
+                    chunk.Style = linkStyle;
+                    chunk.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
+                }
+
+                target.Spans.Add(chunk);
+            }
         }
     }
 
@@ -210,6 +206,7 @@ internal static class Converters
     internal static Func<ValueTuple<bool, bool>, bool> Or = ((bool a, bool b) values) => values.a || values.b;
     internal static Func<ValueTuple<bool, bool>, bool> And = ((bool a, bool b) values) => values.a && values.b;
     internal static FuncConverter<string, bool> IsSignificant = new(value => value.IsSignificant());
+    internal static FuncConverter<object, bool> NotNull = new(value => value != null);
     internal static FuncConverter<T, bool> Func<T>(Func<T?, bool> predicate) => new(predicate);
 }
 

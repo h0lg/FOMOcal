@@ -59,6 +59,8 @@
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
 
+    <Color x:Key="HighlitTextLight">#992</Color>
+    <Color x:Key="HighlitTextDark">#772</Color>
     <Color x:Key="LinkTextLight">#77F</Color>
     <Color x:Key="LinkTextDark">#aaf</Color>
 </ResourceDictionary>

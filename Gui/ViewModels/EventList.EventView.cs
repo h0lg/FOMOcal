@@ -7,11 +7,15 @@ partial class EventList
         public Event Model { get; }
         public bool IsPast { get; }
 
+        // searched and highlit text properties
+        public IReadOnlyList<TextChunk>? Name { get; private set; }
+        public IReadOnlyList<TextChunk>? SubTitle { get; private set; }
+        public IReadOnlyList<TextChunk>? Genres { get; private set; }
+        public IReadOnlyList<TextChunk>? Description { get; private set; }
+        public IReadOnlyList<TextChunk>? Venue { get; private set; }
+        public IReadOnlyList<TextChunk>? Stage { get; private set; }
+
         #region read-only proxies
-        public string Name => Model.Name;
-        public string? SubTitle => Model.SubTitle;
-        public string? Genres => Model.Genres;
-        public string? Description => Model.Description;
         public string? Url => Model.Url;
         public string? ImageUrl => Model.ImageUrl;
 
@@ -20,9 +24,6 @@ partial class EventList
 
         public string? DoorsTime => Model.DoorsTime;
         public string? StartTime => Model.StartTime;
-
-        public string Venue => Model.Venue;
-        public string? Stage => Model.Stage;
 
         /// <inheritdoc cref="Event.Scraped" />
         public DateTime Scraped => Model.Scraped;
@@ -39,6 +40,21 @@ partial class EventList
         {
             Model = e;
             IsPast = Date < DateTime.Today;
+        }
+
+        /// <summary>Chunks the searched text properties by the <paramref name="terms"/>
+        /// to highlight the latter in the former.</summary>
+        internal void SetSearchTerms(string[] terms)
+        {
+            Name = Model.Name.ChunkBy(terms);
+            SubTitle = Model.SubTitle.ChunkBy(terms);
+
+            /* prepend icons to bound chunks because a format string on the binding
+             * doesn't work when binding to Label.FormattedTextProperty */
+            Genres = Model.Genres.ChunkBy(terms).PrependWith("🎶 ");
+            Description = [.. Model.Description.ChunkByLinksAnd(terms)];
+            Venue = Model.Venue.ChunkBy(terms).PrependWith("🏟 ");
+            Stage = Model.Stage.ChunkBy(terms).PrependWith("🏛 ");
         }
 
         public override bool Equals(object? obj) => obj is EventView other && Equals(other);

@@ -156,6 +156,9 @@ public partial class EventList : ObservableObject
     // used on the MainPage for Desktop
     public partial class View : ContentView
     {
+        private static readonly TextChunkConverter textChunkConverter =
+            new(linkStyle: Styles.Span.LinkSpan, highlitStyle: Styles.Span.HighlitSpan);
+
         public View(EventList model)
         {
             BindingContext = model;
@@ -192,26 +195,23 @@ public partial class EventList : ObservableObject
                     .BindIsVisibleToValueOf(nameof(EventView.ImageUrl));
 
                 var header = VStack(5,
-                    BndLbl(nameof(EventView.Name)).Wrap().Bold().FontSize(16),
-                    OptionalTextLabel(nameof(EventView.SubTitle)).Bold().Wrap(),
-                    OptionalTextLabel(nameof(EventView.Genres), "🎶 {0}").Wrap());
+                    BndFmtLbl(nameof(EventView.Name), converter: textChunkConverter).Bold().Wrap().FontSize(16),
+                    OptionalFormattedLabel(nameof(EventView.SubTitle)).Bold().Wrap(),
+                    OptionalFormattedLabel(nameof(EventView.Genres)).Wrap());
 
                 var times = VStack(5,
                     BndLbl(nameof(EventView.Date), stringFormat: "📆 {0:ddd d MMM yy}").Bold(),
                     OptionalTextLabel(nameof(EventView.DoorsTime), "🚪 {0}"),
                     OptionalTextLabel(nameof(EventView.StartTime), "🎼 {0}"));
 
-                var description = new Label().Bind(Label.FormattedTextProperty, nameof(EventView.Description),
-                    convert: (string? text) => text?.LinkifyUrls(Styles.Span.LinkSpan));
-
                 var details = VStack(5,
-                    description.Wrap(),
+                    OptionalFormattedLabel(nameof(EventView.Description)).Wrap(),
                     OpenUrlButton("📰 more 📡", nameof(EventView.Url), model).End(),
                     OpenUrlButton("⛏ from 📡", nameof(EventView.ScrapedFrom), model).End());
 
                 var location = HStack(5,
-                    BndLbl(nameof(EventView.Venue), stringFormat: "🏟 {0}"),
-                    OptionalTextLabel(nameof(EventView.Stage), "🏛 {0}"),
+                    BndFmtLbl(nameof(EventView.Venue), converter: textChunkConverter),
+                    OptionalFormattedLabel(nameof(EventView.Stage)),
                     BndLbl(nameof(EventView.Scraped), stringFormat: "⛏ {0:g}")
                         .StyleClass(Styles.Label.Demoted)).View;
 
@@ -274,6 +274,9 @@ public partial class EventList : ObservableObject
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)
             => BndLbl(property, stringFormat: stringFormat).BindIsVisibleToValueOf(property);
+
+        private static Label OptionalFormattedLabel(string property)
+            => BndFmtLbl(property, converter: textChunkConverter).BindVisibleToNotNullOf(property);
 
         private static Button ExportButton(string text, string command)
             => Btn(text, command).BindVisible(nameof(HasSelection));

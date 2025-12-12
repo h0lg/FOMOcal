@@ -19,18 +19,23 @@ partial class EventList
     {
         CanDeletePastEvents = ShowPastEvents && allEvents!.Any(e => e.IsPast);
         var filtered = ShowPastEvents ? allEvents! : allEvents!.Where(e => !e.IsPast);
+        string[] searchTerms;
 
         if (SearchText.IsSignificant())
         {
-            var terms = SearchText.Split("|", StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToArray();
+            searchTerms = [.. SearchText.Split("|", StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim())];
 
-            filtered = filtered.Where(e => e.Name.ContainsAny(terms)
-                || e.SubTitle?.ContainsAny(terms) == true
-                || e.Genres?.ContainsAny(terms) == true
-                || e.Description?.ContainsAny(terms) == true
-                || e.Venue?.ContainsAny(terms) == true
-                || e.Stage?.ContainsAny(terms) == true);
+            filtered = filtered.Where(e => e.Model.Name.ContainsAny(searchTerms)
+                || e.Model.SubTitle?.ContainsAny(searchTerms) == true
+                || e.Model.Genres?.ContainsAny(searchTerms) == true
+                || e.Model.Description?.ContainsAny(searchTerms) == true
+                || e.Model.Venue?.ContainsAny(searchTerms) == true
+                || e.Model.Stage?.ContainsAny(searchTerms) == true);
         }
+        else searchTerms = [];
+
+        foreach (var evt in filtered)
+            evt.SetSearchTerms(searchTerms);
 
         FilteredEvents.Clear();
 
