@@ -62,6 +62,45 @@ public static partial class StringExtensions
         StringComparison stringComparison = StringComparison.InvariantCultureIgnoreCase)
         => terms.Any(t => text.Contains(t, stringComparison));
 
+    [GeneratedRegex(@"\[(?<label>[^\]]+)\]\((?<url>https?:\/\/[^\s)]+)\)|(?<urlonly>https?:\/\/[^\s\[\]()]+)")]
+    private static partial Regex LinkRegex();
+
+    internal static IEnumerable<(string text, string? url)> ChunkByLinksAndUrls(this string text)
+    {
+        int lastIndex = 0;
+
+        foreach (Match match in LinkRegex().Matches(text))
+        {
+            // Add normal text before this match
+            if (match.Index > lastIndex) yield return (text[lastIndex..match.Index], null);
+
+            string displayText, url;
+
+            Group label = match.Groups["label"],
+                urlMatch = match.Groups["url"];
+
+            if (label.Success && urlMatch.Success) // Markdown-style link
+            {
+                displayText = label.Value;
+                url = urlMatch.Value;
+            }
+            else
+            {
+                Group urlOnly = match.Groups["urlonly"];
+
+                if (urlOnly.Success) // Plain URL
+                    displayText = url = urlOnly.Value;
+                else throw new ArgumentException(nameof(LinkRegex) + " matched something unexpected " + match);
+            }
+
+            yield return (displayText, url);
+            lastIndex = match.Index + match.Length;
+        }
+
+        // Remaining normal text
+        if (lastIndex < text.Length) yield return (text[lastIndex..], null);
+    }
+
     internal static string RemoveJsComments(this string code)
         => JsComments().Replace(code,
             // Keep strings and template literals, remove comments

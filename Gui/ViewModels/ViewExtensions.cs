@@ -97,9 +97,6 @@ internal static partial class ViewExtensions
         return label;
     }
 
-    [GeneratedRegex(@"\[(?<label>[^\]]+)\]\((?<url>https?:\/\/[^\s)]+)\)|(?<urlonly>https?:\/\/[^\s\[\]()]+)")]
-    private static partial Regex LinkRegex();
-
     [GeneratedRegex(@"^(#+)\s+(.*)")] private static partial Regex HeaderRegex(); // e.g. # Heading
     private const string footerPrefix = "^^";
 
@@ -169,52 +166,19 @@ internal static partial class ViewExtensions
 
     private static void AppendWithLinks(FormattedString target, string text, Style linkStyle, Style? normalStyle)
     {
-        int lastIndex = 0;
-
-        foreach (Match match in LinkRegex().Matches(text))
+        foreach ((string display, string? url) in text.ChunkByLinksAndUrls())
         {
-            // Add normal text before this match
-            if (match.Index > lastIndex) target.Spans.Add(new Span
-            {
-                Text = text[lastIndex..match.Index],
-                Style = normalStyle
-            });
+            Span chunk = new() { Text = display };
 
-            Span link;
-            string url;
-
-            Group label = match.Groups["label"],
-                urlMatch = match.Groups["url"];
-
-            if (label.Success && urlMatch.Success) // Markdown-style link
-            {
-                string displayText = label.Value;
-                url = urlMatch.Value;
-                link = new() { Text = displayText, Style = linkStyle };
-            }
+            if (url == null) chunk.Style = normalStyle;
             else
             {
-                Group urlOnly = match.Groups["urlonly"];
-
-                if (urlOnly.Success) // Plain URL
-                {
-                    url = urlOnly.Value;
-                    link = new() { Text = url, Style = linkStyle };
-                }
-                else throw new ArgumentException(nameof(LinkRegex) + " matched something unexpected " + match);
+                chunk.Style = linkStyle;
+                chunk.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
             }
 
-            link.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
-            target.Spans.Add(link);
-            lastIndex = match.Index + match.Length;
+            target.Spans.Add(chunk);
         }
-
-        // Remaining normal text
-        if (lastIndex < text.Length) target.Spans.Add(new Span
-        {
-            Text = text[lastIndex..],
-            Style = normalStyle
-        });
     }
 
     internal static Task AnimateHeightRequest(this VisualElement view, double endValue, uint duration = 300)
