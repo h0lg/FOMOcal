@@ -61,7 +61,10 @@ public partial class VenueScrapeContext : IDisposable // to support custom clean
     public void Dispose()
     {
         if (isDisposed) return;
-        Loading.Result?.Dispose();
+
+        if (Loading.IsCompletedSuccessfully) // avoid throwing exception if task failed
+            Loading.Result?.Dispose();
+
         Loading.Dispose();
         cleanup?.Invoke();
         isDisposed = true; // allow GC to clean up the rest
