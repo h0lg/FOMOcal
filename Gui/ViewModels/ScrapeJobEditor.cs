@@ -115,7 +115,7 @@ public partial class ScrapeJobEditor : ObservableObject
         set
         {
             if (DateScrapeJob!.Format == value) return;
-            DateScrapeJob.Format = value;
+            DateScrapeJob.UpdateFormat(value);
             OnPropertyChanged();
         }
     }

@@ -6,8 +6,15 @@ public class DateScrapeJob : ScrapeJob
 {
     private string culture = "en";
     private CultureInfo? cultureInfo;
+    private string[]? formats, formatsWithWeekDayButNoYear; // caches
 
+    /// <summary>Init via setter e.g. for testing, update using <see cref="UpdateFormat(string)"/> to clear caches.</summary>
     public string Format { get; set; } = "ddd dd MMM yyyy";
+
+    private string[] Formats => formats ??= Format.Split("||", StringSplitOptions.RemoveEmptyEntries);
+
+    private string[] FormatsWithWeekDayButNoYear => formatsWithWeekDayButNoYear
+        ??= [.. Formats.Where(f => f.Contains("ddd") && !f.Contains('y'))];
 
     public string Culture
     {
@@ -21,26 +28,54 @@ public class DateScrapeJob : ScrapeJob
 
     private CultureInfo CultureInfo => cultureInfo ??= new(Culture);
 
+    internal void UpdateFormat(string value)
+    {
+        Format = value;
+        formatsWithWeekDayButNoYear = formats = null; // clear caches
+    }
+
     public DateTime? GetDate(IDomElement element, List<Exception>? errors = null)
     {
         var rawValue = base.GetValue(element, errors);
-        if (rawValue.IsNullOrWhiteSpace()) return null;
-        const DateTimeStyles style = DateTimeStyles.None;
-        string[] formats = Format.Split("||", StringSplitOptions.RemoveEmptyEntries);
+        if (string.IsNullOrWhiteSpace(rawValue)) return null;
 
-        foreach (var format in formats)
-        {
-            if (DateTime.TryParseExact(rawValue, format, CultureInfo, style, out DateTime parsedDate)) return parsedDate;
-        }
+        // try regular parsing
+        var parsed = TryParseWithFormats(rawValue, Formats);
+        if (parsed.HasValue) return parsed;
 
-        foreach (var format in formats)
+        /* retry parsing for formats with week day but no year
+         * for the next two years to avoid errors due to week day mismatches */
+        if (FormatsWithWeekDayButNoYear.Length > 0)
         {
-            if (!format.Contains('y') // retry parsing date as next year's for format without year info
-               && DateTime.TryParseExact(rawValue + " " + (DateTime.Today.Year + 1), format + " yyyy",
-                CultureInfo, style, out DateTime nextYearsDate)) return nextYearsDate;
+            var currentYear = DateTime.Today.Year;
+
+            for (int offset = 1; offset <= 2; offset++)
+            {
+                parsed = TryParseWithFormats(rawValue, FormatsWithWeekDayButNoYear,
+                    valueTransform: v => $"{v} {currentYear + offset}",
+                    formatTransform: f => $"{f} yyyy");
+
+                if (parsed.HasValue) return parsed;
+            }
         }
 
         return AddOrThrow<DateTime?>(errors, new Error($"Failed to parse date '{rawValue}' using format/s '{Format}' in culture '{Culture}'."));
+    }
+
+    private DateTime? TryParseWithFormats(string raw, IEnumerable<string> formats,
+        Func<string, string>? valueTransform = null, Func<string, string>? formatTransform = null)
+    {
+        var value = valueTransform?.Invoke(raw) ?? raw;
+
+        foreach (var format in formats)
+        {
+            var usedFormat = formatTransform?.Invoke(format) ?? format;
+
+            if (DateTime.TryParseExact(value, usedFormat, CultureInfo, DateTimeStyles.None, out var parsed))
+                return parsed;
+        }
+
+        return null;
     }
 
     public override string? GetValue(IDomElement element, List<Exception>? errors = null) => GetDate(element, errors)?.ToString("D");
