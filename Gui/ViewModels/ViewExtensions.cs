@@ -236,6 +236,8 @@ internal static partial class ViewExtensions
         if (element is ScrollView scrollView) return FindTopLayout(scrollView.Content);
         return null;
     }
+
+    internal static IEnumerable<Event> GetEvents(this IEnumerable<EventList.EventView> views) => views.Select(v => v.Model);
 }
 
 internal static class Converters

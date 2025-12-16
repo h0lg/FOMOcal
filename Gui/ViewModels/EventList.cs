@@ -103,7 +103,7 @@ public partial class EventList : ObservableObject
         return eventRepo.SaveCompleteAsync(events ?? GetEvents());
     }
 
-    private HashSet<Event> GetEvents() => [.. allEvents!.Select(e => e.Model)];
+    private HashSet<Event> GetEvents() => [.. allEvents!.GetEvents()];
 
     [RelayCommand]
     private static async Task OpenUrlAsync(string url)
@@ -119,7 +119,7 @@ public partial class EventList : ObservableObject
     [RelayCommand]
     private async Task DeleteSelectedEvents()
     {
-        foreach (var view in SelectedEvents.Cast<EventView>())
+        foreach (var view in GetSelected())
             allEvents!.Remove(view);
 
         SelectedEvents.Clear();
@@ -143,29 +143,15 @@ public partial class EventList : ObservableObject
         NotifySelectionChanged();
     }
 
-    [RelayCommand]
-    private async Task ExportToIcsAsync()
-    {
-        if (SelectedEvents.Any()) await SelectedEvents.Cast<EventView>().Select(v => v.Model).ExportToIcal();
-    }
+    [RelayCommand] private Task ExportToIcsAsync() => ExportSelected(Export.ExportToIcal);
+    [RelayCommand] private Task ExportToCsvAsync() => ExportSelected(Export.ExportToCsv);
+    [RelayCommand] private Task ExportToHtmlAsync() => ExportSelected(Export.ExportToHtml);
+    [RelayCommand] private Task ExportToTextAsync() => ExportSelected(events => events.ExportToText(Export.TextAlignedWithHeaders));
 
-    [RelayCommand]
-    private async Task ExportToCsvAsync()
-    {
-        if (SelectedEvents.Any()) await SelectedEvents.Cast<EventView>().Select(v => v.Model).ExportToCsv();
-    }
+    private Task ExportSelected(Func<IEnumerable<Event>, Task> export)
+        => HasSelection ? export(GetSelected().GetEvents()) : Task.CompletedTask;
 
-    [RelayCommand]
-    private async Task ExportToHtmlAsync()
-    {
-        if (SelectedEvents.Any()) await SelectedEvents.Cast<EventView>().Select(v => v.Model).ExportToHtml();
-    }
-
-    [RelayCommand]
-    private async Task ExportToTextAsync()
-    {
-        if (SelectedEvents.Any()) await SelectedEvents.Cast<EventView>().Select(v => v.Model).ExportToText(Export.TextAlignedWithHeaders);
-    }
+    private IEnumerable<EventView> GetSelected() => SelectedEvents.Cast<EventView>();
 
     // used on the MainPage for Desktop
     public partial class View : ContentView
