@@ -109,8 +109,8 @@ public partial class EventPropertySelection
     {
         if (ExportedFields.Contains(field))
         {
-            ExportedFields.Remove(field);
             AvailableFields.Add(field);
+            ExportedFields.Remove(field);
         }
         else
         {
