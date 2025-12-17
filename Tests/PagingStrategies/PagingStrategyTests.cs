@@ -10,7 +10,7 @@ public abstract class PagingStrategyTests : IDisposable
     protected readonly Scraper scraper;
     protected readonly Venue venue;
 
-    public PagingStrategyTests(Venue.PagingStrategy pagingStrategy)
+    protected PagingStrategyTests(Venue.PagingStrategy pagingStrategy)
     {
         factory = new(browser);
         scraper = new(browser, factory, logFileSaver);
