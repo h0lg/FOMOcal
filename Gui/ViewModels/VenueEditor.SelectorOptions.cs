@@ -5,6 +5,7 @@ using FomoCal.Gui.Resources;
 using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
+
 using SelectorOptionsRepo = SingletonJsonFileRepository<VenueEditor.SelectorOptions>;
 
 partial class VenueEditor
