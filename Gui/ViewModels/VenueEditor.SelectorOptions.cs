@@ -65,14 +65,15 @@ partial class VenueEditor
         internal bool RestoreFrom(SelectorOptions saved)
         {
             bool madeChanges = false;
-            PropertyChangedEventHandler trackChanges = (o, e) => madeChanges = true;
-            PropertyChanged += trackChanges;
+            PropertyChanged += TrackChanges;
 
             foreach (var prop in typeof(SelectorOptions).GetProperties())
                 prop.SetValue(this, prop.GetValue(saved, null));
 
-            PropertyChanged -= trackChanges;
+            PropertyChanged -= TrackChanges;
             return madeChanges;
+
+            void TrackChanges(object? o, PropertyChangedEventArgs e) => madeChanges = true;
         }
     }
 

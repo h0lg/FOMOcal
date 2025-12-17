@@ -60,7 +60,8 @@ public sealed class MauiEventListingAutomatorFactory : IBuildEventListingAutomat
         AbsoluteLayout wrapper = new() { WidthRequest = 0, HeightRequest = 0 };
         wrapper.Add(automator);
         TopLayout.Add(wrapper); // to start the loader's life cycle
-        Action cleanup = () => TopLayout.Remove(wrapper); // make sure to remove loader again
-        return (automator, cleanup);
+        return (automator, Cleanup);
+
+        void Cleanup() => TopLayout.Remove(wrapper); // make sure to remove loader again
     }
 }
