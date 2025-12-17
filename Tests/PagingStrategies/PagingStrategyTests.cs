@@ -63,7 +63,7 @@ public abstract class PagingStrategyTests : IDisposable
         Assert.HasCount(skipped, actualLines, $"log has more lines:\n{actualLines.Skip(skipped).LineJoin()}");
     }
 
-    protected string HasNoMore(string unexpectedLine) => unexpectedLinePrefix + unexpectedLine;
+    protected static string HasNoMore(string unexpectedLine) => unexpectedLinePrefix + unexpectedLine;
 
     public void Dispose() => scraper.Dispose();
 }

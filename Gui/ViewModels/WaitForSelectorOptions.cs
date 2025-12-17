@@ -118,7 +118,7 @@ partial class Settings
 
     partial class Page
     {
-        private View LoadingLazyOrMore()
+        private static FlexLayout LoadingLazyOrMore()
         {
             var help = HelpLabel();
 
@@ -131,7 +131,7 @@ partial class Settings
                 help.layout).View;
         }
 
-        private View ScrollPaging()
+        private static FlexLayout ScrollPaging()
         {
             var help = HelpLabel();
 
@@ -145,7 +145,7 @@ partial class Settings
                 help.layout).View;
         }
 
-        private View SwapPaging()
+        private static FlexLayout SwapPaging()
         {
             var help = HelpLabel();
 
@@ -158,7 +158,7 @@ partial class Settings
 
         private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted);
 
-        private View Stepper(string startLabel, string property, string endLabel, int max,
+        private static View Stepper(string startLabel, string property, string endLabel, int max,
             (Label label, Border layout) help, RememberedUshort remembered, string helpText)
         {
             var stepper = NumericStepper.Create(property: property, startLabel: startLabel, endLabel: endLabel, max: max);
