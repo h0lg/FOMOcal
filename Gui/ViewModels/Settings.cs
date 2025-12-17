@@ -34,7 +34,7 @@ public partial class Settings : ObservableObject
             var exportTextAlignedWithHeaders = Swtch(nameof(ExportTextAlignedWithHeaders)).Wrapper
                 .ToolTip("whether to column-align the plain text export using spaces and include column headers");
 
-            var sectionEnd = 20;
+            const int sectionEnd = 20;
             GridLength[] rows = [Auto, sectionEnd, Auto, Auto, Auto, sectionEnd, Auto, Auto, Auto, Auto, sectionEnd, Auto, Auto, Auto, Auto];
 
             var layout = Grd(cols: [Auto, Star], rows, spacing: 5,
