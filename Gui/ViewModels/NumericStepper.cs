@@ -14,7 +14,7 @@ internal static class NumericStepper
         var entry = new Entry { Keyboard = Keyboard.Numeric }.TextCenterHorizontal();
 
         entry.SetBinding(Entry.TextProperty, property, BindingMode.TwoWay,
-            stringFormat: "{0}", converter: new ClampedIntConverter(min, max));
+            converter: new ClampedIntConverter(min, max), stringFormat: "{0}");
 
         var layout = HStack();
         if (startLabel != null) layout.AddChild(Lbl(startLabel).Margins(right: 5));

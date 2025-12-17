@@ -161,7 +161,7 @@ partial class Settings
         private View Stepper(string startLabel, string property, string endLabel, int max,
             (Label label, Border layout) help, RememberedUshort remembered, string helpText)
         {
-            var stepper = NumericStepper.Create(startLabel: startLabel, property: property, endLabel: endLabel, max: max);
+            var stepper = NumericStepper.Create(property: property, startLabel: startLabel, endLabel: endLabel, max: max);
             stepper.Entry.InlineTooltipOnFocus(helpText + $" Default: {remembered.Default} .", help);
             return stepper.Wrapper;
         }

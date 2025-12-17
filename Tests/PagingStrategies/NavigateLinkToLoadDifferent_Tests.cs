@@ -35,7 +35,7 @@ public sealed partial class NavigateLinkToLoadDifferent_Tests : PagingStrategyTe
         browser.AddEvents(venue, 10, category: "boring party");
         browser.AddNextPageLink("#page-1");
 
-        browser.AddEvents(venue, 10, category: "boring party", start: 11, page: 1);
+        browser.AddEvents(venue, 10, start: 11, category: "boring party", page: 1);
         browser.AddNextPageLink("#page-2", page: 1);
 
         browser.AddEvents(venue, 10, start: 21, page: 2);
@@ -60,7 +60,7 @@ public sealed partial class NavigateLinkToLoadDifferent_Tests : PagingStrategyTe
         browser.AddEvents(venue, 10);
         browser.AddNextPageLink("#page-1");
 
-        browser.AddEvents(venue, 10, page: 1, start: 1, category: "gig"); // duplicates in a different, excluded category
+        browser.AddEvents(venue, 10, start: 1, category: "gig", page: 1); // duplicates in a different, excluded category
         browser.AddNextPageLink("#page-2", page: 1);
 
         browser.AddEvents(venue, 10, page: 2); // more events that shouldn't be scraped because page 1 contains only duplicates
