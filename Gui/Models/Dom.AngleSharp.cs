@@ -51,7 +51,7 @@ public class ResponseBuilder(VirtualResponse response) : IResponseBuilder
     }
 }
 
-public class DomDocument(IDocument doc) : IDomDocument
+public partial class DomDocument(IDocument doc) : IDomDocument
 {
     public string Url => doc.Url;
     public string? Title => doc.Title;
