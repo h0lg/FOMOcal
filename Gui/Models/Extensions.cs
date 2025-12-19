@@ -119,12 +119,6 @@ public static partial class StringExtensions
 
 internal static class EnumerableExtensions
 {
-    internal static void UpdateWith<T>(this HashSet<T> set, IEnumerable<T> newItems)
-    {
-        set.RemoveWhere(newItems.Contains); // Remove old duplicates
-        set.UnionWith(newItems);
-    }
-
     /// <summary>Returns only the non-null elements from <paramref name="nullables"/>.</summary>
     internal static IEnumerable<T> WithValue<T>(this IEnumerable<T> nullables)
         => nullables.Where(v => v != null).Select(v => v);

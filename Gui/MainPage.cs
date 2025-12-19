@@ -12,7 +12,7 @@ public partial class MainPage : ContentPage
         _ = eventList.LoadEvents();
 
         VenueList venueList = new(venueRepo, scraper, Navigation);
-        venueList.EventsScraped += (_, events) => eventList.RefreshWith(events);
+        venueList.EventsScraped += (venue, events) => eventList.RefreshWith(venue, events);
         venueList.VenueRenamed += eventList.RenameVenue;
         venueList.VenueDeleted += eventList.DeleteForVenue;
 

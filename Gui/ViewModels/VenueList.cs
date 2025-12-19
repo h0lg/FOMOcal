@@ -347,7 +347,7 @@ public partial class VenueList : ObservableObject
         {
             Title = "Venues";
             VenueList venueList = new(venueRepo, scraper, Navigation);
-            venueList.EventsScraped += async (_, events) => await eventRepo.AddOrUpdateAsync(events);
+            venueList.EventsScraped += async (venue, events) => await eventRepo.AddOrUpdateAsync(venue, events);
             venueList.VenueRenamed += async (oldName, newName) => await eventRepo.RenameVenueAsync(oldName, newName);
             venueList.VenueDeleted += async (venueName) => await eventRepo.DeleteVenueAsync(venueName);
             Content = new View(venueList);

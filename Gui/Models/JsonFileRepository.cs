@@ -9,13 +9,6 @@ public class SetJsonFileRepository<T>(JsonFileStore store, string fileName) wher
     public async Task<HashSet<T>> LoadAllAsync() => await store.LoadAsync<HashSet<T>>(fileName) ?? [];
     public Task SaveCompleteAsync(ISet<T> items) => store.SaveAsync(fileName, items);
     internal void ShareFile(string label) => store.ShareFile(label, fileName);
-
-    public async Task AddOrUpdateAsync(IEnumerable<T> items)
-    {
-        var set = await LoadAllAsync();
-        set.UpdateWith(items);
-        await SaveCompleteAsync(set);
-    }
 }
 
 public class SingletonJsonFileRepository<T>(JsonFileStore store, string fileName) where T : class

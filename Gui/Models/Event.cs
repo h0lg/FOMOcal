@@ -36,7 +36,17 @@ public class Event : IHaveAnEvent
     Event IHaveAnEvent.Event => this;
 
     public override bool Equals(object? obj) => obj is Event other && Equals(other);
-    public bool Equals(Event? other) => other is not null && GetHashCode() == other.GetHashCode();
+
+    public bool Equals(Event? other)
+    {
+        if (other is null) return false;
+
+        // duplicated from GetHashCode to avoid hash collisions
+        return Venue == other.Venue
+            && (Url ?? Name) == (other.Url ?? other.Name)
+            && Date.Date == other.Date.Date;
+    }
+
     public override int GetHashCode() => HashCode.Combine(Venue, Url ?? Name, Date.Date);
     public override string ToString() => $"{Date:d} {Name}"; // for easier debugging
 }
@@ -48,6 +58,27 @@ public interface IHaveAnEvent
 
 internal static class EventExtensions
 {
+    internal static void UpdateWith<T>(this HashSet<T> existing, Venue venue, HashSet<T> scraped) where T : IHaveAnEvent
+    {
+        if (scraped.Count == 0) return;
+
+        DateTime min = DateTime.MaxValue, max = DateTime.MinValue;
+
+        foreach (var scrpd in scraped)
+        {
+            var date = scrpd.Event.Date;
+            if (date < min) min = date;
+            if (max < date) max = date;
+        }
+
+        /* Assume the scraped range is gap-free and remove existing events between min and max date
+         * to get rid of outdated events. */
+        existing.RemoveWhere(e => (e.Event.Venue == venue.Name && min < e.Event.Date && e.Event.Date < max)
+            || scraped.Contains(e)); // de-duplicate remaining using Event.Equals (includes Venue comparison)
+
+        existing.UnionWith(scraped);
+    }
+
     internal static void RenameVenue(this IEnumerable<Event> events, string oldName, string newName)
     {
         foreach (var evt in events)
@@ -72,6 +103,13 @@ public class EventRepository(JsonFileStore store, string fileName) : SetJsonFile
     {
         var set = await LoadAllAsync();
         set.RemoveOfVenue(venue);
+        await SaveCompleteAsync(set);
+    }
+
+    public async Task AddOrUpdateAsync(Venue venue, HashSet<Event> items)
+    {
+        var set = await LoadAllAsync();
+        set.UpdateWith(venue, items);
         await SaveCompleteAsync(set);
     }
 }

@@ -31,7 +31,7 @@ public partial class EventList : ObservableObject
     }
 
     // Called from the MainPage on VenueList.EventsScraped
-    internal void RefreshWith(HashSet<Event> newEvents)
+    internal void RefreshWith(Venue venue, HashSet<Event> newEvents)
     {
         if (newEvents.Count == 0) return;
 
@@ -39,7 +39,7 @@ public partial class EventList : ObservableObject
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             // merge new events into existing
-            allEvents!.UpdateWith(newEvents.Select(e => new EventView(e)));
+            allEvents!.UpdateWith(venue, [.. newEvents.Select(e => new EventView(e))]);
             await OnEventsUpdated();
         });
     }
