@@ -23,7 +23,10 @@ public partial class EventList : ObservableObject
         {
             if (e.PropertyName == nameof(ShowPastEvents)
                 || e.PropertyName == nameof(SearchText))
-                ApplyFilter();
+            {
+                ApplyFilter(); // because source collection or search text changed
+                ReapplySelection(); // because FilteredEvents changed
+            }
         };
     }
 
@@ -77,7 +80,7 @@ public partial class EventList : ObservableObject
             await ErrorReport.WriteAsyncAndShare(ex.ToString(), "loading events");
         }
 
-        ApplyFilter();
+        ApplyFilter(); // to fill FilteredEvents initially
     }
 
     /// <summary>Call after <see cref="allEvents"/> changed (by adding to or removing from it)
@@ -86,7 +89,8 @@ public partial class EventList : ObservableObject
     /// In either way, the complete event collection is expected.</summary>
     private Task OnEventsUpdated(HashSet<Event>? events = null)
     {
-        ApplyFilter(); // re-apply filter, updates CollectionView
+        ApplyFilter(); // re-apply filter after events updated to refresh CollectionView
+        ReapplySelection(); // because FilteredEvents changed
         return eventRepo.SaveCompleteAsync(events ?? GetEvents());
     }
 
@@ -109,7 +113,7 @@ public partial class EventList : ObservableObject
     [RelayCommand] private Task ExportToTextAsync() => ExportSelected(events => events.ExportToText(Export.TextAlignedWithHeaders));
 
     private Task ExportSelected(Func<IEnumerable<Event>, Task> export)
-        => HasSelection ? export(GetSelected().GetEvents()) : Task.CompletedTask;
+        => HasSelection ? export(selected.GetEvents()) : Task.CompletedTask;
 
     // used on the MainPage for Desktop
     public partial class View : ContentView
@@ -215,10 +219,17 @@ public partial class EventList : ObservableObject
             }
                 .Bind(SelectableItemsView.SelectedItemsProperty, nameof(SelectedEvents));
 
-            /*  Notify model properties downstream from SelectedEvents because setting it as
-             *  SelectedItemsProperty above doesn't raise PropertyChanged for it on selection.
-             *  Don't trigger it for SelectedEvents because we react to the CollectionView here - it doesn't need a call back. */
-            list.SelectionChanged += (o, e) => model.NotifySelectionChanged(forSelectedEvents: false);
+            // Setting SelectedEvents as SelectedItemsProperty above doesn't raise PropertyChanged for it on selection.
+            list.SelectionChanged += (_, e) => model.OnSelectionChanged(e);
+
+            /*  work-around that fixes the de/selected visual state of events
+             *  after switching from selected only back to displaying all events,
+             *  found in https://github.com/dotnet/maui/issues/21252 */
+            model.FixDisplayedSelectedState = () =>
+            {
+                list.ItemTemplate = null;
+                list.ItemTemplate = eventTemplate;
+            };
 
             SizeChanged += (o, e) =>
             {

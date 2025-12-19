@@ -37,10 +37,13 @@ partial class EventList
         foreach (var evt in filtered)
             evt.SetSearchTerms(searchTerms);
 
+        suspendSelectionChange = true; // while FilteredEvents are modified, which reset the selection
         FilteredEvents.Clear();
 
         foreach (var evt in filtered.OrderBy(e => e.Date))
             FilteredEvents.Add(evt);
+
+        suspendSelectionChange = false;
     }
 
     private void SaveSearch()
