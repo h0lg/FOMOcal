@@ -173,10 +173,12 @@ public partial class EventList : ObservableObject
                     .TapGesture(() => model.ShowPastEvents = !model.ShowPastEvents),
                 Swtch(nameof(ShowPastEvents)).Wrapper);
 
-            var commands = HStack(5,
+            var selection = HStack(5,
                 Btn("✨ de/select all", nameof(SelectAllEventsCommand)),
                 BndLbl(nameof(SelectedEventCount), stringFormat: "{0} selected").BindVisible(nameof(HasSelection)),
-                Btn("🗑", nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection)),
+                Btn("🗑", nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection)));
+
+            var export = HStack(5,
                 Lbl("🥡 export as").BindVisible(nameof(HasSelection)),
                 ExportButton("📆 ics", nameof(ExportToIcsCommand)),
                 ExportButton("▦ csv", nameof(ExportToCsvCommand)),
@@ -268,7 +270,8 @@ public partial class EventList : ObservableObject
 
             Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5,
                 HWrap(new Thickness(0, 0, right: 5, 0), pastEvents.View,
-                    Lbl("Gigs").StyleClass(Styles.Label.Headline), searchBar.Grow(1), recentSearches, commands.View).View,
+                    Lbl("Gigs").StyleClass(Styles.Label.Headline), searchBar.Grow(1),
+                        recentSearches, selection.View, export.View).View,
                 list.Row(1));
         }
 
