@@ -174,16 +174,27 @@ public partial class EventList : ObservableObject
                 Swtch(nameof(ShowPastEvents)).Wrapper);
 
             var selection = HStack(5,
-                Btn("✨ de/select all", nameof(SelectAllEventsCommand)),
+                Btn("✨ de/select all", nameof(SelectAllEventsCommand))
+                    .ToolTip("Or 👆 tap individual events in the list below to de/select them."),
                 BndLbl(nameof(SelectedEventCount), stringFormat: "{0} selected").BindVisible(nameof(HasSelection)),
                 Btn("🗑", nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection)));
 
+            const string configurableInSettings = "\nConfigure included event properties in the 🛠 Settings.";
+
             var export = HStack(5,
                 Lbl("🥡 export as").BindVisible(nameof(HasSelection)),
-                ExportButton("📆 ics", nameof(ExportToIcsCommand)),
-                ExportButton("▦ csv", nameof(ExportToCsvCommand)),
-                ExportButton("🖺 html", nameof(ExportToHtmlCommand)),
-                ExportButton("🖹 txt", nameof(ExportToTextCommand)));
+                ExportButton("📆 ics", nameof(ExportToIcsCommand))
+                    .ToolTip("Export selected events for calendar apps in iCalendar format."),
+                ExportButton("🖺 html", nameof(ExportToHtmlCommand))
+                    .ToolTip("Export selected events as a rich HTML document to open and filter in a browser."
+                        + "\nProbably the most end-user friendly option." + configurableInSettings),
+                ExportButton("🖹 txt", nameof(ExportToTextCommand))
+                    .ToolTip("Export selected events as a plain text with configurable alignment."
+                        + "\nAn easily digestable format without frills or noise, e.g. for text messages."
+                        + " Also your best choice if you want to re-format the events in a text editor before sharing."
+                        + configurableInSettings),
+                ExportButton("▦ csv", nameof(ExportToCsvCommand))
+                    .ToolTip("Export selected events as a table for spreadsheet apps in comma-separated value CSV format."));
 
             bool UseVerticalEventLayout() => Width < 800; // whether to stack image on top of event details
             var useVerticalEventLayout = UseVerticalEventLayout(); // caches the last result

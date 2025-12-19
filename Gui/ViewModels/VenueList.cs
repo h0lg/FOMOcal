@@ -281,7 +281,7 @@ public partial class VenueList : ObservableObject
             var title = Lbl("🏟 Venues").StyleClass(Styles.Label.Headline).CenterVertical();
             var importVenues = Btn("📥", nameof(ImportVenuesCommand)).ToolTip("import venues");
             var exportVenues = Btn("🥡", nameof(ExportVenuesCommand)).ToolTip("export venues");
-            var openSettings = Btn("🛠", nameof(OpenSettingsCommand)).ToolTip("open settings");
+            var openSettings = Btn("🛠", nameof(OpenSettingsCommand)).ToolTip("open Settings");
             var addVenue = Btn("➕", nameof(AddVenueCommand)).ToolTip("add a venue");
             var refreshAll = Btn("⛏ dig all gigs", nameof(RefreshAllVenuesCommand)).ToolTip("refresh events from all venues");
 
