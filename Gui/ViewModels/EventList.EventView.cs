@@ -1,19 +1,25 @@
-﻿namespace FomoCal.Gui.ViewModels;
+﻿using System.Runtime.CompilerServices;
+using CommunityToolkit.Mvvm.ComponentModel;
+
+namespace FomoCal.Gui.ViewModels;
 
 partial class EventList
 {
-    public class EventView : IHaveAnEvent
+    public partial class EventView : ObservableObject, IHaveAnEvent
     {
+        private IReadOnlyList<TextChunk>? name, subTitle, genres, description, venue, stage;
+        private readonly PropertyChangeBatcher batcher; // used to batch PropertyChange notifications to reduce layout passes
+
         public Event Model { get; }
         public bool IsPast { get; }
 
         // searched and highlit text properties
-        public IReadOnlyList<TextChunk>? Name { get; private set; }
-        public IReadOnlyList<TextChunk>? SubTitle { get; private set; }
-        public IReadOnlyList<TextChunk>? Genres { get; private set; }
-        public IReadOnlyList<TextChunk>? Description { get; private set; }
-        public IReadOnlyList<TextChunk>? Venue { get; private set; }
-        public IReadOnlyList<TextChunk>? Stage { get; private set; }
+        public IReadOnlyList<TextChunk>? Name { get => name; private set => Set(ref name, value); }
+        public IReadOnlyList<TextChunk>? SubTitle { get => subTitle; private set => Set(ref subTitle, value); }
+        public IReadOnlyList<TextChunk>? Genres { get => genres; private set => Set(ref genres, value); }
+        public IReadOnlyList<TextChunk>? Description { get => description; private set => Set(ref description, value); }
+        public IReadOnlyList<TextChunk>? Venue { get => venue; private set => Set(ref venue, value); }
+        public IReadOnlyList<TextChunk>? Stage { get => stage; private set => Set(ref stage, value); }
 
         #region read-only proxies
         public string? Url => Model.Url;
@@ -40,21 +46,51 @@ partial class EventList
         {
             Model = e;
             IsPast = Date < DateTime.Today;
+            batcher = new PropertyChangeBatcher(name => OnPropertyChanged(name));
+        }
+
+        /// <summary>A custom setter for the searched and highlit text properties
+        /// that minimizes PropertyChanged notifications by carefully comparing
+        /// the set <paramref name="field"/> to the new <paramref name="value"/>
+        /// and uses the <see cref="batcher"/> to dispatch them for the <paramref name="propertyName"/>.</summary>
+        /// <returns>Whether the <paramref name="field"/> was updated.</returns>
+        private bool Set<T>(ref IReadOnlyList<T>? field, IReadOnlyList<T>? value, [CallerMemberName] string? propertyName = null)
+        {
+            // both null, no change
+            if (field is null && value is null) return false;
+
+            // both not null, check value equality
+            if (field is not null && value is not null)
+            {
+                // both empty, no change
+                if (field.Count == 0 && value.Count == 0) return false;
+
+                // count and value equality means no change
+                if (field.Count == value.Count && field.SequenceEqual(value)) return false;
+            }
+
+            // one null or not equal, changed
+            field = value;
+            batcher.Notify(propertyName!);
+            return true;
         }
 
         /// <summary>Chunks the searched text properties by the <paramref name="terms"/>
         /// to highlight the latter in the former.</summary>
         internal void SetSearchTerms(string[] terms)
         {
-            Name = Model.Name.ChunkBy(terms);
-            SubTitle = Model.SubTitle.ChunkBy(terms);
+            using (batcher.Defer()) // batch property change notifications into one cycle to avoid intermediate layout passes
+            {
+                Name = Model.Name.ChunkBy(terms);
+                SubTitle = Model.SubTitle.ChunkBy(terms);
 
-            /* prepend icons to bound chunks because a format string on the binding
-             * doesn't work when binding to Label.FormattedTextProperty */
-            Genres = Model.Genres.ChunkBy(terms).PrependWith("🎶 ");
-            Description = [.. Model.Description.ChunkByLinksAnd(terms)];
-            Venue = Model.Venue.ChunkBy(terms).PrependWith("🏟 ");
-            Stage = Model.Stage.ChunkBy(terms).PrependWith("🏛 ");
+                /* prepend icons to bound chunks because a format string on the binding
+                 * doesn't work when binding to Label.FormattedTextProperty */
+                Genres = Model.Genres.ChunkBy(terms).PrependWith("🎶 ");
+                Description = [.. Model.Description.ChunkByLinksAnd(terms)];
+                Venue = Model.Venue.ChunkBy(terms).PrependWith("🏟 ");
+                Stage = Model.Stage.ChunkBy(terms).PrependWith("🏛 ");
+            }
         }
 
         public override bool Equals(object? obj) => obj is EventView other && Equals(other);
