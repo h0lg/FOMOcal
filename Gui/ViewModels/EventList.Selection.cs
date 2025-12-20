@@ -26,14 +26,30 @@ partial class EventList
     }
 
     [RelayCommand]
-    private async Task DeleteSelectedEvents()
+    private async Task DeleteSelectedEventsAsync()
     {
+        bool isConfirmed = await App.CurrentPage.DisplayAlertAsync("Confirm Deletion",
+            "Are you sure you want to delete the selected events?",
+            "Yes", "No");
+
+        if (!isConfirmed) return;
+
         foreach (var evt in selected)
             allEvents!.Remove(evt);
 
         selected.Clear();
         SelectedEvents.Clear();
         ViewSelectedOnly = false;
+        NotifySelectionChanged();
+        await OnEventsUpdated();
+    }
+
+    [RelayCommand]
+    private async Task DeleteEventAsync(EventView view)
+    {
+        allEvents!.Remove(view);
+        selected.Remove(view);
+        if (selected.Count == 0) ViewSelectedOnly = false;
         NotifySelectionChanged();
         await OnEventsUpdated();
     }
@@ -117,7 +133,7 @@ partial class EventList
                 BndLbl(nameof(SelectedEventCount), stringFormat: "{0} selected").BindVisible(nameof(HasSelection)),
                 Swtch(nameof(ViewSelectedOnly)).Wrapper.BindVisible(nameof(HasSelection))
                     .ToolTip("toggle between viewing all and only selected events"),
-                Btn(Glyphs.Delete, nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection))
+                Btn(Glyphs.Delete, nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(ViewSelectedOnly))
                     .ToolTip("remove all selected events")).View;
     }
 }

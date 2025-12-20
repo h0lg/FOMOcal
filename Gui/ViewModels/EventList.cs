@@ -174,16 +174,17 @@ public partial class EventList : ObservableObject
                     OptionalTextLabel(nameof(EventView.DoorsTime), Glyphs.Doors + "{0}"),
                     OptionalTextLabel(nameof(EventView.StartTime), Glyphs.Start + "{0}"));
 
-                var details = VStack(5,
-                    OptionalFormattedLabel(nameof(EventView.Description)).Wrap(),
-                    OpenUrlButton(Glyphs.EventPage + "more " + Glyphs.Link, nameof(EventView.Url), model).End(),
-                    OpenUrlButton(Glyphs.Scrape + " from " + Glyphs.Link, nameof(EventView.ScrapedFrom), model).End());
+                var details = Grd([Auto, Star, Auto], [Auto, Auto], spacing: 5,
+                    OptionalFormattedLabel(nameof(EventView.Description)).Wrap().ColumnSpan(3),
+                    Btn(Glyphs.Delete, nameof(DeleteEventCommand), source: model).ToolTip("delete this event").Row(1),
+                    BndLbl(nameof(EventView.Scraped), stringFormat: Glyphs.Scrape + " {0:d MMM}")
+                        .StyleClass(Styles.Label.Demoted).CenterVertical().Row(1).Column(1),
+                    OpenUrlButton(Glyphs.EventPage + "more " + Glyphs.Link, nameof(EventView.Url), model).Row(1).Column(2),
+                    OpenUrlButton(Glyphs.Scrape + " from " + Glyphs.Link, nameof(EventView.ScrapedFrom), model).Row(1).Column(2));
 
-                var location = HStack(5,
+                var location = HWrap(5,
                     BndFmtLbl(nameof(EventView.Venue), converter: textChunkConverter),
-                    OptionalFormattedLabel(nameof(EventView.Stage)),
-                    BndLbl(nameof(EventView.Scraped), stringFormat: Glyphs.Scrape + " {0:g}")
-                        .StyleClass(Styles.Label.Demoted)).View;
+                    OptionalFormattedLabel(nameof(EventView.Stage))).View;
 
                 var tickets = VStack(5,
                     OptionalTextLabel(nameof(EventView.PresalePrice), Glyphs.PresalePrice + "{0}"),
@@ -260,7 +261,7 @@ public partial class EventList : ObservableObject
         }
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)
-            => BndLbl(property, stringFormat: stringFormat).BindIsVisibleToValueOf(property);
+            => BndLbl(property, stringFormat: stringFormat).Wrap().BindIsVisibleToValueOf(property);
 
         private static Label OptionalFormattedLabel(string property)
             => BndFmtLbl(property, converter: textChunkConverter).BindVisibleToNotNullOf(property);
