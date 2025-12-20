@@ -13,9 +13,6 @@ public partial class EventList : ObservableObject
 
     [ObservableProperty] public partial bool ShowPastEvents { get; set; }
     [ObservableProperty] public partial bool CanDeletePastEvents { get; set; }
-    [ObservableProperty] public partial IList<object> SelectedEvents { get; set; } = [];
-    public int SelectedEventCount => SelectedEvents.Count;
-    public bool HasSelection => SelectedEventCount > 0;
 
     public EventList(EventRepository eventRepo)
     {
@@ -83,16 +80,6 @@ public partial class EventList : ObservableObject
         ApplyFilter();
     }
 
-    /// <summary>Raises <see cref="System.ComponentModel.INotifyPropertyChanged.PropertyChanged"/>.
-    /// for read-only properties downstream of <see cref="SelectedEvents"/> -
-    /// and for that property itself if <paramref name="forSelectedEvents"/> is true.</summary>
-    private void NotifySelectionChanged(bool forSelectedEvents = true)
-    {
-        if (forSelectedEvents) OnPropertyChanged(nameof(SelectedEvents)); // to notify CollectionView
-        OnPropertyChanged(nameof(SelectedEventCount));
-        OnPropertyChanged(nameof(HasSelection));
-    }
-
     /// <summary>Call after <see cref="allEvents"/> changed (by adding to or removing from it)
     /// to persist its <see cref="EventView.Model"/>s
     /// - or the given <paramref name="events"/> after updating them in place.
@@ -116,33 +103,6 @@ public partial class EventList : ObservableObject
         await OnEventsUpdated();
     }
 
-    [RelayCommand]
-    private async Task DeleteSelectedEvents()
-    {
-        foreach (var view in GetSelected())
-            allEvents!.Remove(view);
-
-        SelectedEvents.Clear();
-        NotifySelectionChanged();
-        await OnEventsUpdated();
-    }
-
-    [RelayCommand]
-    private void SelectAllEvents()
-    {
-        if (SelectedEvents.Count == FilteredEvents.Count)
-            SelectedEvents.Clear(); // toggle selection, de-selecting all
-        else
-        {
-            SelectedEvents.Clear();
-
-            foreach (var evt in FilteredEvents)
-                SelectedEvents.Add(evt);
-        }
-
-        NotifySelectionChanged();
-    }
-
     [RelayCommand] private Task ExportToIcsAsync() => ExportSelected(Export.ExportToIcal);
     [RelayCommand] private Task ExportToCsvAsync() => ExportSelected(Export.ExportToCsv);
     [RelayCommand] private Task ExportToHtmlAsync() => ExportSelected(Export.ExportToHtml);
@@ -150,8 +110,6 @@ public partial class EventList : ObservableObject
 
     private Task ExportSelected(Func<IEnumerable<Event>, Task> export)
         => HasSelection ? export(GetSelected().GetEvents()) : Task.CompletedTask;
-
-    private IEnumerable<EventView> GetSelected() => SelectedEvents.Cast<EventView>();
 
     // used on the MainPage for Desktop
     public partial class View : ContentView
@@ -172,12 +130,6 @@ public partial class EventList : ObservableObject
                 Lbl("🕞 Past").Bold()
                     .TapGesture(() => model.ShowPastEvents = !model.ShowPastEvents),
                 Swtch(nameof(ShowPastEvents)).Wrapper);
-
-            var selection = HStack(5,
-                Btn("✨ de/select all", nameof(SelectAllEventsCommand))
-                    .ToolTip("Or 👆 tap individual events in the list below to de/select them."),
-                BndLbl(nameof(SelectedEventCount), stringFormat: "{0} selected").BindVisible(nameof(HasSelection)),
-                Btn("🗑", nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection)));
 
             const string configurableInSettings = "\nConfigure included event properties in the 🛠 Settings.";
 
@@ -282,7 +234,7 @@ public partial class EventList : ObservableObject
             Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5,
                 HWrap(new Thickness(0, 0, right: 5, 0), pastEvents.View,
                     Lbl("Gigs").StyleClass(Styles.Label.Headline), searchBar.Grow(1),
-                        recentSearches, selection.View, export.View).View,
+                        recentSearches, SelectionMenu(), export.View).View,
                 list.Row(1));
         }
 
