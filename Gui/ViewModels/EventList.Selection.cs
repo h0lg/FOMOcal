@@ -11,6 +11,7 @@ partial class EventList
     private Action? FixDisplayedSelectedState;
 
     [ObservableProperty] public partial IList<object> SelectedEvents { get; set; } = [];
+    [ObservableProperty] public partial bool ViewSelectedOnly { get; set; }
     public int SelectedEventCount => selected.Count;
     public bool HasSelection => SelectedEventCount > 0;
 
@@ -32,6 +33,7 @@ partial class EventList
 
         selected.Clear();
         SelectedEvents.Clear();
+        ViewSelectedOnly = false;
         NotifySelectionChanged();
         await OnEventsUpdated();
     }
@@ -41,8 +43,12 @@ partial class EventList
     {
         // if all visisble are selected, toggle selection, de-selecting visible
         if (FilteredEvents.All(selected.Contains))
+        {
             foreach (var evt in FilteredEvents)
                 selected.Remove(evt);
+
+            SwitchBackToViewingAllIfSelectionIsEmpty();
+        }
         else // otherwise select all visible
             foreach (var evt in FilteredEvents)
                 selected.Add(evt);
@@ -78,13 +84,28 @@ partial class EventList
             foreach (var evt in e.CurrentSelection.OfType<EventView>())
                 selected.Add(evt);
         else
+        {
             foreach (var evt in e.PreviousSelection.OfType<EventView>())
                 if (!e.CurrentSelection.Contains(evt))
                     selected.Remove(evt);
 
+            SwitchBackToViewingAllIfSelectionIsEmpty();
+        }
+
         /* SelectedEvents are up to date with e.CurrentSelection here, no need to call ReapplySelection.
          * Don't trigger change for SelectedEvents because we react to the CollectionView here - it doesn't need a call back. */
         NotifySelectionChanged(forSelectedEvents: false);
+    }
+
+    partial void OnViewSelectedOnlyChanged(bool value)
+    {
+        ApplyFilter(); // to switch list source
+        ReapplySelection(); // because FilteredEvents changed
+    }
+
+    private void SwitchBackToViewingAllIfSelectionIsEmpty()
+    {
+        if (selected.Count == 0) ViewSelectedOnly = false;
     }
 
     partial class View
@@ -94,6 +115,9 @@ partial class EventList
                 Btn("✨ de/select all", nameof(SelectAllEventsCommand))
                     .ToolTip("...events included by the filter in the list below. Or tap and toggle them separately."),
                 BndLbl(nameof(SelectedEventCount), stringFormat: "{0} selected").BindVisible(nameof(HasSelection)),
-                Btn("🗑", nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection))).View;
+                Swtch(nameof(ViewSelectedOnly)).Wrapper.BindVisible(nameof(HasSelection))
+                    .ToolTip("toggle between viewing all and only selected events"),
+                Btn("🗑", nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection))
+                    .ToolTip("remove all selected events")).View;
     }
 }
