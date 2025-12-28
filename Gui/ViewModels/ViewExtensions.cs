@@ -19,7 +19,7 @@ internal static class Styles
 
     internal static class Span
     {
-        internal static Style LinkSpan = Get(), HelpHeaderSpan = Get(), HelpSpan = Get(),
+        internal static Style LinkSpan = Get(), HighlitSpan = Get(), HelpHeaderSpan = Get(), HelpSpan = Get(),
             HelpLinkSpan = Get(), HelpFooterSpan = Get(),
             HelpFooterLinkSpan = MergedStyle.Combine(HelpFooterSpan, HelpLinkSpan)!;
     }
@@ -85,20 +85,20 @@ internal static partial class ViewExtensions
         Func<ValueTuple<bool, bool>, bool> convert, BindingBase binding2) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, binding1, binding2, convert: convert);
 
+    internal static T BindVisibleToNotNullOf<T>(this T vis, string property) where T : VisualElement
+        => vis.Bind(VisualElement.IsVisibleProperty, property, converter: Converters.NotNull);
+
     internal static T BindIsVisibleToValueOf<T>(this T vis, string textProperty) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, textProperty, converter: Converters.IsSignificant);
 
-    internal static T BindIsVisibleToHasValueOf<T, TProp>(this T vis, string textProperty) where T : VisualElement where TProp : struct
-        => vis.Bind(VisualElement.IsVisibleProperty, textProperty, converter: Converters<TProp>.HasValue);
+    internal static T BindIsVisibleToHasValueOf<T, TProp>(this T vis, string property) where T : VisualElement where TProp : struct
+        => vis.Bind(VisualElement.IsVisibleProperty, property, converter: Converters<TProp>.HasValue);
 
     internal static Label Wrap(this Label label)
     {
         label.LineBreakMode = LineBreakMode.WordWrap;
         return label;
     }
-
-    [GeneratedRegex(@"\[(?<label>[^\]]+)\]\((?<url>https?:\/\/[^\s)]+)\)|(?<urlonly>https?:\/\/[^\s\[\]()]+)")]
-    private static partial Regex LinkRegex();
 
     [GeneratedRegex(@"^(#+)\s+(.*)")] private static partial Regex HeaderRegex(); // e.g. # Heading
     private const string footerPrefix = "^^";
@@ -158,63 +158,23 @@ internal static partial class ViewExtensions
             // only append empty line if there are more lines, don't end on one
             if (lineIndex < lines.Length - 1) formatted.Spans.Add(new Span { Text = Environment.NewLine });
         }
-    }
 
-    internal static FormattedString LinkifyUrls(this string text, Style linkStyle, Style? normalStyle = null)
-    {
-        FormattedString formatted = new();
-        AppendWithLinks(formatted, text, linkStyle, normalStyle);
-        return formatted;
-    }
-
-    private static void AppendWithLinks(FormattedString target, string text, Style linkStyle, Style? normalStyle)
-    {
-        int lastIndex = 0;
-
-        foreach (Match match in LinkRegex().Matches(text))
+        static void AppendWithLinks(FormattedString target, string text, Style linkStyle, Style? normalStyle)
         {
-            // Add normal text before this match
-            if (match.Index > lastIndex) target.Spans.Add(new Span
+            foreach ((string display, string? url) in text.ChunkByLinksAndUrls())
             {
-                Text = text[lastIndex..match.Index],
-                Style = normalStyle
-            });
+                Span chunk = new() { Text = display };
 
-            Span link;
-            string url;
-
-            Group label = match.Groups["label"],
-                urlMatch = match.Groups["url"];
-
-            if (label.Success && urlMatch.Success) // Markdown-style link
-            {
-                string displayText = label.Value;
-                url = urlMatch.Value;
-                link = new() { Text = displayText, Style = linkStyle };
-            }
-            else
-            {
-                Group urlOnly = match.Groups["urlonly"];
-
-                if (urlOnly.Success) // Plain URL
+                if (url == null) chunk.Style = normalStyle;
+                else
                 {
-                    url = urlOnly.Value;
-                    link = new() { Text = url, Style = linkStyle };
+                    chunk.Style = linkStyle;
+                    chunk.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
                 }
-                else throw new ArgumentException(nameof(LinkRegex) + " matched something unexpected " + match);
+
+                target.Spans.Add(chunk);
             }
-
-            link.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
-            target.Spans.Add(link);
-            lastIndex = match.Index + match.Length;
         }
-
-        // Remaining normal text
-        if (lastIndex < text.Length) target.Spans.Add(new Span
-        {
-            Text = text[lastIndex..],
-            Style = normalStyle
-        });
     }
 
     internal static Task AnimateHeightRequest(this VisualElement view, double endValue, uint duration = 300)
@@ -236,6 +196,8 @@ internal static partial class ViewExtensions
         if (element is ScrollView scrollView) return FindTopLayout(scrollView.Content);
         return null;
     }
+
+    internal static IEnumerable<Event> GetEvents(this IEnumerable<EventList.EventView> views) => views.Select(v => v.Model);
 }
 
 internal static class Converters
@@ -244,6 +206,7 @@ internal static class Converters
     internal static Func<ValueTuple<bool, bool>, bool> Or = ((bool a, bool b) values) => values.a || values.b;
     internal static Func<ValueTuple<bool, bool>, bool> And = ((bool a, bool b) values) => values.a && values.b;
     internal static FuncConverter<string, bool> IsSignificant = new(value => value.IsSignificant());
+    internal static FuncConverter<object, bool> NotNull = new(value => value != null);
     internal static FuncConverter<T, bool> Func<T>(Func<T?, bool> predicate) => new(predicate);
 }
 

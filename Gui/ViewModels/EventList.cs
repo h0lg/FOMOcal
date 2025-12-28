@@ -9,7 +9,7 @@ namespace FomoCal.Gui.ViewModels;
 public partial class EventList : ObservableObject
 {
     private readonly EventRepository eventRepo;
-    private HashSet<Event>? allEvents;
+    private HashSet<EventView>? allEvents;
 
     [ObservableProperty] public partial bool ShowPastEvents { get; set; }
     [ObservableProperty] public partial bool CanDeletePastEvents { get; set; }
@@ -38,7 +38,8 @@ public partial class EventList : ObservableObject
         // Ensure UI updates happen on the main thread
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            allEvents!.UpdateWith(newEvents);
+            // merge new events into existing
+            allEvents!.UpdateWith(newEvents.Select(e => new EventView(e)));
             await OnEventsUpdated();
         });
     }
@@ -48,8 +49,10 @@ public partial class EventList : ObservableObject
         // Ensure UI updates happen on the main thread
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            allEvents!.RenameVenue(oldName, newName);
-            await OnEventsUpdated();
+            // Venue name changes propagate through the EventView, so allEvents needs no update
+            HashSet<Event> events = GetEvents();
+            events.RenameVenue(oldName, newName);
+            await OnEventsUpdated(events);
         });
     }
 
@@ -67,7 +70,9 @@ public partial class EventList : ObservableObject
     {
         try
         {
-            allEvents = await eventRepo.LoadAllAsync();
+            var events = await eventRepo.LoadAllAsync();
+            // transform events into view model collection once
+            allEvents = [.. events.Select(e => new EventView(e))];
         }
         catch (Exception ex)
         {
@@ -88,11 +93,17 @@ public partial class EventList : ObservableObject
         OnPropertyChanged(nameof(HasSelection));
     }
 
-    private Task OnEventsUpdated()
+    /// <summary>Call after <see cref="allEvents"/> changed (by adding to or removing from it)
+    /// to persist its <see cref="EventView.Model"/>s
+    /// - or the given <paramref name="events"/> after updating them in place.
+    /// In either way, the complete event collection is expected.</summary>
+    private Task OnEventsUpdated(HashSet<Event>? events = null)
     {
         ApplyFilter(); // re-apply filter, updates CollectionView
-        return eventRepo.SaveCompleteAsync(allEvents!);
+        return eventRepo.SaveCompleteAsync(events ?? GetEvents());
     }
+
+    private HashSet<Event> GetEvents() => [.. allEvents!.GetEvents()];
 
     [RelayCommand]
     private static async Task OpenUrlAsync(string url)
@@ -108,8 +119,8 @@ public partial class EventList : ObservableObject
     [RelayCommand]
     private async Task DeleteSelectedEvents()
     {
-        foreach (var evt in SelectedEvents.Cast<Event>())
-            allEvents!.Remove(evt);
+        foreach (var view in GetSelected())
+            allEvents!.Remove(view);
 
         SelectedEvents.Clear();
         NotifySelectionChanged();
@@ -132,33 +143,22 @@ public partial class EventList : ObservableObject
         NotifySelectionChanged();
     }
 
-    [RelayCommand]
-    private async Task ExportToIcsAsync()
-    {
-        if (SelectedEvents.Any()) await SelectedEvents.Cast<Event>().ExportToIcal();
-    }
+    [RelayCommand] private Task ExportToIcsAsync() => ExportSelected(Export.ExportToIcal);
+    [RelayCommand] private Task ExportToCsvAsync() => ExportSelected(Export.ExportToCsv);
+    [RelayCommand] private Task ExportToHtmlAsync() => ExportSelected(Export.ExportToHtml);
+    [RelayCommand] private Task ExportToTextAsync() => ExportSelected(events => events.ExportToText(Export.TextAlignedWithHeaders));
 
-    [RelayCommand]
-    private async Task ExportToCsvAsync()
-    {
-        if (SelectedEvents.Any()) await SelectedEvents.Cast<Event>().ExportToCsv();
-    }
+    private Task ExportSelected(Func<IEnumerable<Event>, Task> export)
+        => HasSelection ? export(GetSelected().GetEvents()) : Task.CompletedTask;
 
-    [RelayCommand]
-    private async Task ExportToHtmlAsync()
-    {
-        if (SelectedEvents.Any()) await SelectedEvents.Cast<Event>().ExportToHtml();
-    }
-
-    [RelayCommand]
-    private async Task ExportToTextAsync()
-    {
-        if (SelectedEvents.Any()) await SelectedEvents.Cast<Event>().ExportToText(Export.TextAlignedWithHeaders);
-    }
+    private IEnumerable<EventView> GetSelected() => SelectedEvents.Cast<EventView>();
 
     // used on the MainPage for Desktop
     public partial class View : ContentView
     {
+        private static readonly TextChunkConverter textChunkConverter =
+            new(linkStyle: Styles.Span.LinkSpan, highlitStyle: Styles.Span.HighlitSpan);
+
         public View(EventList model)
         {
             BindingContext = model;
@@ -189,39 +189,36 @@ public partial class EventList : ObservableObject
             DataTemplate eventTemplate = new(() =>
             {
                 var image = new Image()
-                    .Bind(Image.SourceProperty, nameof(Event.ImageUrl),
+                    .Bind(Image.SourceProperty, nameof(EventView.ImageUrl),
                         convert: static (string? url) => url.IsNullOrWhiteSpace() ? null
                             : new UriImageSource { Uri = new Uri(url!), CacheValidity = TimeSpan.FromDays(30) })
-                    .BindIsVisibleToValueOf(nameof(Event.ImageUrl));
+                    .BindIsVisibleToValueOf(nameof(EventView.ImageUrl));
 
                 var header = VStack(5,
-                    BndLbl(nameof(Event.Name)).Wrap().Bold().FontSize(16),
-                    OptionalTextLabel(nameof(Event.SubTitle)).Bold().Wrap(),
-                    OptionalTextLabel(nameof(Event.Genres), "🎶 {0}").Wrap());
+                    BndFmtLbl(nameof(EventView.Name), converter: textChunkConverter).Bold().Wrap().FontSize(16),
+                    OptionalFormattedLabel(nameof(EventView.SubTitle)).Bold().Wrap(),
+                    OptionalFormattedLabel(nameof(EventView.Genres)).Wrap());
 
                 var times = VStack(5,
-                    BndLbl(nameof(Event.Date), stringFormat: "📆 {0:ddd d MMM yy}").Bold(),
-                    OptionalTextLabel(nameof(Event.DoorsTime), "🚪 {0}"),
-                    OptionalTextLabel(nameof(Event.StartTime), "🎼 {0}"));
-
-                var description = new Label().Bind(Label.FormattedTextProperty, nameof(Event.Description),
-                    convert: (string? text) => text?.LinkifyUrls(Styles.Span.LinkSpan));
+                    BndLbl(nameof(EventView.Date), stringFormat: "📆 {0:ddd d MMM yy}").Bold(),
+                    OptionalTextLabel(nameof(EventView.DoorsTime), "🚪 {0}"),
+                    OptionalTextLabel(nameof(EventView.StartTime), "🎼 {0}"));
 
                 var details = VStack(5,
-                    description.Wrap(),
-                    OpenUrlButton("📰 more 📡", nameof(Event.Url), model).End(),
-                    OpenUrlButton("⛏ from 📡", nameof(Event.ScrapedFrom), model).End());
+                    OptionalFormattedLabel(nameof(EventView.Description)).Wrap(),
+                    OpenUrlButton("📰 more 📡", nameof(EventView.Url), model).End(),
+                    OpenUrlButton("⛏ from 📡", nameof(EventView.ScrapedFrom), model).End());
 
                 var location = HStack(5,
-                    BndLbl(nameof(Event.Venue), stringFormat: "🏟 {0}"),
-                    OptionalTextLabel(nameof(Event.Stage), "🏛 {0}"),
-                    BndLbl(nameof(Event.Scraped), stringFormat: "⛏ {0:g}")
+                    BndFmtLbl(nameof(EventView.Venue), converter: textChunkConverter),
+                    OptionalFormattedLabel(nameof(EventView.Stage)),
+                    BndLbl(nameof(EventView.Scraped), stringFormat: "⛏ {0:g}")
                         .StyleClass(Styles.Label.Demoted)).View;
 
                 var tickets = VStack(5,
-                    OptionalTextLabel(nameof(Event.PresalePrice), "💳 {0}"),
-                    OptionalTextLabel(nameof(Event.DoorsPrice), "💵 {0}"),
-                    OpenUrlButton("🎫 Tickets 📡", nameof(Event.TicketUrl), model));
+                    OptionalTextLabel(nameof(EventView.PresalePrice), "💳 {0}"),
+                    OptionalTextLabel(nameof(EventView.DoorsPrice), "💵 {0}"),
+                    OpenUrlButton("🎫 Tickets 📡", nameof(EventView.TicketUrl), model));
 
                 Grid eventLayout = useVerticalEventLayout
                     ? Grd(cols: [Star, Auto], rows: [200, Auto, Auto, Auto], spacing: 5,
@@ -240,7 +237,7 @@ public partial class EventList : ObservableObject
                     StyleClass = ["list-event"],
                     Content = eventLayout
                 }
-                .Bind(OpacityProperty, nameof(Event.IsPast),
+                .Bind(OpacityProperty, nameof(EventView.IsPast),
                     convert: static (bool isPast) => isPast ? 0.5 : 1.0);
             });
 
@@ -277,6 +274,9 @@ public partial class EventList : ObservableObject
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)
             => BndLbl(property, stringFormat: stringFormat).BindIsVisibleToValueOf(property);
+
+        private static Label OptionalFormattedLabel(string property)
+            => BndFmtLbl(property, converter: textChunkConverter).BindVisibleToNotNullOf(property);
 
         private static Button ExportButton(string text, string command)
             => Btn(text, command).BindVisible(nameof(HasSelection));

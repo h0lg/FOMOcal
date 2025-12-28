@@ -200,6 +200,11 @@
         <Setter Property="TextDecorations" Value="Underline" />
     </Style>
 
+    <Style TargetType="Span" x:Key="HighlitSpan">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource HighlitTextLight}, Dark={StaticResource HighlitTextDark}}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
     <Style TargetType="Span" x:Key="HelpSpan">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Help}, Dark={StaticResource HelpDark}}" />
     </Style>

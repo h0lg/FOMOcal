@@ -1,11 +1,10 @@
 ﻿using System.Reflection;
-using System.Text.Json.Serialization;
 
 namespace FomoCal;
 
-public class Event
+public class Event : IHaveAnEvent
 {
-    public static readonly PropertyInfo[] Fields = [.. typeof(Event).GetProperties().Where(p => p.Name != nameof(IsPast))];
+    public static readonly PropertyInfo[] Fields = typeof(Event).GetProperties();
 
     public required string Name { get; set; }
     public string? SubTitle { get; set; }
@@ -17,7 +16,6 @@ public class Event
     /// <summary>The day of the event.</summary>
     public required DateTime Date { get; set; }
 
-    [JsonIgnore] public bool IsPast => Date < DateTime.Today;
     public string? DoorsTime { get; set; }
     public string? StartTime { get; set; }
 
@@ -35,10 +33,17 @@ public class Event
     public string? DoorsPrice { get; set; }
     public string? TicketUrl { get; set; }
 
+    Event IHaveAnEvent.Event => this;
+
     public override bool Equals(object? obj) => obj is Event other && Equals(other);
     public bool Equals(Event? other) => other is not null && GetHashCode() == other.GetHashCode();
     public override int GetHashCode() => HashCode.Combine(Venue, Url ?? Name, Date.Date);
     public override string ToString() => $"{Date:d} {Name}"; // for easier debugging
+}
+
+public interface IHaveAnEvent
+{
+    Event Event { get; }
 }
 
 internal static class EventExtensions
@@ -50,8 +55,8 @@ internal static class EventExtensions
                 evt.Venue = newName;
     }
 
-    internal static void RemoveOfVenue(this HashSet<Event> allEvents, string oldName)
-        => allEvents.RemoveWhere(e => e.Venue == oldName);
+    internal static void RemoveOfVenue<T>(this HashSet<T> allEvents, string oldName) where T : IHaveAnEvent
+        => allEvents.RemoveWhere(e => e.Event.Venue == oldName);
 }
 
 public class EventRepository(JsonFileStore store, string fileName) : SetJsonFileRepository<Event>(store, fileName)

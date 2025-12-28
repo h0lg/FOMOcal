@@ -36,6 +36,9 @@ internal static class Widgets
     internal static Label BndLbl(string path = ".", string? stringFormat = null, object? source = null)
         => new Label().Bind(Label.TextProperty, path, stringFormat: stringFormat, source: source);
 
+    internal static Label BndFmtLbl(string path = ".", IValueConverter? converter = null)
+        => new Label().Bind(Label.FormattedTextProperty, path, converter: converter);
+
     internal static Entry Entr(string path, string? placeholder = null, Keyboard? keybord = null)
         => new Entry { Placeholder = placeholder, Keyboard = keybord }.Bind(Entry.TextProperty, path);
 
