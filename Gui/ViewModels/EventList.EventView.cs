@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FomoCal.Gui.ViewModels;
 
@@ -14,12 +13,12 @@ partial class EventList
         public bool IsPast { get; }
 
         // searched and highlit text properties
-        public IReadOnlyList<TextChunk>? Name { get => name; private set => Set(ref name, value); }
-        public IReadOnlyList<TextChunk>? SubTitle { get => subTitle; private set => Set(ref subTitle, value); }
-        public IReadOnlyList<TextChunk>? Genres { get => genres; private set => Set(ref genres, value); }
-        public IReadOnlyList<TextChunk>? Description { get => description; private set => Set(ref description, value); }
-        public IReadOnlyList<TextChunk>? Venue { get => venue; private set => Set(ref venue, value); }
-        public IReadOnlyList<TextChunk>? Stage { get => stage; private set => Set(ref stage, value); }
+        public IReadOnlyList<TextChunk>? Name { get => name; }
+        public IReadOnlyList<TextChunk>? SubTitle { get => subTitle; }
+        public IReadOnlyList<TextChunk>? Genres { get => genres; }
+        public IReadOnlyList<TextChunk>? Description { get => description; }
+        public IReadOnlyList<TextChunk>? Venue { get => venue; }
+        public IReadOnlyList<TextChunk>? Stage { get => stage; }
 
         #region read-only proxies
         public string? Url => Model.Url;
@@ -54,7 +53,7 @@ partial class EventList
         /// the set <paramref name="field"/> to the new <paramref name="value"/>
         /// and uses the <see cref="batcher"/> to dispatch them for the <paramref name="propertyName"/>.</summary>
         /// <returns>Whether the <paramref name="field"/> was updated.</returns>
-        private bool Set<T>(ref IReadOnlyList<T>? field, IReadOnlyList<T>? value, [CallerMemberName] string? propertyName = null)
+        private bool Set<T>(ref IReadOnlyList<T>? field, List<T>? value, string propertyName)
         {
             // both null, no change
             if (field is null && value is null) return false;
@@ -71,7 +70,7 @@ partial class EventList
 
             // one null or not equal, changed
             field = value;
-            batcher.Notify(propertyName!);
+            batcher.Notify(propertyName);
             return true;
         }
 
@@ -81,15 +80,15 @@ partial class EventList
         {
             using (batcher.Defer()) // batch property change notifications into one cycle to avoid intermediate layout passes
             {
-                Name = Model.Name.ChunkBy(terms);
-                SubTitle = Model.SubTitle.ChunkBy(terms);
+                Set(ref name, Model.Name.ChunkBy(terms), nameof(Name));
+                Set(ref subTitle, Model.SubTitle.ChunkBy(terms), nameof(SubTitle));
 
                 /* prepend icons to bound chunks because a format string on the binding
                  * doesn't work when binding to Label.FormattedTextProperty */
-                Genres = Model.Genres.ChunkBy(terms).PrependWith("🎶 ");
-                Description = [.. Model.Description.ChunkByLinksAnd(terms)];
-                Venue = Model.Venue.ChunkBy(terms).PrependWith("🏟 ");
-                Stage = Model.Stage.ChunkBy(terms).PrependWith("🏛 ");
+                Set(ref genres, Model.Genres.ChunkBy(terms).PrependWith("🎶 "), nameof(Genres));
+                Set(ref description, [.. Model.Description.ChunkByLinksAnd(terms)], nameof(Description));
+                Set(ref venue, Model.Venue.ChunkBy(terms).PrependWith("🏟 "), nameof(Venue));
+                Set(ref stage, Model.Stage.ChunkBy(terms).PrependWith("🏛 "), nameof(Stage));
             }
         }
 
