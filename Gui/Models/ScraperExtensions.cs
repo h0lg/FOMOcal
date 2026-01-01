@@ -85,10 +85,8 @@ internal static class ScraperExtensions
 
     /// <summary>Loads a <see cref="Venue.ProgramUrl"/> that <see cref="Venue.EventScrapeJob.RequiresAutomation"/>
     /// using an <see cref="IAutomateAnEventListing"/>.</summary>
-    /// <param name="throwOnTimeout">Whether to throw an exception on loading timeout.</param>
     /// <returns>The loading task.</returns>
-    internal static Task<IDomDocument?> LoadAutomated(this IAutomateAnEventListing automator,
-        IBrowser browser, Venue venue, bool throwOnTimeout = false)
+    internal static Task<IDomDocument?> LoadAutomated(this IAutomateAnEventListing automator, IBrowser browser, Venue venue)
     {
         TaskCompletionSource<IDomDocument?> eventHtmlLoading = new();
         automator.HtmlWithEventsLoaded += HandleLoaded;
@@ -104,7 +102,6 @@ internal static class ScraperExtensions
                 var doc = await browser.CreateDocumentAsync(html!, venue, automator.Url);
                 eventHtmlLoading.TrySetResult(doc);
             }
-            else if (throwOnTimeout) eventHtmlLoading.TrySetException(new Exception(venue.FormatEventLoadingTimedOut()));
             else eventHtmlLoading.TrySetResult(null);
         }
 
@@ -112,7 +109,7 @@ internal static class ScraperExtensions
         {
             DetachHandlers();
 
-            if (!throwOnTimeout && navigationResult == WebNavigationResult.Timeout)
+            if (navigationResult == WebNavigationResult.Timeout)
                 eventHtmlLoading.TrySetResult(null);
             else
             {

@@ -22,7 +22,7 @@ public partial class VenueScrapeContext : IDisposable // to support custom clean
         if (venue.Event.RequiresAutomation())
         {
             (automator, cleanup) = automatorFactory.BuildAutomator(this);
-            Loading = automator.LoadAutomated(browser, venue, throwOnTimeout: true); // first page of events is required
+            Loading = automator.LoadAutomated(browser, venue);
             automator.Url = venue.ProgramUrl;
         }
         else

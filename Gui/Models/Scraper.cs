@@ -13,41 +13,46 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
         try
         {
             var document = await venueScrape.Loading;
-            var pagingStrat = venue.Event.PagingStrategy;
-            var nextPageSelector = pagingStrat.RequiresNextPageSelector() ? " " + venue.Event.NextPageSelector : null;
-            venueScrape.Log($"loaded {document!.Url}, paging strategy loads {pagingStrat.GetDescription()}{nextPageSelector}");
-            ushort skippedTotal = ScrapeEvents(venueScrape, events, errors, document!);
 
-            /*  load more even if there are 0 scrapable events on the first page -
-             *  in case it shows the current month with no gig until the end of the month */
-            while (document!.CanLoadMore(venue)) // does not reliably exit the loop for all loading strategies
+            if (document == null) venueScrape.Log(venue.FormatEventLoadingTimedOut(), "WARN");
+            else
             {
-                venueScrape.Log("can load more");
-                document = await venueScrape.LoadMoreAsync();
-                if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
-                venueScrape.Log($"loaded {document.Url}");
-                int scrapedBefore = events.Count;
-                ushort skipped = ScrapeEvents(venueScrape, events, errors, document);
+                var pagingStrat = venue.Event.PagingStrategy;
+                var nextPageSelector = pagingStrat.RequiresNextPageSelector() ? " " + venue.Event.NextPageSelector : null;
+                venueScrape.Log($"loaded {document.Url}, paging strategy loads {pagingStrat.GetDescription()}{nextPageSelector}");
+                ushort skippedTotal = ScrapeEvents(venueScrape, events, errors, document);
 
-                int skippedDiff = pagingStrat.LoadsDifferentEvents() ? skipped // all skipped events are considered different
-                    : skipped - skippedTotal; // when loading more, skipped contains previously skipped events
+                /*  load more even if there are 0 scrapable events on the first page -
+                 *  in case it shows the current month with no gig until the end of the month */
+                while (document.CanLoadMore(venue)) // does not reliably exit the loop for all loading strategies
+                {
+                    venueScrape.Log("can load more");
+                    document = await venueScrape.LoadMoreAsync();
+                    if (document == null) break; // stop loading more if next selector doesn't go to a page or loading more times out
+                    venueScrape.Log($"loaded {document.Url}");
+                    int scrapedBefore = events.Count;
+                    ushort skipped = ScrapeEvents(venueScrape, events, errors, document);
 
-                // sanity-check the paging strategy to make sure the loop exits
-                if (skippedDiff < 0) throw new InvalidOperationException(
-                    "The number of events excluded by the filter dropped during paging." +
-                    $" That's not expected behavior for the configured paging strategy loading {pagingStrat.GetDescription()}." +
-                    " Consider trying a different one.");
+                    int skippedDiff = pagingStrat.LoadsDifferentEvents() ? skipped // all skipped events are considered different
+                        : skipped - skippedTotal; // when loading more, skipped contains previously skipped events
 
-                /* stop loading more if scraping current page yielded no different scrapable events
-                 * to exit the loop early and avoid paging rubbish */
-                if (events.Count == scrapedBefore && skippedDiff == 0) break;
+                    // sanity-check the paging strategy to make sure the loop exits
+                    if (skippedDiff < 0) throw new InvalidOperationException(
+                        "The number of events excluded by the filter dropped during paging." +
+                        $" That's not expected behavior for the configured paging strategy loading {pagingStrat.GetDescription()}." +
+                        " Consider trying a different one.");
 
-                /*  keep track of total skipped events to enable exit condition above
-                 *  for paging strats that load more instead of different events */
-                skippedTotal += (ushort)skippedDiff;
+                    /* stop loading more if scraping current page yielded no different scrapable events
+                     * to exit the loop early and avoid paging rubbish */
+                    if (events.Count == scrapedBefore && skippedDiff == 0) break;
+
+                    /*  keep track of total skipped events to enable exit condition above
+                     *  for paging strats that load more instead of different events */
+                    skippedTotal += (ushort)skippedDiff;
+                }
+
+                venueScrape.Log($"scraped {events.Count} events in total");
             }
-
-            venueScrape.Log($"scraped {events.Count} events in total");
         }
         catch (Exception ex)
         {
