@@ -66,7 +66,7 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
             if (venueScrape.Venue.SaveScrapeLogs)
                 await logFileSaver.SaveScrapeLogAsync(venueScrape.Venue, venueScrape.GetScrapeLog());
 
-            venueScrape.Dispose();
+            await venueScrape.DisposeAsync();
         }
 
         return (events, errors);

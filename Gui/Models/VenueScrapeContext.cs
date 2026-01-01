@@ -4,10 +4,10 @@ namespace FomoCal;
 
 /// <summary>An Adapter unifying the APIs for scraping <see cref="Venue.ProgramUrl"/>
 /// pages with or without automation.</summary>
-public partial class VenueScrapeContext : IDisposable // to support custom cleanup in order to detach the loader from the layout again
+public sealed partial class VenueScrapeContext : IDisposable, IAsyncDisposable // to support custom cleanup in order to detach the loader from the layout again
 {
     public readonly Venue Venue;
-    private readonly IBrowser browser; // not ours to dispose, just holding on to it
+    private readonly IBrowser browser; // not owned
     private readonly IAutomateAnEventListing? automator;
     private readonly ConcurrentBag<string> log = [];
     private readonly Action? cleanup;
@@ -32,10 +32,11 @@ public partial class VenueScrapeContext : IDisposable // to support custom clean
 
     internal async Task<IDomDocument?> LoadMoreAsync()
     {
-        var loading = await browser.LoadMoreAsync(Venue, automator, Loading.Result!, Log);
-        if (loading == null) return null;
-        Loading.Result?.Dispose(); // dispose previous document
-        Loading = loading;
+        ThrowIfDisposed();
+        var next = await browser.LoadMoreAsync(Venue, automator, Loading.Result!, Log);
+        if (next == null) return null;
+        await DisposeDocumentAsync(Loading.Result); // dispose previous document
+        Loading = next;
         return await Loading;
     }
 
@@ -56,17 +57,31 @@ public partial class VenueScrapeContext : IDisposable // to support custom clean
     public void Log(string message, string? level = null) => log.Add($"{DateTime.UtcNow:o} {level ?? "INFO"} {message}");
     internal string GetScrapeLog() => log.Reverse().LineJoin();
 
-    private bool isDisposed;
+    #region disposing
+    private int disposed; // 0 = false, 1 = true
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        if (isDisposed) return;
+        if (Interlocked.Exchange(ref disposed, 1) != 0) return;
 
-        if (Loading.IsCompletedSuccessfully) // avoid throwing exception if task failed
-            Loading.Result?.Dispose();
+        if (Loading.IsCompletedSuccessfully)  // avoid throwing exception if task failed
+            await DisposeDocumentAsync(Loading.Result);
 
-        Loading.Dispose();
         cleanup?.Invoke();
-        isDisposed = true; // allow GC to clean up the rest
     }
+
+    private static async ValueTask DisposeDocumentAsync(IDomDocument? document)
+    {
+        if (document is null) return;
+
+        if (document is IAsyncDisposable asyncDisposable)
+            await asyncDisposable.DisposeAsync();
+        else document.Dispose();
+    }
+
+    public void Dispose() => DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(Volatile.Read(ref disposed) != 0, typeof(VenueScrapeContext));
+    #endregion
 }
