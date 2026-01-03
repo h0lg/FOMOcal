@@ -107,6 +107,7 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
+    // DateScrapeJob proxies
     public string Format
     {
         /* No need to handle model.scrapeJob being initialized lazily.

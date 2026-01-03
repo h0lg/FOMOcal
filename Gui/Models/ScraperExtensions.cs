@@ -102,7 +102,7 @@ internal static class ScraperExtensions
                 var doc = await browser.CreateDocumentAsync(html!, venue, automator.Url);
                 eventHtmlLoading.TrySetResult(doc);
             }
-            else eventHtmlLoading.TrySetResult(null);
+            else eventHtmlLoading.TrySetResult(null); // lazy loading timed out
         }
 
         void HandleError(WebNavigationResult navigationResult)
