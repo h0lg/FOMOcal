@@ -26,10 +26,10 @@ partial class VenueEditor
     private void TogglePicking() => EnablePicking = !EnablePicking;
     private void TogglePickedSelector() => ShowSelectorOptions = !ShowSelectorOptions;
 
-    private async Task OnHtmlLoadedAsync(string? html, string timeOutMessage, string? url)
+    private async Task OnHtmlLoadedAsync(string? html, string? url)
     {
         if (html.IsSignificant()) SetDocument(await scraper.CreateDocumentAsync(html!, venue, url));
-        else await App.CurrentPage.DisplayAlertAsync("Event loading timed out.", timeOutMessage, "OK");
+        else await App.CurrentPage.DisplayAlertAsync("Event loading timed out.", venue.FormatEventLoadingTimedOut(), "OK");
 
         IsEventPageLoading = false;
         RevealMore();
@@ -59,10 +59,7 @@ partial class VenueEditor
         private AbsoluteLayout CreateVisualSelector()
         {
             pageView = new(model.venue, log: (message, level) => model.BrowserLog.Add(VenueScrapeContext.FormatLog(message, level)));
-
-            pageView.HtmlLoaded += async html => await model.OnHtmlLoadedAsync(html,
-                model.venue.FormatEventLoadingTimedOut(), pageView.Url);
-
+            pageView.HtmlLoaded += async html => await model.OnHtmlLoadedAsync(html, pageView.Url);
             pageView.ErrorLoading += async navigationResult => await model.OnErrorLoadingEventsAsync(navigationResult);
             pageView.PickedSelector += selector => model.PickedSelector = selector;
 
