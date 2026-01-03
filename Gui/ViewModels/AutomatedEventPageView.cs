@@ -97,14 +97,7 @@ public partial class AutomatedEventPageView : WebView, IAutomateAnEventListing
             if (bool.TryParse(loaded, out var isLoaded))
             {
                 string? html = null;
-
-                if (isLoaded)
-                {
-                    // retrieve complete document HTML once event container selector is available
-                    var encodedHtml = await EvaluateJavaScriptAsync("document.documentElement.outerHTML");
-                    html = Regex.Unescape(encodedHtml);
-                }
-
+                if (isLoaded) html = await GetHtml(); // get HTML when event containers are available
                 HtmlLoaded?.Invoke(html); // notify awaiter
             }
         }
@@ -145,9 +138,23 @@ public partial class AutomatedEventPageView : WebView, IAutomateAnEventListing
         }
 
         await EvaluateJavaScriptAsync(script);
+
+        // event selector is unset - we're creating a new Venue config in the Editor
+        if (venue.Event.Selector.IsNullOrWhiteSpace())
+        {
+            // eventsLoaded may not be called or only much later if page make many requests for some reason
+            var html = await GetHtml(); // get HTML without event containers
+            HtmlLoaded?.Invoke(html); // notify awaiter early to enable setting Venue Name from document title
+        }
     }
 
     private static string NavigateTo(string quotedUrl) => $"location = {quotedUrl};";
+
+    private async Task<string?> GetHtml()
+    {
+        var encodedHtml = await EvaluateJavaScriptAsync("document.documentElement.outerHTML");
+        return Regex.Unescape(encodedHtml);
+    }
 
     internal static string GetLeafSelector(string selector, bool isXpath)
     {
