@@ -17,7 +17,7 @@ class MockAutomator(VenueScrapeContext venueScrape, MockBrowser browser) : IAuto
         }
     }
 
-    public event Action<string?>? HtmlWithEventsLoaded;
+    public event Action<string?>? HtmlLoaded;
     public event Action<WebNavigationResult>? ErrorLoading;
 
     public Task ClickElementToLoadDifferent(string selector) => SimulateHtmlLoadedAsync();
@@ -45,7 +45,7 @@ class MockAutomator(VenueScrapeContext venueScrape, MockBrowser browser) : IAuto
              * That should never occur though - CanLoadMore(this IDomDocument document, Venue venue)
              * stops the paging in that scenario. */
 
-            HtmlWithEventsLoaded?.Invoke(html);
+            HtmlLoaded?.Invoke(html);
         }
         catch (Exception ex)
         {

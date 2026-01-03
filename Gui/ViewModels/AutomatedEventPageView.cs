@@ -7,7 +7,7 @@ namespace FomoCal.Gui.ViewModels;
 /// to either <see cref="EnablePicking(bool)"/> elements from
 /// or automate (if it <see cref="Venue.EventScrapeJob.RequiresAutomation"/>)
 /// in order to load <see cref="Event"/>s from it
-/// e.g. by waiting for lazy-loaded ones via <see cref="HtmlWithEventsLoaded"/>
+/// e.g. by waiting for lazy-loaded ones via <see cref="HtmlLoaded"/>
 /// or loading more depending on the <see cref="Venue.EventScrapeJob.PagingStrategy"/>.</summary>
 public partial class AutomatedEventPageView : WebView, IAutomateAnEventListing
 {
@@ -22,7 +22,7 @@ public partial class AutomatedEventPageView : WebView, IAutomateAnEventListing
     private readonly Action<string, string?>? Log;
 
     /// <inheritdoc />
-    public event Action<string?>? HtmlWithEventsLoaded;
+    public event Action<string?>? HtmlLoaded;
 
     /// <inheritdoc />
     public event Action<WebNavigationResult>? ErrorLoading;
@@ -105,7 +105,7 @@ public partial class AutomatedEventPageView : WebView, IAutomateAnEventListing
                     html = Regex.Unescape(encodedHtml);
                 }
 
-                HtmlWithEventsLoaded?.Invoke(html); // notify awaiter
+                HtmlLoaded?.Invoke(html); // notify awaiter
             }
         }
         else if (args.Url.StartsWith(elementPicked))
