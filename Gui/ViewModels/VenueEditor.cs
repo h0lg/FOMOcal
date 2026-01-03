@@ -37,6 +37,9 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))] public partial int SelectedEventCount { get; set; } = 0;
     [ObservableProperty] public partial int FilteredEventCount { get; set; } = 0;
 
+    [ObservableProperty] public partial bool ShowBrowserLog { get; set; }
+    [ObservableProperty] public partial ObservableCollection<string> BrowserLog { get; set; } = [];
+
     public string ProgramUrl
     {
         get => venue.ProgramUrl;
@@ -171,7 +174,7 @@ public partial class VenueEditor : ObservableObject
         eventDate.IsValidAsRequiredChanged += (_, _) => RevealMore();
 
         // only load scrape logs if ProgramUrl is set; use isDeletable as indicator
-        ScrapeLogs = new(isDeletable ? ScrapeLogFile.GetAll(venue): []);
+        ScrapeLogs = new(isDeletable ? ScrapeLogFile.GetAll(venue) : []);
 
         PropertyChanged += (o, e) =>
         {
@@ -354,7 +357,7 @@ public partial class VenueEditor : ObservableObject
             form = new ScrollView
             {
                 Content = VStack(20, venueFields, eventContainer,
-                    requiredEventFields, optionalEventFields, ScrapeLogs(model), formControls)
+                    requiredEventFields, optionalEventFields, ScrapeLogs(model), formControls, ScriptLog(model))
                     .Padding(20)
             };
 
@@ -560,6 +563,21 @@ public partial class VenueEditor : ObservableObject
                 .ToolTip("Tap any log to open it.");
 
             return HWrap(5, Lbl("📜 Scrape logs").Bold(), Lbl("save"), save.Wrapper, logs).View;
+        }
+
+        private static FlexLayout ScriptLog(VenueEditor model)
+        {
+            var toggle = Swtch(nameof(ShowBrowserLog));
+            toggle.Switch.ToolTip("View the browser log during the configuration process, e.g. to debug it.");
+
+            var log = new CollectionView
+            {
+                ItemsSource = model.BrowserLog,
+                ItemTemplate = new DataTemplate(() => BndLbl())
+            }
+                .BindVisible(nameof(ShowBrowserLog));
+
+            return HWrap(5, Lbl("📨 Browser log").Bold(), toggle.Wrapper, log).View;
         }
 
         private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)

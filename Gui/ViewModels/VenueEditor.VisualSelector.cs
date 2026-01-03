@@ -58,7 +58,7 @@ partial class VenueEditor
 
         private AbsoluteLayout CreateVisualSelector()
         {
-            pageView = new(model.venue);
+            pageView = new(model.venue, log: (message, level) => model.BrowserLog.Add(VenueScrapeContext.FormatLog(message, level)));
 
             pageView.HtmlWithEventsLoaded += async html => await model.OnHtmlWithEventsLoadedAsync(html,
                 model.venue.FormatEventLoadingTimedOut(), pageView.Url);
