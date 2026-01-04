@@ -172,7 +172,9 @@ public partial class VenueList : ObservableObject
         var file = await FilePicker.Default.PickAsync(new PickOptions
         {
             PickerTitle = "Pick a venues config",
-            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>> { { DevicePlatform.WinUI, [".json"] } })
+            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>> {
+                { DevicePlatform.Android, ["application/json"] },
+                { DevicePlatform.WinUI, [".json"] } })
         });
 
         if (file != null)
