@@ -132,8 +132,8 @@ public partial class VenueList : ObservableObject
     private async Task RefreshVenueAsync(Venue venue)
     {
         (List<Exception> errors, string? warning) = await RefreshEvents(venue);
-        RefreshList();
         await SaveVenues();
+        RefreshList(); // after SaveVenues to have venue visually refreshed
         if (errors.Count > 0) await WriteErrorReportAsync(ReportErrors(errors, venue));
         if (warning != null) await App.CurrentPage.DisplayAlertAsync("You may want to look into:", warning, "OK");
     }
