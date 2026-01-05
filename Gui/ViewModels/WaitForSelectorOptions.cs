@@ -125,8 +125,10 @@ partial class Settings
             return HWrap(5,
                 ContextLabel($"When lazy-loading events, paging {Venue.PagingStrategy.ScrollDownToLoadMore.GetDescription()}"
                     + $" or {Venue.PagingStrategy.ClickElementToLoadMore.GetDescription()} an element,"),
-                Stepper("check for events every", nameof(IntervalDelayMs), "ms", max: 1000, help, Remembered.IntervalDelayMs, HelpTexts.IntervalDelayMs),
-                Stepper("for max.", nameof(MaxTries), "resetting times,", max: 1000, help, Remembered.MaxTries, HelpTexts.MaxTries),
+                Lbl("check for events"),
+                Stepper("every", nameof(IntervalDelayMs), "ms", max: 1000, help, Remembered.IntervalDelayMs, HelpTexts.IntervalDelayMs),
+                Stepper("for max.", nameof(MaxTries), endLabel: null, max: 1000, help, Remembered.MaxTries, HelpTexts.MaxTries),
+                Lbl("resetting times,"),
                 BndLbl(nameof(WaitForMaxSecs), stringFormat: "waiting up to {0}s in total."),
                 help.layout).View;
         }
@@ -137,11 +139,15 @@ partial class Settings
 
             return HWrap(5,
                 ContextLabel($"When loading {Venue.PagingStrategy.ScrollDownToLoadMore.GetDescription()},"),
-                Stepper("trigger the scroll event after", nameof(TriggerScrollAfterMs), "ms,", max: 10000, help,
+                Lbl("trigger the scroll event"),
+                Stepper("after", nameof(TriggerScrollAfterMs), "ms,", max: 10000, help,
                     Remembered.TriggerScrollAfterMs, HelpTexts.TriggerScrollAfterMs),
-                Stepper("consider async requests done after", nameof(AjaxTimeoutMs), "ms", max: 30000, help, Remembered.AjaxTimeoutMs, HelpTexts.AjaxTimeoutMs),
-                Stepper("and stop scrolling after min.", nameof(MaxMatchesScrollingDown), "events are found.", max: 1000,
+                Lbl("consider async requests done"),
+                Stepper("after", nameof(AjaxTimeoutMs), "ms", max: 30000, help, Remembered.AjaxTimeoutMs, HelpTexts.AjaxTimeoutMs),
+                Lbl("and stop scrolling after"),
+                Stepper("min.", nameof(MaxMatchesScrollingDown), "events", max: 1000,
                     help, Remembered.MaxMatchesScrollingDown, HelpTexts.MaxMatchesScrollingDown),
+                Lbl("are found."),
                 help.layout).View;
         }
 
@@ -151,14 +157,15 @@ partial class Settings
 
             return HWrap(5,
                 ContextLabel($"When loading {Venue.PagingStrategy.ClickElementToLoadDifferent.GetDescription()} an element,"),
-                Stepper("wait max.", nameof(MutationTimeoutMs), "ms for a change", max: 30000, help, Remembered.MutationTimeoutMs, HelpTexts.MutationTimeoutMs),
-                Stepper("and debounce it for", nameof(MutationDebounceMs), "ms .", max: 2000, help, Remembered.MutationDebounceMs, HelpTexts.MutationDebounceMs),
+                Stepper("wait max.", nameof(MutationTimeoutMs), "ms", max: 30000, help, Remembered.MutationTimeoutMs, HelpTexts.MutationTimeoutMs),
+                Lbl("for a change and debounce it "),
+                Stepper("for", nameof(MutationDebounceMs), "ms .", max: 2000, help, Remembered.MutationDebounceMs, HelpTexts.MutationDebounceMs),
                 help.layout).View;
         }
 
         private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted);
 
-        private static View Stepper(string startLabel, string property, string endLabel, int max,
+        private static View Stepper(string startLabel, string property, string? endLabel, int max,
             (Label label, Border layout) help, RememberedUshort remembered, string helpText)
         {
             var stepper = NumericStepper.Create(property: property, startLabel: startLabel, endLabel: endLabel, max: max);
