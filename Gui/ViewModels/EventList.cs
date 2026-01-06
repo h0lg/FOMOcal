@@ -190,8 +190,8 @@ public partial class EventList : ObservableObject
                     OpenUrlButton("🎫 Tickets 📡", nameof(EventView.TicketUrl), model));
 
                 Grid eventLayout = useVerticalEventLayout
-                    ? Grd(cols: [Star, Auto], rows: [200, Auto, Auto, Auto], spacing: 5,
-                        image.ColumnSpan(2),
+                    ? Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,
+                        image.Bind(HeightRequestProperty, nameof(EventView.ImageHeight)).ColumnSpan(2),
                         header.Row(1), times.Row(1).Column(1),
                         details.Row(2).ColumnSpan(2),
                         location.Bottom().Row(3), tickets.Row(3).Column(1))

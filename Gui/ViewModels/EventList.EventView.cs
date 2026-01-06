@@ -41,6 +41,9 @@ partial class EventList
         public string? TicketUrl => Model.TicketUrl;
         #endregion
 
+        public int ImageHeight => ImageUrl.IsSignificant() ? 200
+            : 0; // don't take up space in vertical layout
+
         public EventView(Event e)
         {
             Model = e;
