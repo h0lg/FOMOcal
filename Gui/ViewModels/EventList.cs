@@ -124,6 +124,7 @@ public partial class EventList : ObservableObject
         public View(EventList model)
         {
             BindingContext = model;
+            bool isDesktop = DeviceInfo.Idiom == DeviceIdiom.Desktop;
             (SearchBar searchBar, CollectionView recentSearches) = BuildSearch(model);
 
             var pastEvents = HStack(5,
@@ -242,11 +243,20 @@ public partial class EventList : ObservableObject
                 list.ItemTemplate = eventTemplate;
             };
 
-            Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5,
-                HWrap(new Thickness(0, 0, right: 5, 0), pastEvents.View,
-                    Lbl("Gigs").StyleClass(Styles.Label.Headline), searchBar.Grow(1),
-                        recentSearches, SelectionMenu(), export.View).View,
-                list.Row(1));
+            var header = HWrap(new Thickness(0, 0, right: 5, 0));
+
+            if (isDesktop)
+            {
+                header.AddChild(pastEvents.View);
+                header.AddChild(Lbl("Gigs").StyleClass(Styles.Label.Headline));
+            }
+
+            header.AddChild(searchBar.Grow(1));
+            header.AddChild(recentSearches);
+            if (!isDesktop) header.AddChild(pastEvents.View);
+            header.AddChild(SelectionMenu());
+            header.AddChild(export.View);
+            Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5, header.View, list.Row(1));
         }
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)
