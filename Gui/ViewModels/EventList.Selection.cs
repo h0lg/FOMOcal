@@ -117,7 +117,7 @@ partial class EventList
                 BndLbl(nameof(SelectedEventCount), stringFormat: "{0} selected").BindVisible(nameof(HasSelection)),
                 Swtch(nameof(ViewSelectedOnly)).Wrapper.BindVisible(nameof(HasSelection))
                     .ToolTip("toggle between viewing all and only selected events"),
-                Btn("🗑", nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection))
+                Btn(Glyphs.Delete, nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(HasSelection))
                     .ToolTip("remove all selected events")).View;
     }
 }

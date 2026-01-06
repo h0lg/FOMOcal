@@ -127,7 +127,7 @@ public partial class EventList : ObservableObject
             (SearchBar searchBar, CollectionView recentSearches) = BuildSearch(model);
 
             var pastEvents = HStack(5,
-                Btn("🗑", nameof(CleanUpPastEventsCommand))
+                Btn(Glyphs.Delete, nameof(CleanUpPastEventsCommand))
                     .BindVisible(nameof(CanDeletePastEvents))
                     .ToolTip("Remove old gig pasta"),
 
@@ -138,13 +138,13 @@ public partial class EventList : ObservableObject
             const string configurableInSettings = "\nConfigure included event properties in the 🛠 Settings.";
 
             var export = HStack(5,
-                Lbl("🥡 export as").BindVisible(nameof(HasSelection)),
-                ExportButton("📆 ics", nameof(ExportToIcsCommand))
+                Lbl(Glyphs.Export + " export as").BindVisible(nameof(HasSelection)),
+                ExportButton(Glyphs.Date + "ics", nameof(ExportToIcsCommand))
                     .ToolTip("Export selected events for calendar apps in iCalendar format."),
-                ExportButton("🖺 html", nameof(ExportToHtmlCommand))
+                ExportButton(Glyphs.Html + "html", nameof(ExportToHtmlCommand))
                     .ToolTip("Export selected events as a rich HTML document to open and filter in a browser."
                         + "\nProbably the most end-user friendly option." + configurableInSettings),
-                ExportButton("🖹 txt", nameof(ExportToTextCommand))
+                ExportButton(Glyphs.Text + "txt", nameof(ExportToTextCommand))
                     .ToolTip("Export selected events as a plain text with configurable alignment."
                         + "\nAn easily digestable format without frills or noise, e.g. for text messages."
                         + " Also your best choice if you want to re-format the events in a text editor before sharing."
@@ -169,25 +169,25 @@ public partial class EventList : ObservableObject
                     OptionalFormattedLabel(nameof(EventView.Genres)).Wrap());
 
                 var times = VStack(5,
-                    BndLbl(nameof(EventView.Date), stringFormat: "📆 {0:ddd d MMM yy}").Bold(),
-                    OptionalTextLabel(nameof(EventView.DoorsTime), "🚪 {0}"),
-                    OptionalTextLabel(nameof(EventView.StartTime), "🎼 {0}"));
+                    BndLbl(nameof(EventView.Date), stringFormat: Glyphs.Date + "{0:ddd d MMM yy}").Bold(),
+                    OptionalTextLabel(nameof(EventView.DoorsTime), Glyphs.Doors + "{0}"),
+                    OptionalTextLabel(nameof(EventView.StartTime), Glyphs.Start + "{0}"));
 
                 var details = VStack(5,
                     OptionalFormattedLabel(nameof(EventView.Description)).Wrap(),
-                    OpenUrlButton("📰 more 📡", nameof(EventView.Url), model).End(),
-                    OpenUrlButton("⛏ from 📡", nameof(EventView.ScrapedFrom), model).End());
+                    OpenUrlButton(Glyphs.EventPage + "more " + Glyphs.Link, nameof(EventView.Url), model).End(),
+                    OpenUrlButton(Glyphs.Scrape + " from " + Glyphs.Link, nameof(EventView.ScrapedFrom), model).End());
 
                 var location = HStack(5,
                     BndFmtLbl(nameof(EventView.Venue), converter: textChunkConverter),
                     OptionalFormattedLabel(nameof(EventView.Stage)),
-                    BndLbl(nameof(EventView.Scraped), stringFormat: "⛏ {0:g}")
+                    BndLbl(nameof(EventView.Scraped), stringFormat: Glyphs.Scrape + " {0:g}")
                         .StyleClass(Styles.Label.Demoted)).View;
 
                 var tickets = VStack(5,
-                    OptionalTextLabel(nameof(EventView.PresalePrice), "💳 {0}"),
-                    OptionalTextLabel(nameof(EventView.DoorsPrice), "💵 {0}"),
-                    OpenUrlButton("🎫 Tickets 📡", nameof(EventView.TicketUrl), model));
+                    OptionalTextLabel(nameof(EventView.PresalePrice), Glyphs.PresalePrice + "{0}"),
+                    OptionalTextLabel(nameof(EventView.DoorsPrice), Glyphs.DoorPrice + "{0}"),
+                    OpenUrlButton(Glyphs.Tickets + "Tickets " + Glyphs.Link, nameof(EventView.TicketUrl), model));
 
                 Grid eventLayout = useVerticalEventLayout
                     ? Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,

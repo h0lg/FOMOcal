@@ -101,7 +101,7 @@ partial class VenueEditor
 
             View[] appendSelection = [
                 Lbl("Select parts of the selector text and"),
-                Btn("➕ append").TapGesture(AppendSelectedQuery)
+                Btn(Glyphs.Add + " append").TapGesture(AppendSelectedQuery)
                     .InlineTooltipOnFocus(HelpTexts.AppendSelectedQuery, help),
                 Lbl("them to your query to try them out."),
                 Btn("🍜 selector options").BindVisible(showSelectorOptions).TapGesture(model.ToggleSelectorDetail)

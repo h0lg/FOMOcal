@@ -4,6 +4,29 @@ using CommunityToolkit.Maui.Markup;
 
 namespace FomoCal.Gui.ViewModels;
 
+internal static class Glyphs
+{
+    internal const string Html = "🖺 ",
+        Text = "🖹 ",
+        Venue = "🏟 ",
+        Stage = "🏛 ",
+        Doors = "🚪 ",
+        Start = "🎼 ",
+        PresalePrice = "💳 ",
+        DoorPrice = "💵 ",
+        EventPage = "📰 ",
+        Date = "📆 ",
+        Genres = "🎶 ",
+        Tickets = "🎫 ",
+        Scrape = "⛏",
+        Settings = "🛠",
+        Comment = "💬",
+        Link = "📡",
+        Export = "🥡",
+        Add = "➕",
+        Delete = "🗑";
+}
+
 internal static class Styles
 {
     internal static class Label

@@ -40,13 +40,13 @@ public partial class Settings : ObservableObject
             var layout = Grd(cols: [Auto, Star], rows, spacing: 5,
                 SubHeadline("🎨 Theme"), ThemeSwitches().Column(1),
 
-                SubHeadline("🖺 HTML export").Row(2),
+                SubHeadline(Glyphs.Html + "HTML export").Row(2),
                 Section("included fields").Row(3),
                 htmlExport.included.CenterVertical().Row(3).Column(1),
                 Section("excluded fields").StyleClass(Styles.Label.Demoted).Row(4),
                 htmlExport.excluded.Row(4).Column(1),
 
-                SubHeadline("🖹 Text export").Row(6),
+                SubHeadline(Glyphs.Text + "Text export").Row(6),
                 Section("aligned with headers").Row(7),
                 exportTextAlignedWithHeaders.CenterVertical().Row(7).Column(1),
                 Section("included fields").Row(8),

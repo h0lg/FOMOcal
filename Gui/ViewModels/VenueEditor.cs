@@ -169,7 +169,7 @@ public partial class VenueEditor : ObservableObject
 
         var evt = this.venue.Event;
         eventName = ScrapeJob("❗ Name", evt.Name, nameof(Venue.EventScrapeJob.Name));
-        eventDate = ScrapeJob("📆 Date", evt.Date, nameof(Venue.EventScrapeJob.Date));
+        eventDate = ScrapeJob(Glyphs.Date + "Date", evt.Date, nameof(Venue.EventScrapeJob.Date));
         eventName.IsValidAsRequiredChanged += (_, _) => RevealMore();
         eventDate.IsValidAsRequiredChanged += (_, _) => RevealMore();
 
@@ -351,7 +351,7 @@ public partial class VenueEditor : ObservableObject
                 progress,
                 Btn("💾 Save", nameof(SaveCommand)).Column(1),
                 Lbl("or").CenterVertical().IsVisible(model.isDeletable).Column(2),
-                Btn("🗑 Delete", nameof(DeleteCommand)).IsVisible(model.isDeletable).Column(3),
+                Btn(Glyphs.Delete + " Delete", nameof(DeleteCommand)).IsVisible(model.isDeletable).Column(3),
                 Lbl("this venue").CenterVertical().Column(4));
 
             form = new ScrollView
@@ -385,7 +385,7 @@ public partial class VenueEditor : ObservableObject
                 .BindVisible(new Binding(programUrl, converter: Converters.IsSignificant),
                     Converters.And, new Binding(nameof(IsEventPageLoading), converter: Converters.Not));
 
-            var openUrl = Btn("📡", nameof(OpenUrlCommand), source: model, parameterPath: programUrl)
+            var openUrl = Btn(Glyphs.Link, nameof(OpenUrlCommand), source: model, parameterPath: programUrl)
                 .BindIsVisibleToValueOf(programUrl);
 
             return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
@@ -393,7 +393,7 @@ public partial class VenueEditor : ObservableObject
                 FldLbl("🏷").Row(1), nameEntry.Row(1).Column(1).ColumnSpan(3),
                 FldLbl("📍").Row(2), location.Row(2).Column(1).ColumnSpan(3),
                 FldLbl("🔣").Row(3), encoding.Row(3).Column(1).ColumnSpan(3),
-                FldLbl("💬").Row(4), comment.Row(4).Column(1).ColumnSpan(3));
+                FldLbl(Glyphs.Comment).Row(4), comment.Row(4).Column(1).ColumnSpan(3));
 
             static Label FldLbl(string Text) => Lbl(Text).CenterVertical();
         }
@@ -522,15 +522,15 @@ public partial class VenueEditor : ObservableObject
             return VStack(0,
                 OptionalScrapeJob("‼ Subtitle", evt.SubTitle, nameof(Venue.EventScrapeJob.SubTitle)),
                 OptionalScrapeJob("📜 Description", evt.Description, nameof(Venue.EventScrapeJob.Description)),
-                OptionalScrapeJob("🎶 Genres", evt.Genres, nameof(Venue.EventScrapeJob.Genres)),
-                OptionalScrapeJob("🏛 Stage", evt.Stage, nameof(Venue.EventScrapeJob.Stage)),
-                OptionalScrapeJob("🚪 Doors", evt.DoorsTime, nameof(Venue.EventScrapeJob.DoorsTime)),
-                OptionalScrapeJob("🎼 Start", evt.StartTime, nameof(Venue.EventScrapeJob.StartTime)),
-                OptionalScrapeJob("💳 Pre-sale price", evt.PresalePrice, nameof(Venue.EventScrapeJob.PresalePrice)),
-                OptionalScrapeJob("💵 Door price", evt.DoorsPrice, nameof(Venue.EventScrapeJob.DoorsPrice)),
-                OptionalScrapeJob("📰 Event page 📡", evt.Url, nameof(Venue.EventScrapeJob.Url), defaultAttribute: "href"),
+                OptionalScrapeJob(Glyphs.Genres + "Genres", evt.Genres, nameof(Venue.EventScrapeJob.Genres)),
+                OptionalScrapeJob(Glyphs.Stage + "Stage", evt.Stage, nameof(Venue.EventScrapeJob.Stage)),
+                OptionalScrapeJob(Glyphs.Doors + "Doors", evt.DoorsTime, nameof(Venue.EventScrapeJob.DoorsTime)),
+                OptionalScrapeJob(Glyphs.Start + "Start", evt.StartTime, nameof(Venue.EventScrapeJob.StartTime)),
+                OptionalScrapeJob(Glyphs.PresalePrice + "Pre-sale price", evt.PresalePrice, nameof(Venue.EventScrapeJob.PresalePrice)),
+                OptionalScrapeJob(Glyphs.DoorPrice + "Door price", evt.DoorsPrice, nameof(Venue.EventScrapeJob.DoorsPrice)),
+                OptionalScrapeJob(Glyphs.EventPage + "Event page " + Glyphs.Link, evt.Url, nameof(Venue.EventScrapeJob.Url), defaultAttribute: "href"),
                 OptionalScrapeJob("🖼 Image", evt.ImageUrl, nameof(Venue.EventScrapeJob.ImageUrl), defaultAttribute: "src"),
-                OptionalScrapeJob("🎫 Tickets 📡", evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href"));
+                OptionalScrapeJob(Glyphs.Tickets + "Tickets " + Glyphs.Link, evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href"));
 
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
                => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute),
@@ -544,7 +544,7 @@ public partial class VenueEditor : ObservableObject
 
             DataTemplate itemTemplate = new(() =>
             {
-                var deleteBtn = Lbl("🗑").BindTapGesture(nameof(DeleteScrapeLogCommand),
+                var deleteBtn = Lbl(Glyphs.Delete).BindTapGesture(nameof(DeleteScrapeLogCommand),
                     commandSource: model, parameterPath: ".");
 
                 var label = BndLbl(nameof(ScrapeLogFile.ForVenue.TimeStamp)).Padding(10)

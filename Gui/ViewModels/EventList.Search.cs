@@ -82,7 +82,7 @@ partial class EventList
                 IsVisible = false,
                 ItemTemplate = new DataTemplate(() =>
                     Grd(cols: [Star, Auto], rows: [Auto], spacing: 5,
-                        BndLbl().Center(), Btn("🗑", nameof(DeleteSearchCommand), source: model).Column(1)))
+                        BndLbl().Center(), Btn(Glyphs.Delete, nameof(DeleteSearchCommand), source: model).Column(1)))
             };
 
             // toggle dropdown visibility when searchbar focused

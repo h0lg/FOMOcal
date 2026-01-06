@@ -88,10 +88,10 @@ partial class EventList
 
                 /* prepend icons to bound chunks because a format string on the binding
                  * doesn't work when binding to Label.FormattedTextProperty */
-                Set(ref genres, Model.Genres.ChunkBy(terms).PrependWith("🎶 "), nameof(Genres));
+                Set(ref genres, Model.Genres.ChunkBy(terms).PrependWith(Glyphs.Genres), nameof(Genres));
                 Set(ref description, [.. Model.Description.ChunkByLinksAnd(terms)], nameof(Description));
-                Set(ref venue, Model.Venue.ChunkBy(terms).PrependWith("🏟 "), nameof(Venue));
-                Set(ref stage, Model.Stage.ChunkBy(terms).PrependWith("🏛 "), nameof(Stage));
+                Set(ref venue, Model.Venue.ChunkBy(terms).PrependWith(Glyphs.Venue), nameof(Venue));
+                Set(ref stage, Model.Stage.ChunkBy(terms).PrependWith(Glyphs.Stage), nameof(Stage));
             }
         }
 

@@ -262,11 +262,11 @@ public partial class VenueList : ObservableObject
                         .StyleClass(Styles.Label.VenueRowDetail)
                         .BindIsVisibleToHasValueOf<Label, int>(nameof(Venue.LastEventCount));
 
-                    var lastRefreshed = BndLbl(nameof(Venue.LastRefreshed), stringFormat: "last ⛏ {0:d MMM H:mm}")
+                    var lastRefreshed = BndLbl(nameof(Venue.LastRefreshed), stringFormat: $"last {Glyphs.Scrape} {{0:d MMM H:mm}}")
                         .StyleClass(Styles.Label.VenueRowDetail)
                         .BindIsVisibleToHasValueOf<Label, DateTime>(nameof(Venue.LastRefreshed));
 
-                    var refresh = Btn("⛏", nameof(RefreshVenueCommand), source: model);
+                    var refresh = Btn(Glyphs.Scrape, nameof(RefreshVenueCommand), source: model);
                     SwingPickaxeDuring(refresh, model.RefreshVenueCommand);
 
                     return new Border
@@ -280,12 +280,12 @@ public partial class VenueList : ObservableObject
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
-            var title = Lbl("🏟 Venues").StyleClass(Styles.Label.Headline).CenterVertical();
+            var title = Lbl(Glyphs.Venue + "Venues").StyleClass(Styles.Label.Headline).CenterVertical();
             var importVenues = Btn("📥", nameof(ImportVenuesCommand)).ToolTip("import venues");
-            var exportVenues = Btn("🥡", nameof(ExportVenuesCommand)).ToolTip("export venues");
-            var openSettings = Btn("🛠", nameof(OpenSettingsCommand)).ToolTip("open Settings");
-            var addVenue = Btn("➕", nameof(AddVenueCommand)).ToolTip("add a venue");
-            var refreshAll = Btn("⛏ dig all gigs", nameof(RefreshAllVenuesCommand)).ToolTip("refresh events from all venues");
+            var exportVenues = Btn(Glyphs.Export, nameof(ExportVenuesCommand)).ToolTip("export venues");
+            var openSettings = Btn(Glyphs.Settings, nameof(OpenSettingsCommand)).ToolTip("open Settings");
+            var addVenue = Btn(Glyphs.Add, nameof(AddVenueCommand)).ToolTip("add a venue");
+            var refreshAll = Btn(Glyphs.Scrape + " dig all gigs", nameof(RefreshAllVenuesCommand)).ToolTip("refresh events from all venues");
 
             var refreshAllProgress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(RefreshAllVenuesProgress))
                 .ToolTip("the progress of refreshing the events of all venues ")
