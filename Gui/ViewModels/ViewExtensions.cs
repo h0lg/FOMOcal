@@ -6,8 +6,8 @@ namespace FomoCal.Gui.ViewModels;
 
 internal static class Glyphs
 {
-    internal const string Html = "🖺 ",
-        Text = "🖹 ",
+    internal const string Html = "🌐 ",
+        Text = "𝕋 ",
         Venue = "🏟 ",
         Stage = "🏛 ",
         Doors = "🚪 ",
@@ -21,7 +21,7 @@ internal static class Glyphs
         Scrape = "⛏",
         Settings = "🛠",
         Comment = "💬",
-        Link = "📡",
+        Link = "🔗",
         Export = "🥡",
         Add = "➕",
         Delete = "🗑";

@@ -262,8 +262,14 @@
 
     <Style TargetType="Border" Class="showVisualSelector">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-        <Setter Property="Margin" Value="-5,0,0,0" />
-        <Setter Property="Padding" Value="5,3,5,12" />
+        <Setter Property="Margin" Value="-4,0,0,0" />
+        <Setter Property="Padding">
+            <Setter.Value>
+                <OnPlatform x:TypeArguments="Thickness" Default="5,7,5,10">
+                    <On Platform="Android" Value="5,3,5,4" />
+                </OnPlatform>
+            </Setter.Value>
+        </Setter>
 
         <Setter Property="StrokeShape">
             <Setter.Value>

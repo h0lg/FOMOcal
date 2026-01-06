@@ -97,7 +97,7 @@ partial class VenueEditor
                         Converters.And, new Binding(showSelectorOptions, converter: Converters.Not)),
                 new Button().BindIsVisibleToValueOf(displayedSelector).TapGesture(model.TogglePickedSelector)
                     .Bind(Button.TextProperty, showSelectorOptions,
-                        convert: static (bool showSelector) => showSelector ? "⏮ Back to ⛶ picking an element" : "🥢 Choose a selector next ⏭"));
+                        convert: static (bool showSelector) => showSelector ? "⏮ Back to ⛶ picking an element" : "🍒 Choose a selector next ⏭"));
 
             View[] appendSelection = [
                 Lbl("Select parts of the selector text and"),
@@ -139,7 +139,7 @@ partial class VenueEditor
                             .ToolTip("You may find it useful to zoom  the page using [Ctrl] + MouseWheel or try the 'Inspect' tool from the right-click context menu.")
                             .BindVisible(showSelectorOptions, converter: Converters.Not).Row(3))
                         .LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
-                    Btn("🗙").TapGesture(HideVisualSelector).Size(30, 30).TranslationY(-35) // float half above upper boundary
+                    Btn("⬇️").TapGesture(HideVisualSelector)
                         .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, auto-sized
                 }
             };

@@ -19,7 +19,7 @@ namespace FomoCal.Gui.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class HelpTexts {
@@ -361,7 +361,7 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Every web page is made up of 🖽 [boxes inside boxes](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure) - kind of like Russian nesting dolls, but often with more than one contained child.
+        ///   Looks up a localized string similar to Every web page is made up of [🍱 boxes inside boxes](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure) - kind of like Russian nesting dolls, but often with more than one contained child.
         ///Each box holds different parts of the page with different info. In the following, you can choose which boxes to pick what kind of info from..
         /// </summary>
         internal static string ScrapeConfigInfo {
@@ -452,7 +452,7 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 🧪 Test this strategy to load more events. You can watch the process in the 🖽 Visual Selector, e.g. the one for the event selector.
+        ///   Looks up a localized string similar to 🧪 Test this strategy to load more events. You can watch the process in a 🥢 Picker, e.g. the one for the event selector.
         ///If you test a strategy that involves clicking, make sure to disable the option &quot;Tap a page element to pick it.&quot;.
         /// </summary>
         internal static string TestPagingStrategy {
