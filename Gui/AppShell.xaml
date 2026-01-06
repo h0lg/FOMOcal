@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Shell
+<Shell Shell.NavBarIsVisible="False"
     x:Class="FomoCal.Gui.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:FomoCal.Gui.ViewModels">
 
     <TabBar>
-        <Tab Title="Venues">
+        <Tab Title="🏟 Venues">
             <ShellContent ContentTemplate="{DataTemplate vm:VenueList+Page}" />
         </Tab>
-        <Tab Title="Events">
+        <Tab Title="🎤 Gigs">
             <ShellContent ContentTemplate="{DataTemplate vm:EventList+Page}" />
         </Tab>
-        <Tab Title="Settings">
+        <Tab Title="🛠 Settings">
             <ShellContent ContentTemplate="{DataTemplate vm:Settings+Page}" />
         </Tab>
     </TabBar>
