@@ -276,14 +276,12 @@ public partial class VenueList : ObservableObject
                             name.ColumnSpan(2),
                             location.Row(1),
                             refresh.Row(1).Column(1).RowSpan(2).Bottom(),
-                            HWrap(1, lastEventCount, lastRefreshed).View.Row(2).End())
+                            HStack(5, lastEventCount, lastRefreshed).View.Row(2).End())
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
                 }));
 
-            var title = Lbl(Glyphs.Venue + "Venues").StyleClass(Styles.Label.Headline).CenterVertical();
             var importVenues = Btn("📥", nameof(ImportVenuesCommand)).ToolTip("import venues");
             var exportVenues = Btn(Glyphs.Export, nameof(ExportVenuesCommand)).ToolTip("export venues");
-            var openSettings = Btn(Glyphs.Settings, nameof(OpenSettingsCommand)).ToolTip("open Settings");
             var addVenue = Btn(Glyphs.Add, nameof(AddVenueCommand)).ToolTip("add a venue");
             var refreshAll = Btn(Glyphs.Scrape + " dig all gigs", nameof(RefreshAllVenuesCommand)).ToolTip("refresh events from all venues");
 
@@ -292,11 +290,24 @@ public partial class VenueList : ObservableObject
                 // hide when none is refreshing
                 .BindVisible(nameof(RefreshAllVenuesProgress), converter: Converters.Func<double>(progress => progress < 1d));
 
-            Content = Grd(cols: [Auto, Auto, Star, Auto, Auto], rows: [Auto, Star, Auto, Auto], spacing: 5,
-                title.ColumnSpan(3), importVenues.Column(3), exportVenues.Column(4),
-                list.Row(1).ColumnSpan(5),
-                refreshAllProgress.Row(2).ColumnSpan(5),
-                openSettings.Row(3), addVenue.Row(3).Column(1), refreshAll.Row(3).Column(3).ColumnSpan(2));
+            if (Shell.Current == null) // desktop layout with Venue and Event list side by side
+            {
+                // title display and settings access are take care of by tabs in the Shell
+                var title = Lbl(Glyphs.Venue + "Venues").StyleClass(Styles.Label.Headline).CenterVertical();
+                var openSettings = Btn(Glyphs.Settings, nameof(OpenSettingsCommand)).ToolTip("open Settings");
+
+                Content = Grd(cols: [Auto, Auto, Star, Auto, Auto], rows: [Auto, Star, Auto, Auto], spacing: 5,
+                    title.ColumnSpan(3), importVenues.Column(3), exportVenues.Column(4),
+                    list.Row(1).ColumnSpan(5),
+                    refreshAllProgress.Row(2).ColumnSpan(5),
+                    openSettings.Row(3), addVenue.Row(3).Column(1), refreshAll.Row(3).Column(3).ColumnSpan(2));
+            }
+            else // shell layout displaying lists separately
+                Content = Grd(cols: [Auto, Auto, Auto, Star, Auto], rows: [Star, Auto, Auto], spacing: 5,
+                    list.ColumnSpan(5),
+                    refreshAllProgress.Row(1).ColumnSpan(5),
+                    addVenue.Row(2), importVenues.Row(2).Column(1), exportVenues.Row(2).Column(2),
+                    refreshAll.Row(2).Column(4));
         }
 
         private static void SwingPickaxeDuring(Button btn, ICommand cmd)
