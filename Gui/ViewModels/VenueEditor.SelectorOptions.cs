@@ -90,8 +90,7 @@ partial class VenueEditor
 
             return [syntax.View,
                 Lbl("detail").Bold(),
-                LbldView("ancestor path", Check(nameof(SelectorOptions.IncludeAncestorPath), source: model.selectorOptions)
-                    .InlineTooltipOnFocus(HelpTexts.IncludePickedSelectorPath, help)),
+                SelectorOption("ancestor path", nameof(SelectorOptions.IncludeAncestorPath), HelpTexts.IncludePickedSelectorPath),
                 SelectorOption("tag name", nameof(SelectorOptions.TagName), HelpTexts.TagName),
                 SelectorOption("id", nameof(SelectorOptions.Ids), HelpTexts.ElementId),
                 Lbl("classes").Bold(),
@@ -103,7 +102,16 @@ partial class VenueEditor
                 SelectorOption("position", nameof(SelectorOptions.Position), HelpTexts.ElementPosition)];
 
             HorizontalStackLayout SelectorOption(string label, string isCheckedPropertyPath, string helpText)
-                => LbldView(label, Check(isCheckedPropertyPath, source: model.selectorOptions).InlineTooltipOnFocus(helpText, help));
+            {
+                CheckBox checkBox = Check(isCheckedPropertyPath, source: model.selectorOptions).InlineTooltipOnFocus(helpText, help);
+
+                // "forward" tap on label to checkbox, which is hard to hit on a touch screen
+                return LbldView(label, checkBox).TapGesture(() =>
+                {
+                    checkBox.IsChecked = !checkBox.IsChecked; // toggle
+                    checkBox.Focus(); // to inline tooltip
+                });
+            }
         }
     }
 }
