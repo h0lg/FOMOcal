@@ -24,54 +24,118 @@ public partial class Settings : ObservableObject
 
     public partial class Page : ContentPage
     {
+        private readonly bool layoutVertically;
+
         public Page(Settings model)
         {
             BindingContext = model;
             Title = "Settings";
-            var htmlExport = EventPropertySelection.Views(model.ExportedHtmlEventFields);
-            var textExport = EventPropertySelection.Views(model.ExportedTextEventFields);
+            layoutVertically = DeviceInfo.Idiom == DeviceIdiom.Watch || DeviceInfo.Idiom == DeviceIdiom.Phone;
 
+            Label themeTitle = SubHeadline("🎨 Theme");
+            HorizontalStackLayout themeSwitches = ThemeSwitches();
+
+            var htmlExport = EventPropertySelection.Views(model.ExportedHtmlEventFields);
+            Label htmlExportTitle = SubHeadline(Glyphs.Html + "HTML export");
+            Label htmlIncludedSection = Section("included fields");
+            Label htmlExcludedSection = Section("excluded fields").StyleClass(Styles.Label.Demoted);
+
+            const string alignedWithHeaders = "aligned with headers";
             var exportTextAlignedWithHeaders = Swtch(nameof(ExportTextAlignedWithHeaders)).Wrapper
                 .ToolTip("whether to column-align the plain text export using spaces and include column headers");
 
-            const int sectionEnd = 20;
-            GridLength[] rows = [Auto, sectionEnd, Auto, Auto, Auto, sectionEnd, Auto, Auto, Auto, Auto, sectionEnd, Auto, Auto, Auto, Auto];
+            var textExport = EventPropertySelection.Views(model.ExportedTextEventFields);
+            Label textExportTitle = SubHeadline(Glyphs.Text + "Text export");
+            Label textIncluded = Section("included fields");
+            Label textExcluded = Section("excluded fields").StyleClass(Styles.Label.Demoted);
 
-            var layout = Grd(cols: [Auto, Star], rows, spacing: 5,
-                SubHeadline("🎨 Theme"), ThemeSwitches().Column(1),
+            Label browserTiming = SubHeadline("⏱ Browser timing");
 
-                SubHeadline(Glyphs.Html + "HTML export").Row(2),
-                Section("included fields").Row(3),
-                htmlExport.included.CenterVertical().Row(3).Column(1),
-                Section("excluded fields").StyleClass(Styles.Label.Demoted).Row(4),
-                htmlExport.excluded.Row(4).Column(1),
+            Label timingInfo = ContextLabel(
+                "You can tweak the automation engine here if you experience problems, e.g. due to a slow internet connection."
+                + " Tread lightly - footguns ahead!");
 
-                SubHeadline(Glyphs.Text + "Text export").Row(6),
-                Section("aligned with headers").Row(7),
-                exportTextAlignedWithHeaders.CenterVertical().Row(7).Column(1),
-                Section("included fields").Row(8),
-                textExport.included.CenterVertical().Row(8).Column(1),
-                Section("excluded fields").StyleClass(Styles.Label.Demoted).Row(9),
-                textExport.excluded.Row(9).Column(1),
+            Label loadingLazySection = TimingSection("loading lazy or more");
+            FlexLayout loadingLazy = LoadingLazyOrMore();
 
-                SubHeadline("⏱ Browser timing").Row(11),
-                ContextLabel("You can tweak the automation engine here if you experience problems, e.g. due to a slow internet connection."
-                    + " Tread lightly - footguns ahead!").Center().Row(11).Column(1),
-                TimingSection("loading lazy or more").Row(12),
-                LoadingLazyOrMore().Top().Row(12).Column(1),
-                TimingSection("scroll paging").Row(13),
-                ScrollPaging().Top().Row(13).Column(1),
-                TimingSection("swap paging").Row(14),
-                SwapPaging().Top().Row(14).Column(1));
+            Label scrollPagingSection = TimingSection("scroll paging");
+            FlexLayout scrollPaging = ScrollPaging();
 
-            Content = new ScrollView { Content = layout.Center() };
+            Label swapPagingSection = TimingSection("swap paging");
+            FlexLayout swapPaging = SwapPaging();
+
+            View layout;
+
+            if (layoutVertically)
+                layout = VStack(5, themeTitle, themeSwitches.CenterHorizontal(),
+
+                    htmlExportTitle, htmlIncludedSection, htmlExport.included,
+                    htmlExcludedSection, htmlExport.excluded,
+
+                    textExportTitle,
+                    HStack(5, Lbl(alignedWithHeaders), exportTextAlignedWithHeaders).View.CenterHorizontal(),
+                    textIncluded, textExport.included, textExcluded, textExport.excluded,
+
+                    browserTiming,
+                    timingInfo,
+                    loadingLazySection,
+                    loadingLazy,
+                    scrollPagingSection,
+                    scrollPaging,
+                    swapPagingSection,
+                    swapPaging);
+            else
+            {
+                const int sectionEnd = 20;
+                GridLength[] rows = [Auto, sectionEnd, Auto, Auto, Auto, sectionEnd, Auto, Auto, Auto, Auto, sectionEnd, Auto, Auto, Auto, Auto];
+
+                layout = Grd(cols: [Auto, Star], rows, spacing: 5,
+                    themeTitle, themeSwitches.Column(1),
+
+                    htmlExportTitle.Row(2),
+                    htmlIncludedSection.Row(3),
+                    htmlExport.included.CenterVertical().Row(3).Column(1),
+                    htmlExcludedSection.Row(4),
+                    htmlExport.excluded.Row(4).Column(1),
+
+                    textExportTitle.Row(6),
+                    Section(alignedWithHeaders).Row(7),
+                    exportTextAlignedWithHeaders.CenterVertical().Row(7).Column(1),
+                    textIncluded.Row(8),
+                    textExport.included.CenterVertical().Row(8).Column(1),
+                    textExcluded.Row(9),
+                    textExport.excluded.Row(9).Column(1),
+
+                    browserTiming.Row(11),
+                    timingInfo.Center().Row(11).Column(1),
+                    loadingLazySection.Row(12),
+                    loadingLazy.Top().Row(12).Column(1),
+                    scrollPagingSection.Row(13),
+                    scrollPaging.Top().Row(13).Column(1),
+                    swapPagingSection.Row(14),
+                    swapPaging.Top().Row(14).Column(1));
+            }
+
+            Content = new ScrollView { Content = layout.Center() }
+                .Paddings(10, top: 0, 10, 10);
         }
 
-        private static Label SubHeadline(string text)
-            => Lbl(text).StyleClass(Styles.Label.SubHeadline).CenterVertical().End();
+        private Label SubHeadline(string text)
+        {
+            Label label = Lbl(text).StyleClass(Styles.Label.SubHeadline).CenterVertical();
+            return layoutVertically ? label.Margins(top: 60, bottom: 25) : label.End();
+        }
 
-        private static Label Section(string text, int topMargin = 10) => Lbl(text).Margins(top: topMargin).End();
-        private static Label TimingSection(string text) => Section(text, topMargin: 24);
+        private Label Section(string text, int topMargin = 10)
+        {
+            Label label = Lbl(text).Margins(
+                top: layoutVertically ? 25 : topMargin,
+                bottom: layoutVertically ? 15 : 0);
+
+            return layoutVertically ? label.Center() : label.End();
+        }
+
+        private Label TimingSection(string text) => Section(text, topMargin: 24);
 
         private static HorizontalStackLayout ThemeSwitches()
             => HStack(0, ThemeVariantToggle("🌑 dark", AppTheme.Dark, "always use dark theme"),
