@@ -12,6 +12,14 @@ partial class EventList
         public Event Model { get; }
         public bool IsPast { get; }
 
+        /// <summary>
+        /// Helps setting visual state correctly on Android.
+        /// Works around https://github.com/dotnet/maui/issues/20062
+        /// until https://github.com/dotnet/maui/pull/31591
+        /// is merged and available.
+        /// </summary>
+        [ObservableProperty] public partial bool IsSelected { get; set; }
+
         // searched and highlit text properties
         public IReadOnlyList<TextChunk>? Name { get => name; }
         public IReadOnlyList<TextChunk>? SubTitle { get => subTitle; }
