@@ -38,16 +38,20 @@ public partial class Settings : ObservableObject
             var htmlExport = EventPropertySelection.Views(model.ExportedHtmlEventFields);
             Label htmlExportTitle = SubHeadline(Glyphs.Html + "HTML export");
             Label htmlIncludedSection = Section("included fields");
+            Label htmlIncludedInfo = ContextLabel(EventPropertySelection.IncludedInfo);
             Label htmlExcludedSection = Section("excluded fields").StyleClass(Styles.Label.Demoted);
+            Label htmlExcludedInfo = ContextLabel(EventPropertySelection.ExcludedInfo);
 
             const string alignedWithHeaders = "aligned with headers";
-            var exportTextAlignedWithHeaders = Swtch(nameof(ExportTextAlignedWithHeaders)).Wrapper
-                .ToolTip("whether to column-align the plain text export using spaces and include column headers");
+            var exportTextAlignedWithHeaders = Swtch(nameof(ExportTextAlignedWithHeaders)).Wrapper;
+            Label exportTextAlignedInfo = ContextLabel("whether to column-align the plain text export using spaces and include column headers");
 
             var textExport = EventPropertySelection.Views(model.ExportedTextEventFields);
             Label textExportTitle = SubHeadline(Glyphs.Text + "Text export");
             Label textIncluded = Section("included fields");
+            Label textIncludedInfo = ContextLabel(EventPropertySelection.IncludedInfo);
             Label textExcluded = Section("excluded fields").StyleClass(Styles.Label.Demoted);
+            Label textExcludedInfo = ContextLabel(EventPropertySelection.ExcludedInfo);
 
             Label browserTiming = SubHeadline("⏱ Browser timing");
 
@@ -69,12 +73,14 @@ public partial class Settings : ObservableObject
             if (layoutVertically)
                 layout = VStack(5, themeTitle, themeSwitches.CenterHorizontal(),
 
-                    htmlExportTitle, htmlIncludedSection, htmlExport.included,
-                    htmlExcludedSection, htmlExport.excluded,
+                    htmlExportTitle, htmlIncludedSection, htmlExport.included, htmlIncludedInfo,
+                    htmlExcludedSection, htmlExport.excluded, htmlExcludedInfo,
 
                     textExportTitle,
                     HStack(5, Lbl(alignedWithHeaders), exportTextAlignedWithHeaders).View.CenterHorizontal(),
-                    textIncluded, textExport.included, textExcluded, textExport.excluded,
+                    exportTextAlignedInfo,
+                    textIncluded, textExport.included, textIncludedInfo,
+                    textExcluded, textExport.excluded, textExcludedInfo,
 
                     browserTiming,
                     timingInfo,
@@ -87,7 +93,11 @@ public partial class Settings : ObservableObject
             else
             {
                 const int sectionEnd = 20;
-                GridLength[] rows = [Auto, sectionEnd, Auto, Auto, Auto, sectionEnd, Auto, Auto, Auto, Auto, sectionEnd, Auto, Auto, Auto, Auto];
+
+                GridLength[] rows = [Auto, sectionEnd,
+                    /*  2 */ Auto, Auto, Auto, Auto, Auto, sectionEnd,
+                    /*  8 */ Auto, Auto, Auto, Auto, Auto, Auto, sectionEnd,
+                    /* 15 */ Auto, Auto, Auto, Auto];
 
                 layout = Grd(cols: [Auto, Star], rows, spacing: 5,
                     themeTitle, themeSwitches.Column(1),
@@ -95,25 +105,31 @@ public partial class Settings : ObservableObject
                     htmlExportTitle.Row(2),
                     htmlIncludedSection.Row(3),
                     htmlExport.included.CenterVertical().Row(3).Column(1),
-                    htmlExcludedSection.Row(4),
-                    htmlExport.excluded.Row(4).Column(1),
+                    htmlIncludedInfo.Row(4).Column(1),
+                    htmlExcludedSection.Row(5),
+                    htmlExport.excluded.Row(5).Column(1),
+                    htmlExcludedInfo.Row(6).Column(1),
 
-                    textExportTitle.Row(6),
-                    Section(alignedWithHeaders).Row(7),
-                    exportTextAlignedWithHeaders.CenterVertical().Row(7).Column(1),
-                    textIncluded.Row(8),
-                    textExport.included.CenterVertical().Row(8).Column(1),
-                    textExcluded.Row(9),
-                    textExport.excluded.Row(9).Column(1),
+                    textExportTitle.Row(8),
+                    Section(alignedWithHeaders).Row(9),
+                    HStack(5,
+                        exportTextAlignedWithHeaders.CenterVertical(),
+                        exportTextAlignedInfo).View.Row(9).Column(1),
+                    textIncluded.Row(10),
+                    textExport.included.CenterVertical().Row(10).Column(1),
+                    textIncludedInfo.Row(11).Column(1),
+                    textExcluded.Row(12),
+                    textExport.excluded.Row(12).Column(1),
+                    textExcludedInfo.Row(13).Column(1),
 
-                    browserTiming.Row(11),
-                    timingInfo.Center().Row(11).Column(1),
-                    loadingLazySection.Row(12),
-                    loadingLazy.Top().Row(12).Column(1),
-                    scrollPagingSection.Row(13),
-                    scrollPaging.Top().Row(13).Column(1),
-                    swapPagingSection.Row(14),
-                    swapPaging.Top().Row(14).Column(1));
+                    browserTiming.Row(15),
+                    timingInfo.Center().Row(15).Column(1),
+                    loadingLazySection.Row(16),
+                    loadingLazy.Top().Row(16).Column(1),
+                    scrollPagingSection.Row(17),
+                    scrollPaging.Top().Row(17).Column(1),
+                    swapPagingSection.Row(18),
+                    swapPaging.Top().Row(18).Column(1));
             }
 
             Content = new ScrollView { Content = layout.Center() }
@@ -135,6 +151,7 @@ public partial class Settings : ObservableObject
             return layoutVertically ? label.Center() : label.End();
         }
 
+        private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted);
         private Label TimingSection(string text) => Section(text, topMargin: 24);
 
         private static HorizontalStackLayout ThemeSwitches()
@@ -152,6 +169,9 @@ public partial class Settings : ObservableObject
 
 public partial class EventPropertySelection
 {
+    internal const string IncludedInfo = "✊ Drag event fields to ⇆ re-order them, 👇 tap one to exclude it from the export.",
+        ExcludedInfo = "👆 Tap an event field to include it in the export.";
+
     public ObservableCollection<PropertyInfo> ExportedFields { get; }
     public ObservableCollection<PropertyInfo> AvailableFields { get; }
 
@@ -196,16 +216,14 @@ public partial class EventPropertySelection
             ItemsLayout = itemsLayout,
             ItemTemplate = itemTemplate,
             CanReorderItems = true
-        }
-            .ToolTip("✊ Drag event fields to ⇆ re-order them, 👇 tap one to exclude it from the export.");
+        };
 
         var excluded = new CollectionView
         {
             ItemsSource = model.AvailableFields,
             ItemsLayout = itemsLayout,
             ItemTemplate = itemTemplate
-        }
-            .ToolTip("👆 Tap an event field to include it in the export.");
+        };
 
         return (included, excluded);
     }

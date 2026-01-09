@@ -163,8 +163,6 @@ partial class Settings
                 help.layout).View;
         }
 
-        private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted);
-
         private static View Stepper(string startLabel, string property, string? endLabel, int max,
             (Label label, Border layout) help, RememberedUshort remembered, string helpText)
         {
