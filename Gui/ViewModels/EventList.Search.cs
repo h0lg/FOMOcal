@@ -67,7 +67,7 @@ partial class EventList
 
     partial class View
     {
-        private static (SearchBar searchBar, CollectionView recentSearches) BuildSearch(EventList model)
+        private static (SearchBar searchBar, ScrollView recentSearches) BuildSearch(EventList model)
         {
             var searchBar = new SearchBar() { Placeholder = "filter by pipe | separated | terms" }
                 .Bind(SearchBar.TextProperty, nameof(SearchText))
@@ -79,19 +79,45 @@ partial class EventList
             {
                 ItemsSource = model.RecentSearches,
                 SelectionMode = SelectionMode.Single,
-                IsVisible = false,
                 ItemTemplate = new DataTemplate(() =>
                     Grd(cols: [Star, Auto], rows: [Auto], spacing: 5,
                         BndLbl().Center(), Btn(Glyphs.Delete, nameof(DeleteSearchCommand), source: model).Column(1)))
             };
 
+            var closeRecentSearches = Btn("⬆️ Close recent searches");
+
+            var scroller = new ScrollView()
+            {
+                Content = VStack(5, recentSearches, closeRecentSearches),
+                IsVisible = false
+            };
+
+            EventHandler? limitInitialScrollerSize = null;
+
+            limitInitialScrollerSize = (_, __) =>
+            {
+                scroller.SizeChanged -= limitInitialScrollerSize!; // unsub initial sizing handler
+                var parent = (VisualElement)scroller.Parent;
+                LimitScrollerSize(parent); // limit size initially
+                parent.SizeChanged += (_, __) => LimitScrollerSize(parent); // and when parent size changes
+            };
+
+            // init size on first event that allows correct size measurements
+            scroller.SizeChanged += limitInitialScrollerSize;
+
             // toggle dropdown visibility when searchbar focused
-            searchBar.Focused += (_, __) => recentSearches.IsVisible = true;
+            searchBar.Focused += (_, __) => scroller.IsVisible = true;
+
+            closeRecentSearches.TapGesture(() =>
+            {
+                scroller.IsVisible = false;
+                searchBar.Unfocus();
+            });
 
             searchBar.Unfocused += async (_, __) =>
             {
                 await Task.Delay(300); // to enable selecting or deleting recent searches
-                recentSearches.IsVisible = false;
+                if (scroller.IsLoaded) scroller.IsVisible = false;
             };
 
             // when a recent search is tapped, restore it
@@ -105,7 +131,11 @@ partial class EventList
                 }
             };
 
-            return (searchBar, recentSearches);
+            return (searchBar, scroller);
+
+            // limit height to keep everything visible force scroll because the layout it's placed into doesn't do it
+            void LimitScrollerSize(VisualElement parent)
+                => scroller.MaximumHeightRequest = parent.DesiredSize.Height - searchBar.Height;
         }
     }
 }

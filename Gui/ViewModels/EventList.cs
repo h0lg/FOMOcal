@@ -125,7 +125,7 @@ public partial class EventList : ObservableObject
         {
             BindingContext = model;
             bool isDesktop = DeviceInfo.Idiom == DeviceIdiom.Desktop;
-            (SearchBar searchBar, CollectionView recentSearches) = BuildSearch(model);
+            (SearchBar searchBar, ScrollView recentSearches) = BuildSearch(model);
 
             var pastEvents = HStack(5,
                 Btn(Glyphs.Delete, nameof(CleanUpPastEventsCommand))
