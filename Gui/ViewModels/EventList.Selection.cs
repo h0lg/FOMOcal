@@ -82,18 +82,12 @@ partial class EventList
 
         if (e.PreviousSelection.Count < e.CurrentSelection.Count)
             foreach (var evt in e.CurrentSelection.OfType<EventView>())
-            {
                 selected.Add(evt);
-                evt.IsSelected = true;
-            }
         else
         {
             foreach (var evt in e.PreviousSelection.OfType<EventView>())
                 if (!e.CurrentSelection.Contains(evt))
-                {
                     selected.Remove(evt);
-                    evt.IsSelected = false;
-                }
 
             SwitchBackToViewingAllIfSelectionIsEmpty();
         }
