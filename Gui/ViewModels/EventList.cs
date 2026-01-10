@@ -153,6 +153,8 @@ public partial class EventList : ObservableObject
                 ExportButton("▦ csv", nameof(ExportToCsvCommand))
                     .ToolTip("Export selected events as a table for spreadsheet apps in comma-separated value CSV format."));
 
+            if (!isDesktop) export.View.BindVisible(nameof(ViewSelectedOnly));
+
             bool UseVerticalEventLayout() => Width < 800; // whether to stack image on top of event details
             var useVerticalEventLayout = UseVerticalEventLayout(); // caches the last result
 
@@ -210,7 +212,7 @@ public partial class EventList : ObservableObject
                 .Bind(OpacityProperty, nameof(EventView.IsPast),
                     convert: static (bool isPast) => isPast ? 0.5 : 1.0);
 
-                if (DeviceInfo.Idiom == DeviceIdiom.Desktop)
+                if (isDesktop)
                 {
                     MenuFlyout menu = [
                         new MenuFlyoutItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteEventCommand), source: model)];
