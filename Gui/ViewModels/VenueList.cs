@@ -96,7 +96,7 @@ public partial class VenueList : ObservableObject
     }
 
     [RelayCommand]
-    private async Task EditVenue(Venue original)
+    private async Task EditVenueAsync(Venue original)
     {
         TaskCompletionSource<VenueEditor.Actions?> editing = new();
         Venue edited = original.DeepCopy(); // so that original is not changed by the editor
@@ -119,13 +119,24 @@ public partial class VenueList : ObservableObject
                 break;
 
             case VenueEditor.Actions.Deleted:
-                Venues.Remove(original);
-                VenueDeleted?.Invoke(original.Name); // notify subscribers
-                await SaveVenues();
+                await DeleteVenueAsync(original);
                 break;
         }
 
         await navigation.PopAsync(); // navigate back
+    }
+
+    [RelayCommand]
+    private async Task DeleteVenueAsync(Venue venue)
+    {
+        bool isConfirmed = await App.CurrentPage.DisplayAlertAsync("Confirm Deletion",
+            $"Are you sure you want to delete the venue {venue.Name}?",
+            "Yes", "No");
+
+        if (!isConfirmed) return;
+        Venues.Remove(venue);
+        VenueDeleted?.Invoke(venue.Name); // notify subscribers
+        await SaveVenues();
     }
 
     [RelayCommand(AllowConcurrentExecutions = true, CanExecute = nameof(CanRefreshVenue))]
@@ -269,7 +280,7 @@ public partial class VenueList : ObservableObject
                     var refresh = Btn(Glyphs.Scrape, nameof(RefreshVenueCommand), source: model);
                     SwingPickaxeDuring(refresh, model.RefreshVenueCommand);
 
-                    return new Border
+                    var border = new Border
                     {
                         Padding = 10,
                         Content = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
@@ -278,6 +289,22 @@ public partial class VenueList : ObservableObject
                             refresh.Row(1).Column(1).RowSpan(2).Bottom(),
                             HStack(5, lastEventCount, lastRefreshed).View.Row(2).End())
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
+
+                    if (DeviceInfo.Idiom == DeviceIdiom.Desktop)
+                    {
+                        MenuFlyout menu = [
+                            new MenuFlyoutItem() { Text = Glyphs.Edit + " Edit" }.BindCommand(nameof(EditVenueCommand), source: model),
+                            new MenuFlyoutItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteVenueCommand), source: model)];
+
+                        FlyoutBase.SetContextFlyout(border, menu);
+                        return border;
+                    }
+                    else return new SwipeView()
+                    {
+                        LeftItems = [new SwipeItem() { Text = Glyphs.Edit + " Edit" }.BindCommand(nameof(EditVenueCommand), source: model)],
+                        Content = border,
+                        RightItems = [new SwipeItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteVenueCommand), source: model)]
+                    };
                 }));
 
             var importVenues = Btn("📥", nameof(ImportVenuesCommand)).ToolTip("import venues");

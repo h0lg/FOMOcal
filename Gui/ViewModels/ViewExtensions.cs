@@ -24,6 +24,7 @@ internal static class Glyphs
         Link = "🔗",
         Export = "🥡",
         Add = "➕",
+        Edit = "✏",
         Delete = "🗑";
 }
 
