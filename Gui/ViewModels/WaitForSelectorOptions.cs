@@ -125,12 +125,12 @@ partial class Settings
             return HWrap(5,
                 ContextLabel($"When lazy-loading events, paging {Venue.PagingStrategy.ScrollDownToLoadMore.GetDescription()}"
                     + $" or {Venue.PagingStrategy.ClickElementToLoadMore.GetDescription()} an element,"),
+                help.layout,
                 Lbl("check for events"),
                 Stepper("every", nameof(IntervalDelayMs), "ms", max: 1000, help, Remembered.IntervalDelayMs, HelpTexts.IntervalDelayMs),
                 Stepper("for max.", nameof(MaxTries), endLabel: null, max: 1000, help, Remembered.MaxTries, HelpTexts.MaxTries),
                 Lbl("resetting times,"),
-                BndLbl(nameof(WaitForMaxSecs), stringFormat: "waiting up to {0}s in total."),
-                help.layout).View;
+                BndLbl(nameof(WaitForMaxSecs), stringFormat: "waiting up to {0}s in total.")).View;
         }
 
         private static FlexLayout ScrollPaging()
@@ -139,6 +139,7 @@ partial class Settings
 
             return HWrap(5,
                 ContextLabel($"When loading {Venue.PagingStrategy.ScrollDownToLoadMore.GetDescription()},"),
+                help.layout,
                 Lbl("trigger the scroll event"),
                 Stepper("after", nameof(TriggerScrollAfterMs), "ms,", max: 10000, help,
                     Remembered.TriggerScrollAfterMs, HelpTexts.TriggerScrollAfterMs),
@@ -147,8 +148,7 @@ partial class Settings
                 Lbl("and stop scrolling after"),
                 Stepper("min.", nameof(MaxMatchesScrollingDown), "events", max: 1000,
                     help, Remembered.MaxMatchesScrollingDown, HelpTexts.MaxMatchesScrollingDown),
-                Lbl("are found."),
-                help.layout).View;
+                Lbl("are found.")).View;
         }
 
         private static FlexLayout SwapPaging()
@@ -157,10 +157,10 @@ partial class Settings
 
             return HWrap(5,
                 ContextLabel($"When loading {Venue.PagingStrategy.ClickElementToLoadDifferent.GetDescription()} an element,"),
+                help.layout,
                 Stepper("wait max.", nameof(MutationTimeoutMs), "ms", max: 30000, help, Remembered.MutationTimeoutMs, HelpTexts.MutationTimeoutMs),
                 Lbl("for a change and debounce it "),
-                Stepper("for", nameof(MutationDebounceMs), "ms .", max: 2000, help, Remembered.MutationDebounceMs, HelpTexts.MutationDebounceMs),
-                help.layout).View;
+                Stepper("for", nameof(MutationDebounceMs), "ms .", max: 2000, help, Remembered.MutationDebounceMs, HelpTexts.MutationDebounceMs)).View;
         }
 
         private static View Stepper(string startLabel, string property, string? endLabel, int max,
