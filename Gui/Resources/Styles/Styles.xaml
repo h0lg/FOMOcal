@@ -18,10 +18,34 @@
         <Setter Property="StrokeThickness" Value="1"/>
     </Style>
 
-    <!--style the selected item of the EventList CollectionView, see
-        https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/selection?view=net-maui-9.0#change-selected-item-color-->
+    <!-- style the selected item of the EventList CollectionView, see
+        https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/selection?view=net-maui-9.0#change-selected-item-color -->
     <Style TargetType="Border" Class="list-event">
         <Setter Property="Padding" Value="10" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <!-- fixes visual state on Android,
+                                see https://github.com/dotnet/maui/issues/20062#issuecomment-1983143930
+                                try removing after https://github.com/dotnet/maui/pull/31591 is merged -->
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Selected">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    <!-- style the selected item of the EventList CollectionView, see
+        https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/selection?view=net-maui-9.0#change-selected-item-color -->
+    <Style TargetType="SwipeView" Class="list-event">
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">

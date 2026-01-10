@@ -174,13 +174,12 @@ public partial class EventList : ObservableObject
                     OptionalTextLabel(nameof(EventView.DoorsTime), Glyphs.Doors + "{0}"),
                     OptionalTextLabel(nameof(EventView.StartTime), Glyphs.Start + "{0}"));
 
-                var details = Grd([Auto, Star, Auto], [Auto, Auto], spacing: 5,
-                    OptionalFormattedLabel(nameof(EventView.Description)).Wrap().ColumnSpan(3),
-                    Btn(Glyphs.Delete, nameof(DeleteEventCommand), source: model).ToolTip("delete this event").Row(1),
+                var details = Grd([Star, Auto], [Auto, Auto], spacing: 5,
+                    OptionalFormattedLabel(nameof(EventView.Description)).Wrap().ColumnSpan(2),
                     BndLbl(nameof(EventView.Scraped), stringFormat: Glyphs.Scrape + " {0:d MMM}")
-                        .StyleClass(Styles.Label.Demoted).CenterVertical().Row(1).Column(1),
-                    OpenUrlButton(Glyphs.EventPage + "more " + Glyphs.Link, nameof(EventView.Url), model).Row(1).Column(2),
-                    OpenUrlButton(Glyphs.Scrape + " from " + Glyphs.Link, nameof(EventView.ScrapedFrom), model).Row(1).Column(2));
+                        .StyleClass(Styles.Label.Demoted).CenterVertical().Row(1),
+                    OpenUrlButton(Glyphs.EventPage + "more " + Glyphs.Link, nameof(EventView.Url), model).Row(1).Column(1),
+                    OpenUrlButton(Glyphs.Scrape + " from " + Glyphs.Link, nameof(EventView.ScrapedFrom), model).Row(1).Column(1));
 
                 var location = HWrap(5,
                     BndFmtLbl(nameof(EventView.Venue), converter: textChunkConverter),
@@ -203,13 +202,29 @@ public partial class EventList : ObservableObject
                         details.Row(1).Column(1).ColumnSpan(2),
                         location.Bottom().Row(2).Column(1), tickets.Row(2).Column(2));
 
-                return new Border
+                var border = new Border
                 {
                     StyleClass = ["list-event"],
                     Content = eventLayout
                 }
                 .Bind(OpacityProperty, nameof(EventView.IsPast),
                     convert: static (bool isPast) => isPast ? 0.5 : 1.0);
+
+                if (DeviceInfo.Idiom == DeviceIdiom.Desktop)
+                {
+                    MenuFlyout menu = [
+                        new MenuFlyoutItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteEventCommand), source: model)];
+
+                    FlyoutBase.SetContextFlyout(border, menu);
+                    return border;
+                }
+                else return new SwipeView()
+                {
+                    StyleClass = ["list-event"],
+                    LeftItems = [
+                        new SwipeItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteEventCommand), source: model)],
+                    Content = border
+                };
             });
 
             var list = new CollectionView
