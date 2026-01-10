@@ -272,7 +272,7 @@ public partial class EventList : ObservableObject
             header.AddChild(searchBar.Grow(1));
             header.AddChild(recentSearches);
             if (!isDesktop) header.AddChild(pastEvents.View);
-            header.AddChild(SelectionMenu());
+            header.AddChild(SelectionMenu(model));
             header.AddChild(export.View);
             Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5, header.View, list.Row(1));
         }

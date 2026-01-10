@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using static FomoCal.Gui.ViewModels.Widgets;
 
@@ -11,7 +12,11 @@ partial class EventList
     private Action? FixDisplayedSelectedState;
 
     [ObservableProperty] public partial IList<object> SelectedEvents { get; set; } = [];
-    [ObservableProperty] public partial bool ViewSelectedOnly { get; set; }
+
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ToggleViewMode))]
+    public partial bool ViewSelectedOnly { get; set; }
+
+    public string ToggleViewMode => ViewSelectedOnly ? "👁 all" : $"👁 {SelectedEventCount} selected";
     public int SelectedEventCount => selected.Count;
     public bool HasSelection => SelectedEventCount > 0;
 
@@ -23,6 +28,7 @@ partial class EventList
         if (forSelectedEvents) OnPropertyChanged(nameof(SelectedEvents));
         OnPropertyChanged(nameof(SelectedEventCount));
         OnPropertyChanged(nameof(HasSelection));
+        if (!ViewSelectedOnly) OnPropertyChanged(nameof(ToggleViewMode));
     }
 
     [RelayCommand]
@@ -126,13 +132,13 @@ partial class EventList
 
     partial class View
     {
-        private static HorizontalStackLayout SelectionMenu()
+        private static HorizontalStackLayout SelectionMenu(EventList model)
             => HStack(5,
                 Btn("✨ de/select all", nameof(SelectAllEventsCommand))
                     .ToolTip("...events included by the filter in the list below. Or tap and toggle them separately."),
-                BndLbl(nameof(SelectedEventCount), stringFormat: "{0} selected").BindVisible(nameof(HasSelection)),
-                Swtch(nameof(ViewSelectedOnly)).Wrapper.BindVisible(nameof(HasSelection))
-                    .ToolTip("toggle between viewing all and only selected events"),
+                new Button().Bind(Button.TextProperty, nameof(ToggleViewMode)).BindVisible(nameof(HasSelection))
+                    .ToolTip("toggle between viewing all and only selected events")
+                    .TapGesture(() => model.ViewSelectedOnly = !model.ViewSelectedOnly),
                 Btn(Glyphs.Delete, nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(ViewSelectedOnly))
                     .ToolTip("remove all selected events")).View;
     }
