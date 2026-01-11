@@ -7,17 +7,24 @@ namespace FomoCal.Gui;
 
 public partial class MainPage : ContentPage
 {
-    public MainPage(SetJsonFileRepository<Venue> venueRepo, Scraper scraper, EventList eventList)
+    public MainPage(VenueCollection venues, Scraper scraper, EventList eventList)
     {
-        _ = eventList.LoadEvents();
-
-        VenueList venueList = new(venueRepo, scraper, Navigation);
+        VenueList venueList = new(scraper, Navigation, venues);
         venueList.EventsScraped += (venue, events) => eventList.RefreshWith(venue, events);
-        venueList.VenueRenamed += eventList.RenameVenue;
-        venueList.VenueDeleted += eventList.DeleteForVenue;
+        venues.Renamed += eventList.RenameVenue;
+        venues.Deleted += eventList.DeleteForVenue;
 
         Content = Grd(cols: [Auto, Star], rows: [Star], spacing: 5,
             new VenueList.View(venueList).Width(250),
             new EventList.View(eventList).Column(1));
+
+        var loaded = false;
+
+        NavigatedTo += async (o, e) =>
+        {
+            if (loaded) return;
+            loaded = true;
+            await Task.WhenAll(venues.LoadAsync(), eventList.LoadEvents());
+        };
     }
 }

@@ -49,11 +49,10 @@ public static class MauiProgram
         builder.Services.AddSingleton<IBuildEventListingAutomators, MauiEventListingAutomatorFactory>();
         builder.Services.AddSingleton<ISaveScrapeLogFiles, DefaultScrapeLogFileSaver>();
         builder.Services.AddSingleton<Scraper>(); // just to have it disposed of properly by the service provider
+        builder.Services.AddSingleton<VenueCollection>();
 
         // register view models and views
-        builder.Services.AddSingleton<VenueList>();
         builder.Services.AddSingleton<EventList>();
-        builder.Services.AddSingleton<VenueList.View>();
         builder.Services.AddTransient<Settings>();
         builder.Services.AddTransient<Settings.Page>();
         builder.Services.AddSingleton<MainPage>();

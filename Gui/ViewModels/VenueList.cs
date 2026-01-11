@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,142 +7,28 @@ using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
 
-public partial class VenueList : ObservableObject
+public partial class VenueList(Scraper scraper, INavigation navigation, VenueCollection venues) : ObservableObject
 {
-    private readonly SetJsonFileRepository<Venue> venueRepo;
-    private readonly Scraper scraper;
-    private readonly INavigation navigation;
     private readonly HashSet<Venue> refreshingVenues = [];
+    private readonly VenueCollection Venues = venues;
 
-    [ObservableProperty] public partial bool IsLoading { get; set; }
     [ObservableProperty] public partial double RefreshAllVenuesProgress { get; set; } = 1; // none is refreshing
 
-    public ObservableCollection<Venue> Venues { get; } = [];
-
     internal event Action<Venue, HashSet<Event>>? EventsScraped;
-    internal event Action<string, string>? VenueRenamed;
-    internal event Action<string>? VenueDeleted;
 
-    public VenueList(SetJsonFileRepository<Venue> venueRepo, Scraper scraper, INavigation navigation)
-    {
-        this.venueRepo = venueRepo;
-        this.scraper = scraper;
-        this.navigation = navigation;
-        _ = LoadVenuesAsync(); // Fire & forget (no need to await in constructor)
-    }
-
-    private async Task LoadVenuesAsync()
-    {
-        if (IsLoading) return;
-        IsLoading = true;
-
-        try
-        {
-            var venues = await venueRepo.LoadAllAsync();
-            RefreshList(venues);
-        }
-        catch (Exception ex)
-        {
-            await ErrorReport.WriteAsyncAndShare(ex.ToString(), "loading venues");
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
-
-    private void RefreshList(IEnumerable<Venue>? venues = null) =>
+    private void RefreshList(IEnumerable<Venue>? venues = null)
         // Ensure UI updates on the main thread
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            venues ??= [.. Venues];
-            Venues.Clear();
+        => MainThread.BeginInvokeOnMainThread(() => Venues.Refresh(venues));
 
-            // order unscraped (new) venues on top, then by latest refresh
-            foreach (var venue in venues.OrderByDescending(v => v.LastRefreshed ?? DateTime.Now))
-                Venues.Add(venue);
-        });
-
-    [RelayCommand]
-    private async Task AddVenue()
-    {
-        TaskCompletionSource<VenueEditor.Actions?> adding = new();
-
-        Venue added = new()
-        {
-            Name = "",
-            ProgramUrl = "",
-            Event = new() { Selector = "", Name = new(), Date = new() }
-        };
-
-        VenueEditor model = new(added, scraper, adding);
-        await navigation.PushAsync(new VenueEditor.Page(model));
-        VenueEditor.Actions? result = await adding.Task; // wait for editor
-        if (result == null) return;  // canceled & navigation stack popped, do nothing
-
-        switch (result)
-        {
-            case VenueEditor.Actions.Saved:
-                Venues.Add(added);
-                await SaveVenues();
-                break;
-
-            case VenueEditor.Actions.Deleted:
-                break;
-        }
-
-        await navigation.PopAsync(); // navigate back
-    }
-
-    [RelayCommand]
-    private async Task EditVenueAsync(Venue original)
-    {
-        TaskCompletionSource<VenueEditor.Actions?> editing = new();
-        Venue edited = original.DeepCopy(); // so that original is not changed by the editor
-        VenueEditor model = new(edited, scraper, editing);
-        await navigation.PushAsync(new VenueEditor.Page(model));
-        VenueEditor.Actions? result = await editing.Task; // wait for editor
-        if (result == null) return; // canceled & navigation stack popped, do nothing
-
-        switch (result)
-        {
-            case VenueEditor.Actions.Saved:
-                Venues.Remove(original);
-                Venues.Add(edited);
-                await SaveVenues();
-
-                if (original.Name != edited.Name)
-                    VenueRenamed?.Invoke(original.Name, edited.Name); // notify subscribers
-
-                await LoadVenuesAsync(); // to refresh UI
-                break;
-
-            case VenueEditor.Actions.Deleted:
-                await DeleteVenueAsync(original);
-                break;
-        }
-
-        await navigation.PopAsync(); // navigate back
-    }
-
-    [RelayCommand]
-    private async Task DeleteVenueAsync(Venue venue)
-    {
-        bool isConfirmed = await App.CurrentPage.DisplayAlertAsync("Confirm Deletion",
-            $"Are you sure you want to delete the venue {venue.Name}?",
-            "Yes", "No");
-
-        if (!isConfirmed) return;
-        Venues.Remove(venue);
-        VenueDeleted?.Invoke(venue.Name); // notify subscribers
-        await SaveVenues();
-    }
+    [RelayCommand] private Task AddVenue() => Venues.AddAsync(navigation);
+    [RelayCommand] private Task EditVenueAsync(Venue original) => Venues.EditAsync(original, navigation);
+    [RelayCommand] private Task DeleteVenueAsync(Venue venue) => Venues.DeleteAsync(venue);
 
     [RelayCommand(AllowConcurrentExecutions = true, CanExecute = nameof(CanRefreshVenue))]
     private async Task RefreshVenueAsync(Venue venue)
     {
         (List<Exception> errors, string? warning) = await RefreshEvents(venue);
-        await SaveVenues();
+        await Venues.SaveVenues();
         RefreshList(); // after SaveVenues to have venue visually refreshed
         if (errors.Count > 0) await WriteErrorReportAsync(ReportErrors(errors, venue));
         if (warning != null) await App.CurrentPage.DisplayAlertAsync("You may want to look into:", warning, "OK");
@@ -152,10 +37,10 @@ public partial class VenueList : ObservableObject
     [RelayCommand]
     private async Task RefreshAllVenuesAsync()
     {
-        var refreshs = Venues.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
+        var refreshs = Venues.Observable.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
         await Task.WhenAll(refreshs.Select(r => r.task));
         RefreshList();
-        await SaveVenues();
+        await Venues.SaveVenues();
 
         var scrapesWithErrors = refreshs.Where(r => r.task.Result.errors.Count > 0).ToArray();
 
@@ -175,7 +60,7 @@ public partial class VenueList : ObservableObject
     }
 
     [RelayCommand]
-    private void ExportVenues() => venueRepo.ShareFile("venues");
+    private void ExportVenues() => Venues.ShareFile();
 
     [RelayCommand]
     private async Task ImportVenues()
@@ -203,8 +88,8 @@ public partial class VenueList : ObservableObject
             }
 
             if (imported?.Count < 1) return;
-            Venues.Import(imported!);
-            await SaveVenues();
+            Venues.Observable.Import(imported!);
+            await Venues.SaveVenues();
             RefreshList();
         }
     }
@@ -222,7 +107,7 @@ public partial class VenueList : ObservableObject
 
         /* refreshing venues count against the progress, i.e. all refreshing => 0, none => 1
          * so that the bar progresses as venues finish refreshing */
-        RefreshAllVenuesProgress = (Venues.Count - refreshingVenues.Count) / (double)Venues.Count;
+        RefreshAllVenuesProgress = (Venues.Observable.Count - refreshingVenues.Count) / (double)Venues.Observable.Count;
 
         RefreshVenueCommand.NotifyCanExecuteChanged();
     }
@@ -246,8 +131,6 @@ public partial class VenueList : ObservableObject
         }
     }
 
-    private Task SaveVenues() => venueRepo.SaveCompleteAsync(Venues.Migrate().ToHashSet());
-
     private static string ReportErrors(IEnumerable<Exception> errors, Venue venue)
         => errors.Select(ex => ex.ToString())
             .Prepend("Scraping " + venue.Name + " " + venue.ProgramUrl)
@@ -263,7 +146,7 @@ public partial class VenueList : ObservableObject
             BindingContext = model;
 
             var list = new CollectionView()
-                .Bind(ItemsView.ItemsSourceProperty, nameof(Venues))
+                .Bind(ItemsView.ItemsSourceProperty, nameof(VenueCollection.Observable), source: model.Venues)
                 .ItemTemplate(new DataTemplate(() =>
                 {
                     var name = BndLbl(nameof(Venue.Name)).FontSize(16).Wrap();
@@ -383,14 +266,22 @@ public partial class VenueList : ObservableObject
     /// <summary>Wraps the <see cref="View"/> in a stand-alone Page for narrow devices that use AppShell.</summary>
     public partial class Page : ContentPage
     {
-        public Page(SetJsonFileRepository<Venue> venueRepo, Scraper scraper, EventRepository eventRepo)
+        public Page(VenueCollection venues, Scraper scraper, EventRepository eventRepo)
         {
             Title = "Venues";
-            VenueList venueList = new(venueRepo, scraper, Navigation);
+            VenueList venueList = new(scraper, Navigation, venues);
             venueList.EventsScraped += async (venue, events) => await eventRepo.AddOrUpdateAsync(venue, events);
-            venueList.VenueRenamed += async (oldName, newName) => await eventRepo.RenameVenueAsync(oldName, newName);
-            venueList.VenueDeleted += async (venueName) => await eventRepo.DeleteVenueAsync(venueName);
+            venues.Renamed += async (oldName, newName) => await eventRepo.RenameVenueAsync(oldName, newName);
+            venues.Deleted += async (venueName) => await eventRepo.DeleteVenueAsync(venueName);
             Content = new View(venueList);
+            var loaded = false;
+
+            NavigatedTo += async (o, e) =>
+            {
+                if (loaded) return;
+                loaded = true;
+                await venues.LoadAsync();
+            };
         }
     }
 }
