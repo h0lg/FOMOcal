@@ -26,16 +26,13 @@ public sealed class MauiEventListingAutomatorFactory : IBuildEventListingAutomat
 
     public (IAutomateAnEventListing automator, Action? cleanup) BuildAutomator(VenueScrapeContext venueScrape)
     {
-        const int height = 1000, width = 1000;
-
         /* Add loader to an AbsoluteLayout that lets it have a decent size and be IsVisible
          * (which some pages require to properly scroll and load more events)
          * while staying out of view and not taking up space in the layout it's added to. */
-        var automator = new AutomatedEventPageView(venueScrape.Venue, venueScrape.Log)
-            //.LayoutBounds(0, 0, width, height) // use to see what's going on
-            .LayoutBounds(-2 * width, -2 * height, width, height); // position off-screen with a decent size
-
-        AbsoluteLayout wrapper = new() { WidthRequest = 0, HeightRequest = 0 };
+        const int height = 1000, width = 1000;
+        var automator = new AutomatedEventPageView(venueScrape.Venue, venueScrape.Log).LayoutBounds(0, 0, width, height);
+        automator.Opacity = 0; // comment this and ZIndex below to see what's going on
+        AbsoluteLayout wrapper = new() { WidthRequest = 0, HeightRequest = 0, ZIndex = -10 };
         wrapper.Add(automator);
         TopLayout.Add(wrapper); // to start the loader's life cycle
         return (automator, Cleanup);
