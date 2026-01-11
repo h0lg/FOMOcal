@@ -51,16 +51,6 @@ partial class EventList
     }
 
     [RelayCommand]
-    private async Task DeleteEventAsync(EventView view)
-    {
-        allEvents!.Remove(view);
-        selected.Remove(view);
-        if (selected.Count == 0) ViewSelectedOnly = false;
-        NotifySelectionChanged();
-        await OnEventsUpdated();
-    }
-
-    [RelayCommand]
     private void SelectAllEvents()
     {
         // if all visisble are selected, toggle selection, de-selecting visible

@@ -11,6 +11,13 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
     [ObservableProperty] public partial bool IsLoading { get; set; }
     public ObservableCollection<Venue> Observable { get; } = [];
 
+    internal async Task EditAsync(string venueName, INavigation navigation)
+    {
+        var venue = Observable.SingleOrDefault(v => v.Name == venueName);
+        if (venue == null) return;
+        await EditAsync(venue, navigation);
+    }
+
     internal async Task EditAsync(Venue original, INavigation navigation)
     {
         TaskCompletionSource<VenueEditor.Actions?> editing = new();

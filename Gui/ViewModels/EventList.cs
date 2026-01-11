@@ -8,15 +8,19 @@ namespace FomoCal.Gui.ViewModels;
 
 public partial class EventList : ObservableObject
 {
+    private readonly VenueCollection venues;
     private readonly EventRepository eventRepo;
+    private readonly INavigation navigation;
     private HashSet<EventView>? allEvents;
 
     [ObservableProperty] public partial bool ShowPastEvents { get; set; }
     [ObservableProperty] public partial bool CanDeletePastEvents { get; set; }
 
-    public EventList(EventRepository eventRepo)
+    public EventList(EventRepository eventRepo, VenueCollection venues, INavigation navigation)
     {
+        this.venues = venues;
         this.eventRepo = eventRepo;
+        this.navigation = navigation;
         RecentSearches = new(recentSearches.Get());
 
         PropertyChanged += (o, e) =>
@@ -114,6 +118,18 @@ public partial class EventList : ObservableObject
 
     private Task ExportSelected(Func<IEnumerable<Event>, Task> export)
         => HasSelection ? export(selected.GetEvents()) : Task.CompletedTask;
+
+    [RelayCommand] private Task EditVenueAsync(EventView view) => venues.EditAsync(view.Model.Venue, navigation);
+
+    [RelayCommand]
+    private async Task DeleteEventAsync(EventView view)
+    {
+        allEvents!.Remove(view);
+        selected.Remove(view);
+        if (selected.Count == 0) ViewSelectedOnly = false;
+        NotifySelectionChanged();
+        await OnEventsUpdated();
+    }
 
     // used on the MainPage for Desktop
     public partial class View : ContentView
@@ -215,6 +231,7 @@ public partial class EventList : ObservableObject
                 if (isDesktop)
                 {
                     MenuFlyout menu = [
+                        new MenuFlyoutItem() { Text = $"{Glyphs.Edit} Edit {Glyphs.Venue} venue" }.BindCommand(nameof(EditVenueCommand), source: model),
                         new MenuFlyoutItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteEventCommand), source: model)];
 
                     FlyoutBase.SetContextFlyout(border, menu);
@@ -224,6 +241,7 @@ public partial class EventList : ObservableObject
                 {
                     StyleClass = ["list-event"],
                     LeftItems = [
+                        new SwipeItem() { Text = $"{Glyphs.Edit} Edit {Glyphs.Venue} venue" }.BindCommand(nameof(EditVenueCommand), source: model),
                         new SwipeItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteEventCommand), source: model)],
                     Content = border
                 };
@@ -294,9 +312,10 @@ public partial class EventList : ObservableObject
     // used in the AppShell for non-Desktop devices
     public partial class Page : ContentPage
     {
-        public Page(EventList eventList)
+        public Page(EventRepository eventRepo, VenueCollection venues)
         {
             Title = "Events";
+            EventList eventList = new(eventRepo, venues, Navigation);
             Content = new View(eventList);
 
             // refresh events when navigated to

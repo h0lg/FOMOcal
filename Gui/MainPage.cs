@@ -7,8 +7,9 @@ namespace FomoCal.Gui;
 
 public partial class MainPage : ContentPage
 {
-    public MainPage(VenueCollection venues, Scraper scraper, EventList eventList)
+    public MainPage(VenueCollection venues, EventRepository eventRepo, Scraper scraper)
     {
+        EventList eventList = new(eventRepo, venues, Navigation);
         VenueList venueList = new(scraper, Navigation, venues);
         venueList.EventsScraped += (venue, events) => eventList.RefreshWith(venue, events);
         venues.Renamed += eventList.RenameVenue;
