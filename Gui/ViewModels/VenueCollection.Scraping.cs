@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace FomoCal.Gui.ViewModels;
@@ -10,6 +9,13 @@ partial class VenueCollection
 
     internal event Action<Venue, HashSet<Event>>? EventsScraped;
     [ObservableProperty] public partial double RefreshAllVenuesProgress { get; set; } = 1; // none is refreshing
+
+    internal async Task RefreshByNameAsync(string venueName)
+    {
+        var venue = Observable.SingleOrDefault(v => v.Name == venueName);
+        if (venue == null || !CanRefreshVenue(venue)) return;
+        await RefreshVenueAsync(venue);
+    }
 
     [RelayCommand(AllowConcurrentExecutions = true, CanExecute = nameof(CanRefreshVenue))]
     private async Task RefreshVenueAsync(Venue venue)

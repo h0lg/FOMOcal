@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
 
@@ -120,6 +121,7 @@ public partial class EventList : ObservableObject
         => HasSelection ? export(selected.GetEvents()) : Task.CompletedTask;
 
     [RelayCommand] private Task EditVenueAsync(EventView view) => venues.EditAsync(view.Model.Venue, navigation);
+    [RelayCommand] private Task RefreshVenueAsync(EventView view) => venues.RefreshByNameAsync(view.Model.Venue);
 
     [RelayCommand]
     private async Task DeleteEventAsync(EventView view)
@@ -231,20 +233,35 @@ public partial class EventList : ObservableObject
                 if (isDesktop)
                 {
                     MenuFlyout menu = [
+                        new MenuFlyoutItem() { Text = $"{Glyphs.Scrape} Refresh events from {Glyphs.Venue} venue" }.BindCommand(nameof(RefreshVenueCommand), source: model),
                         new MenuFlyoutItem() { Text = $"{Glyphs.Edit} Edit {Glyphs.Venue} venue" }.BindCommand(nameof(EditVenueCommand), source: model),
                         new MenuFlyoutItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteEventCommand), source: model)];
 
                     FlyoutBase.SetContextFlyout(border, menu);
                     return border;
                 }
-                else return new SwipeView()
+                else
                 {
-                    StyleClass = ["list-event"],
-                    LeftItems = [
-                        new SwipeItem() { Text = $"{Glyphs.Edit} Edit {Glyphs.Venue} venue" }.BindCommand(nameof(EditVenueCommand), source: model),
-                        new SwipeItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteEventCommand), source: model)],
-                    Content = border
-                };
+                    // shown on swipe right - works around SwipeView not supporting vertical layout
+                    FlexLayout leftMenu = new()
+                    {
+                        Direction = FlexDirection.Column,
+                        JustifyContent = FlexJustify.SpaceEvenly,
+                        AlignItems = FlexAlignItems.Center,
+                        Children = {
+                            Btn($"{Glyphs.Scrape} Refresh events from {Glyphs.Venue} venue", nameof(RefreshVenueCommand), source: model).Wrap(),
+                            Btn($"{Glyphs.Edit} Edit {Glyphs.Venue} venue", nameof(EditVenueCommand), source: model).Wrap()
+                        }
+                    };
+
+                    return new SwipeView()
+                    {
+                        StyleClass = ["list-event"],
+                        LeftItems = [new SwipeItemView() { Content = leftMenu }],
+                        Content = border,
+                        RightItems = [new SwipeItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteEventCommand), source: model)]
+                    };
+                }
             });
 
             var list = new CollectionView

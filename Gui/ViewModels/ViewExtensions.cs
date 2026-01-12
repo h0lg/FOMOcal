@@ -124,6 +124,12 @@ internal static partial class ViewExtensions
         return label;
     }
 
+    internal static Button Wrap(this Button btn)
+    {
+        btn.LineBreakMode = LineBreakMode.WordWrap;
+        return btn;
+    }
+
     [GeneratedRegex(@"^(#+)\s+(.*)")] private static partial Regex HeaderRegex(); // e.g. # Heading
     private const string footerPrefix = "^^";
 
