@@ -97,6 +97,19 @@
         </Setter>
     </Style>
 
+    <Style TargetType="Button" Class="stepper-btn">
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="FontSize" Value="32" />
+
+        <Setter Property="Margin">
+            <Setter.Value>
+                <OnPlatform x:TypeArguments="Thickness" Default="-5,-11,-5,-10">
+                    <On Platform="Android" Value="-5,-13,-5,-13" />
+                </OnPlatform>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="CheckBox">
         <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
         <Setter Property="MinimumHeightRequest" Value="44"/>
