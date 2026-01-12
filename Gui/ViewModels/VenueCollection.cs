@@ -110,7 +110,20 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
         }
     }
 
-    internal void Refresh(IEnumerable<Venue>? venues = null)
+    internal async Task Import(HashSet<Venue> imported)
+    {
+        Observable.Import(imported!);
+        await SaveVenues();
+        RefreshList();
+    }
+
+    internal void ShareFile() => repo.ShareFile("venues");
+
+    private void RefreshList(IEnumerable<Venue>? venues = null)
+        // Ensure UI updates on the main thread
+        => MainThread.BeginInvokeOnMainThread(() => Refresh(venues));
+
+    private void Refresh(IEnumerable<Venue>? venues = null)
     {
         venues ??= [.. Observable];
         Observable.Clear();
@@ -120,6 +133,5 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
             Observable.Add(venue);
     }
 
-    internal Task SaveVenues() => repo.SaveCompleteAsync(Observable.Migrate().ToHashSet());
-    internal void ShareFile() => repo.ShareFile("venues");
+    private Task SaveVenues() => repo.SaveCompleteAsync(Observable.Migrate().ToHashSet());
 }

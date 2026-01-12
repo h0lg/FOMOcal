@@ -7,57 +7,14 @@ using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
 
-public partial class VenueList(Scraper scraper, INavigation navigation, VenueCollection venues) : ObservableObject
+public partial class VenueList(INavigation navigation, VenueCollection venues) : ObservableObject
 {
-    private readonly HashSet<Venue> refreshingVenues = [];
     private readonly VenueCollection Venues = venues;
-
-    [ObservableProperty] public partial double RefreshAllVenuesProgress { get; set; } = 1; // none is refreshing
-
-    internal event Action<Venue, HashSet<Event>>? EventsScraped;
-
-    private void RefreshList(IEnumerable<Venue>? venues = null)
-        // Ensure UI updates on the main thread
-        => MainThread.BeginInvokeOnMainThread(() => Venues.Refresh(venues));
+    private readonly INavigation navigation = navigation;
 
     [RelayCommand] private Task AddVenue() => Venues.AddAsync(navigation);
     [RelayCommand] private Task EditVenueAsync(Venue original) => Venues.EditAsync(original, navigation);
     [RelayCommand] private Task DeleteVenueAsync(Venue venue) => Venues.DeleteAsync(venue);
-
-    [RelayCommand(AllowConcurrentExecutions = true, CanExecute = nameof(CanRefreshVenue))]
-    private async Task RefreshVenueAsync(Venue venue)
-    {
-        (List<Exception> errors, string? warning) = await RefreshEvents(venue);
-        await Venues.SaveVenues();
-        RefreshList(); // after SaveVenues to have venue visually refreshed
-        if (errors.Count > 0) await WriteErrorReportAsync(ReportErrors(errors, venue));
-        if (warning != null) await App.CurrentPage.DisplayAlertAsync("You may want to look into:", warning, "OK");
-    }
-
-    [RelayCommand]
-    private async Task RefreshAllVenuesAsync()
-    {
-        var refreshs = Venues.Observable.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
-        await Task.WhenAll(refreshs.Select(r => r.task));
-        RefreshList();
-        await Venues.SaveVenues();
-
-        var scrapesWithErrors = refreshs.Where(r => r.task.Result.errors.Count > 0).ToArray();
-
-        if (scrapesWithErrors.Length > 0)
-        {
-            string errorReport = scrapesWithErrors.Select(r => ReportErrors(r.task.Result.errors, r.venue)).Join(ErrorReport.OutputSpacing);
-            await WriteErrorReportAsync(errorReport);
-        }
-
-        var scrapesWithWarnings = refreshs.Where(r => r.task.Result.warning != null).ToArray();
-
-        if (scrapesWithWarnings.Length > 0)
-        {
-            string warnings = scrapesWithWarnings.Select(r => r.task.Result.warning).LineJoin();
-            await App.CurrentPage.DisplayAlertAsync("You may want to look into:", warnings, "OK");
-        }
-    }
 
     [RelayCommand]
     private void ExportVenues() => Venues.ShareFile();
@@ -88,56 +45,12 @@ public partial class VenueList(Scraper scraper, INavigation navigation, VenueCol
             }
 
             if (imported?.Count < 1) return;
-            Venues.Observable.Import(imported!);
-            await Venues.SaveVenues();
-            RefreshList();
+            await Venues.Import(imported!);
         }
     }
 
     [RelayCommand]
     private async Task OpenSettingsAsync() => await navigation.PushAsync(new Settings.Page(new Settings()));
-
-    private bool CanRefreshVenue(Venue? venue) => venue is not null && !IsRefreshing(venue);
-    private bool IsRefreshing(Venue venue) => refreshingVenues.Contains(venue);
-
-    private void SetVenueRefreshing(Venue venue, bool isRefreshing)
-    {
-        if (isRefreshing) refreshingVenues.Add(venue);
-        else refreshingVenues.Remove(venue);
-
-        /* refreshing venues count against the progress, i.e. all refreshing => 0, none => 1
-         * so that the bar progresses as venues finish refreshing */
-        RefreshAllVenuesProgress = (Venues.Observable.Count - refreshingVenues.Count) / (double)Venues.Observable.Count;
-
-        RefreshVenueCommand.NotifyCanExecuteChanged();
-    }
-
-    private async Task<(List<Exception> errors, string? warning)> RefreshEvents(Venue venue)
-    {
-        SetVenueRefreshing(venue, true);
-
-        try
-        {
-            (HashSet<Event> events, List<Exception> errors) = await scraper.ScrapeVenueAsync(venue);
-            venue.LastRefreshed = DateTime.Now;
-            venue.LastEventCount = events.Count;
-            var warning = events.Count > 0 || errors.Count > 0 ? null : $"Found no relevant events for {venue.Name}.";
-            EventsScraped?.Invoke(venue, events); // notify subscribers
-            return (errors, warning);
-        }
-        finally
-        {
-            SetVenueRefreshing(venue, false);
-        }
-    }
-
-    private static string ReportErrors(IEnumerable<Exception> errors, Venue venue)
-        => errors.Select(ex => ex.ToString())
-            .Prepend("Scraping " + venue.Name + " " + venue.ProgramUrl)
-            .Join(ErrorReport.OutputSpacing);
-
-    private static async Task WriteErrorReportAsync(string errorReport)
-        => await ErrorReport.WriteAsyncAndShare(errorReport, "refreshing venues");
 
     public partial class View : ContentView
     {
@@ -160,8 +73,8 @@ public partial class VenueList(Scraper scraper, INavigation navigation, VenueCol
                         .StyleClass(Styles.Label.VenueRowDetail)
                         .BindIsVisibleToHasValueOf<Label, DateTime>(nameof(Venue.LastRefreshed));
 
-                    var refresh = Btn(Glyphs.Scrape, nameof(RefreshVenueCommand), source: model);
-                    SwingPickaxeDuring(refresh, model.RefreshVenueCommand);
+                    var refresh = Btn(Glyphs.Scrape, nameof(VenueCollection.RefreshVenueCommand), source: model.Venues);
+                    SwingPickaxeDuring(refresh, model.Venues.RefreshVenueCommand);
 
                     var border = new Border
                     {
@@ -193,12 +106,17 @@ public partial class VenueList(Scraper scraper, INavigation navigation, VenueCol
             var importVenues = Btn("📥", nameof(ImportVenuesCommand)).ToolTip("import venues");
             var exportVenues = Btn(Glyphs.Export, nameof(ExportVenuesCommand)).ToolTip("export venues");
             var addVenue = Btn(Glyphs.Add, nameof(AddVenueCommand)).ToolTip("add a venue");
-            var refreshAll = Btn(Glyphs.Scrape + " dig all gigs", nameof(RefreshAllVenuesCommand)).ToolTip("refresh events from all venues");
 
-            var refreshAllProgress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(RefreshAllVenuesProgress))
+            var refreshAll = Btn(Glyphs.Scrape + " dig all gigs",
+                nameof(VenueCollection.RefreshAllVenuesCommand), source: model.Venues)
+                .ToolTip("refresh events from all venues");
+
+            var refreshAllProgress = new ProgressBar()
+                .Bind(ProgressBar.ProgressProperty, nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues)
                 .ToolTip("the progress of refreshing the events of all venues ")
                 // hide when none is refreshing
-                .BindVisible(nameof(RefreshAllVenuesProgress), converter: Converters.Func<double>(progress => progress < 1d));
+                .BindVisible(nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues,
+                    converter: Converters.Func<double>(progress => progress < 1d));
 
             if (Shell.Current == null) // desktop layout with Venue and Event list side by side
             {
@@ -266,11 +184,11 @@ public partial class VenueList(Scraper scraper, INavigation navigation, VenueCol
     /// <summary>Wraps the <see cref="View"/> in a stand-alone Page for narrow devices that use AppShell.</summary>
     public partial class Page : ContentPage
     {
-        public Page(VenueCollection venues, Scraper scraper, EventRepository eventRepo)
+        public Page(VenueCollection venues, EventRepository eventRepo)
         {
             Title = "Venues";
-            VenueList venueList = new(scraper, Navigation, venues);
-            venueList.EventsScraped += async (venue, events) => await eventRepo.AddOrUpdateAsync(venue, events);
+            VenueList venueList = new(Navigation, venues);
+            venues.EventsScraped += async (venue, events) => await eventRepo.AddOrUpdateAsync(venue, events);
             venues.Renamed += async (oldName, newName) => await eventRepo.RenameVenueAsync(oldName, newName);
             venues.Deleted += async (venueName) => await eventRepo.DeleteVenueAsync(venueName);
             Content = new View(venueList);
