@@ -63,6 +63,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                     var border = new Border
                     {
                         Padding = 10,
+                        StrokeThickness = 0,
                         Content = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
                             name.ColumnSpan(2),
                             location.Row(1),

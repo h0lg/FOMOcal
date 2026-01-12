@@ -71,6 +71,8 @@
         https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/selection?view=net-maui-9.0#change-selected-item-color -->
     <Style TargetType="Border" Class="list-event">
         <Setter Property="Padding" Value="10" />
+        <Setter Property="StrokeThickness" Value="0" />
+
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">
