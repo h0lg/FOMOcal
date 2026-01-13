@@ -199,7 +199,11 @@ partial class VenueEditor
             }
 
             model.visualSelectorHost = entry;
-            entry.Focus(); // to keep its help open
+
+            if (DeviceInfo.Idiom == DeviceIdiom.Desktop || DeviceInfo.Idiom == DeviceIdiom.Tablet)
+                entry.Focus(); // to keep its help open on devices with big screens
+            else entry.Unfocus(); // on-screen keyboard sliding in from below is useless in visual picker and takes up space
+
             visualSelector.IsVisible = true;
             await pageView!.PickRelativeTo(selector, descendant);
             UpdateHeight();
