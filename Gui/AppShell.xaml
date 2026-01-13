@@ -16,9 +16,4 @@
             <ShellContent ContentTemplate="{DataTemplate vm:Settings+Page}" />
         </Tab>
     </TabBar>
-
-    <ContentPage
-        x:Class="FomoCal.Gui.ViewModels.VenueEditor.Page"
-        Shell.TabBarIsVisible="False"
-        Shell.FlyoutBehavior="Disabled" />
 </Shell>

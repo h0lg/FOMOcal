@@ -305,21 +305,14 @@ public partial class VenueEditor : ObservableObject
 
     internal enum Actions { Saved, Deleted }
 
-    public partial class Page : ContentPage, IQueryAttributable
+    public partial class Page : ContentPage
     {
-        private VenueEditor? model;
-        private ScrollView? form;
+        private readonly VenueEditor model;
+        private readonly ScrollView form;
 
-        internal const string ModelQueryParam = nameof(model);
-
-        public Page(VenueEditor model) => Init(model); // for page navigation
-
-        public Page() => Shell.SetTabBarIsVisible(this, false); // required by Shell navigation
-
-        public void ApplyQueryAttributes(IDictionary<string, object> query) => Init((VenueEditor)query[ModelQueryParam]);
-
-        private void Init(VenueEditor model)
+        public Page(VenueEditor model)
         {
+            if (Shell.Current != null) Shell.SetTabBarIsVisible(this, false);
             this.model = model;
             BindingContext = model;
             Title = model.isDeletable ? "Edit " + model.originalVenueName : "Add a venue";

@@ -52,13 +52,13 @@ partial class VenueEditor
 
     partial class Page
     {
-        private AbsoluteLayout? visualSelector;
+        private readonly AbsoluteLayout visualSelector;
         private AutomatedEventPageView? pageView;
         private string? selectedQuery;
 
         private AbsoluteLayout CreateVisualSelector()
         {
-            pageView = new(model!.venue, log: (message, level) => model.BrowserLog.Add(VenueScrapeContext.FormatLog(message, level)));
+            pageView = new(model.venue, log: (message, level) => model.BrowserLog.Add(VenueScrapeContext.FormatLog(message, level)));
             pageView.HtmlLoaded += async html => await model.OnHtmlLoadedAsync(html, pageView.Url);
             pageView.ErrorLoading += async navigationResult => await model.OnErrorLoadingEventsAsync(navigationResult);
             pageView.PickedSelector += selector => model.PickedSelector = selector;
@@ -158,7 +158,7 @@ partial class VenueEditor
 
         private void AppendSelectedQuery()
         {
-            Entry host = model!.visualSelectorHost!;
+            Entry host = model.visualSelectorHost!;
             var existing = host.Text ?? "";
             var hasXpath = FomoCal.ScrapeJob.TryGetXPathSelector(existing, out var existingXpath);
             string normalized = selectedQuery.NormalizeWhitespace();
@@ -176,14 +176,14 @@ partial class VenueEditor
 
         private void Reload()
         {
-            model!.IsEventPageLoading = true;
+            model.IsEventPageLoading = true;
             pageView!.Reload();
         }
 
         private async Task ShowVisualSelectorForAsync(Entry entry, string selector, bool descendant)
         {
             // reset UI state to allow picking an element
-            model!.ShowSelectorOptions = false;
+            model.ShowSelectorOptions = false;
             model.ShowSelectorDetail = false;
             model.EnablePicking = true;
 
@@ -204,23 +204,23 @@ partial class VenueEditor
                 entry.Focus(); // to keep its help open on devices with big screens
             else entry.Unfocus(); // on-screen keyboard sliding in from below is useless in visual picker and takes up space
 
-            visualSelector!.IsVisible = true;
+            visualSelector.IsVisible = true;
             await pageView!.PickRelativeTo(selector, descendant);
             UpdateHeight();
         }
 
         private void HideVisualSelector()
         {
-            model!.EnablePicking = false; // to enable running a PagingStrategy that ClicksElementToLoad
+            model.EnablePicking = false; // to enable running a PagingStrategy that ClicksElementToLoad
             if (model.visualSelectorHost == null) return;
 
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                await visualSelector!.AnimateHeightRequest(0);
-                visualSelector!.IsVisible = false;
+                await visualSelector.AnimateHeightRequest(0);
+                visualSelector.IsVisible = false;
                 Entry entry = model.visualSelectorHost; // keep a reference to it before resetting
                 model.visualSelectorHost = null; // reset before re-focusing entry because its handler may check model.visualSelectorHost
-                form!.HeightRequest = -1; // reset form height
+                form.HeightRequest = -1; // reset form height
                 entry.Focus(); // re-focus the entry to keep its help and preview or errors open
             });
         }
@@ -239,7 +239,7 @@ partial class VenueEditor
             pickedSelectorScroller!.Content.SizeChanged += (sender, e) =>
             {
                 // exit handler early if height update is unnecessary
-                if (!visualSelector!.IsVisible) return;
+                if (!visualSelector.IsVisible) return;
                 UpdateHeight();
             };
         }
@@ -251,7 +251,7 @@ partial class VenueEditor
             var maxHeight = Height - 100;
             double height;
 
-            if (model!.ShowSelectorOptions) // calculate dynamic height based on measured selectorControls sizes
+            if (model.ShowSelectorOptions) // calculate dynamic height based on measured selectorControls sizes
             {
                 height = pickedSelectorScroller!.Content.Height;
 
@@ -264,16 +264,16 @@ partial class VenueEditor
             }
             else height = maxHeight;
 
-            await visualSelector!.AnimateHeightRequest(height);
+            await visualSelector.AnimateHeightRequest(height);
 
             if (model.visualSelectorHost != null)
             {
-                form!.HeightRequest = Height - height; // shrink form so End is visible to scroll there
+                form.HeightRequest = Height - height; // shrink form so End is visible to scroll there
 
                 // scroll entry to end so that Help above is visible
                 await form.ScrollToAsync(model.visualSelectorHost, ScrollToPosition.End, animated: true);
             }
-            else form!.HeightRequest = -1; // reset form height
+            else form.HeightRequest = -1; // reset form height
         }
         #endregion
     }
