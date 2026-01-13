@@ -312,7 +312,10 @@ public partial class VenueEditor : ObservableObject
 
         internal const string ModelQueryParam = nameof(model);
 
-        public Page(VenueEditor model) => Init(model);
+        public Page(VenueEditor model) => Init(model); // for page navigation
+
+        public Page() => Shell.SetTabBarIsVisible(this, false); // required by Shell navigation
+
         public void ApplyQueryAttributes(IDictionary<string, object> query) => Init((VenueEditor)query[ModelQueryParam]);
 
         private void Init(VenueEditor model)
@@ -345,12 +348,27 @@ public partial class VenueEditor : ObservableObject
             var progress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(Progress))
                 .ToolTip("your progress towards the minimum required configuration to make this venue scrapable");
 
-            var formControls = Grd(cols: [Star, Auto, Auto, Auto, Auto], rows: [Auto], spacing: 10,
-                progress,
-                Btn("💾 Save", nameof(SaveCommand)).Column(1),
-                Lbl("or").CenterVertical().IsVisible(model.isDeletable).Column(2),
-                Btn(Glyphs.Delete + " Delete", nameof(DeleteCommand)).IsVisible(model.isDeletable).Column(3),
-                Lbl("this venue").CenterVertical().Column(4));
+            var cancel = Btn("🔙 cancel").TapGesture(async () =>
+            {
+                if (Shell.Current == null) OnBackButtonPressed(); // works if BackButton is visible
+                else
+                {
+                    SignalCancelation();
+                    await Shell.Current.GoToAsync("..");
+                }
+            });
+
+            var actions = HStack(10,
+                Btn("💾 Save", nameof(SaveCommand)),
+                Lbl("or").IsVisible(model.isDeletable),
+                Btn(Glyphs.Delete + " Delete", nameof(DeleteCommand)).IsVisible(model.isDeletable),
+                Lbl("this venue"));
+
+            var formControls = false // DeviceInfo.Idiom == DeviceIdiom.Desktop || DeviceInfo.Idiom == DeviceIdiom.Tablet
+                ? Grd(cols: [Auto, Star, Auto], rows: [Auto], spacing: 10,
+                    cancel, progress.Column(1), actions.View.Column(2))
+                : Grd(cols: [Auto, Star], rows: [Auto, Auto], spacing: 10,
+                    cancel, progress.Column(1), actions.View.Row(1).ColumnSpan(2).End());
 
             form = new ScrollView
             {
@@ -607,8 +625,10 @@ public partial class VenueEditor : ObservableObject
 
         protected override bool OnBackButtonPressed()
         {
-            model!.SetActionTaken(null); // to signal cancellation
+            SignalCancelation();
             return base.OnBackButtonPressed();
         }
+
+        private void SignalCancelation() => model!.SetActionTaken(null);
     }
 }

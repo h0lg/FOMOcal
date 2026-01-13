@@ -25,7 +25,11 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
         VenueEditor model = new(edited, scraper, editing);
 
         if (Shell.Current == null) await App.CurrentPage.Navigation.PushAsync(new VenueEditor.Page(model));
-        else await Shell.Current.GoToAsync("venue-editor", new ShellNavigationQueryParameters() { { "model", model } });
+        else
+        {
+            ShellNavigationQueryParameters args = new() { { VenueEditor.Page.ModelQueryParam, model } };
+            await Shell.Current.GoToAsync(nameof(VenueEditor), args);
+        }
 
         VenueEditor.Actions? result = await editing.Task; // wait for editor
         if (result == null) return; // canceled & navigation stack popped, do nothing

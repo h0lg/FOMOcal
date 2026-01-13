@@ -8,6 +8,7 @@ namespace FomoCal.Gui
         {
             InitializeComponent();
             Routing.RegisterRoute(nameof(WebViewPage), typeof(WebViewPage));
+            Routing.RegisterRoute(nameof(VenueEditor), typeof(VenueEditor.Page));
         }
     }
 }
