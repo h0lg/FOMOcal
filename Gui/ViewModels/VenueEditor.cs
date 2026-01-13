@@ -305,12 +305,17 @@ public partial class VenueEditor : ObservableObject
 
     internal enum Actions { Saved, Deleted }
 
-    public partial class Page : ContentPage
+    public partial class Page : ContentPage, IQueryAttributable
     {
-        private readonly VenueEditor model;
-        private readonly ScrollView form;
+        private VenueEditor? model;
+        private ScrollView? form;
 
-        public Page(VenueEditor model)
+        internal const string ModelQueryParam = nameof(model);
+
+        public Page(VenueEditor model) => Init(model);
+        public void ApplyQueryAttributes(IDictionary<string, object> query) => Init((VenueEditor)query[ModelQueryParam]);
+
+        private void Init(VenueEditor model)
         {
             this.model = model;
             BindingContext = model;
@@ -417,7 +422,7 @@ public partial class VenueEditor : ObservableObject
 
             var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(PreviewRelatedHasFocus),
-                hasError: nameof(EventSelectorHasError), source: model);
+                hasError: nameof(EventSelectorHasError), source: model!);
 
             var controls = HWrap(5,
                 Lbl("Event container").Bold(),
@@ -436,7 +441,7 @@ public partial class VenueEditor : ObservableObject
                 /*  Only propagate the loss of focus to the property
                     if entry has not currently opened the visualSelector
                     to keep the help visible while working there */
-                cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis);
+                cancelFocusChanged: (vis, focused) => !focused && model!.visualSelectorHost == vis);
 
             eventFilter.InlineTooltipOnFocus(string.Format(HelpTexts.EventContainerFilterFormat, FomoCal.ScrapeJob.XPathSelectorPrefix),
                 help, onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
@@ -463,11 +468,11 @@ public partial class VenueEditor : ObservableObject
 
             async Task TogglePreviewRelatedFocus(bool focused)
             {
-                if (focused) model.PreviewRelatedHasFocus = true;
+                if (focused) model!.PreviewRelatedHasFocus = true;
                 else
                 {
                     await Task.Delay(300); // to allow for using the skip/take steppers without flickering
-                    if (!previewRelated.Any(vis => vis.IsFocused)) model.PreviewRelatedHasFocus = false;
+                    if (!previewRelated.Any(vis => vis.IsFocused)) model!.PreviewRelatedHasFocus = false;
                 }
             }
         }
@@ -476,7 +481,7 @@ public partial class VenueEditor : ObservableObject
         {
             Picker pagingStrategy = new()
             {
-                ItemsSource = model.PagingStrategies.ConvertAll(e => e.GetDescription()),
+                ItemsSource = model!.PagingStrategies.ConvertAll(e => e.GetDescription()),
                 SelectedIndex = model.PagingStrategies.IndexOf(model.venue.Event.PagingStrategy)
             };
 
@@ -510,7 +515,7 @@ public partial class VenueEditor : ObservableObject
 
         private VerticalStackLayout OptionalEventFields()
         {
-            var evt = model.venue.Event;
+            var evt = model!.venue.Event;
 
             return VStack(0,
                 OptionalScrapeJob("‼ Subtitle", evt.SubTitle, nameof(Venue.EventScrapeJob.SubTitle)),
@@ -596,13 +601,13 @@ public partial class VenueEditor : ObservableObject
                 /*  if maybeGetDescendantOfClosest is set, we're selecting the descendant
                  *  and prefer selecting from the Closest expression over the EventSelector */
                 bool picksDescendant = maybeGetDescendantOfClosest != null;
-                string selector = picksDescendant ? maybeGetDescendantOfClosest!() ?? model.EventSelector : model.EventSelector;
+                string selector = picksDescendant ? maybeGetDescendantOfClosest!() ?? model!.EventSelector : model!.EventSelector;
                 return (selector, picksDescendant);
             });
 
         protected override bool OnBackButtonPressed()
         {
-            model.SetActionTaken(null); // to signal cancellation
+            model!.SetActionTaken(null); // to signal cancellation
             return base.OnBackButtonPressed();
         }
     }

@@ -23,7 +23,10 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
         TaskCompletionSource<VenueEditor.Actions?> editing = new();
         Venue edited = original.DeepCopy(); // so that original is not changed by the editor
         VenueEditor model = new(edited, scraper, editing);
-        await navigation.PushAsync(new VenueEditor.Page(model));
+
+        if (Shell.Current == null) await App.CurrentPage.Navigation.PushAsync(new VenueEditor.Page(model));
+        else await Shell.Current.GoToAsync("venue-editor", new ShellNavigationQueryParameters() { { "model", model } });
+
         VenueEditor.Actions? result = await editing.Task; // wait for editor
         if (result == null) return; // canceled & navigation stack popped, do nothing
 

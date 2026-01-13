@@ -16,4 +16,10 @@
             <ShellContent ContentTemplate="{DataTemplate vm:Settings+Page}" />
         </Tab>
     </TabBar>
+
+    <ShellContent
+        Route="venue-editor"
+        Shell.TabBarIsVisible="False"
+        Shell.FlyoutBehavior="Disabled"
+        ContentTemplate="{DataTemplate vm:VenueEditor+Page}" />
 </Shell>

@@ -83,7 +83,7 @@ partial class VenueEditor
         View[] GetSelectorOptions((Label label, Border layout) help)
         {
             var xPathSyntax = new Switch() // enables switching between CSS and XPath syntax to save space
-                .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: model.selectorOptions)
+                .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: model!.selectorOptions)
                 .InlineTooltipOnFocus(string.Format(HelpTexts.SelectorSyntaxFormat, FomoCal.ScrapeJob.XPathSelectorPrefix), help);
 
             var syntax = HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath"));
