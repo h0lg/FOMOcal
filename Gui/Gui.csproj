@@ -59,11 +59,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- App Icon -->
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" />
+    <!-- App icon for Android -->
+    <MauiIcon Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'"
+              Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.5" />
 
-    <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\AppIcon\appicon.svg" />
+    <!-- App Icon for all other platforms -->
+    <MauiIcon Include="Resources\AppIcon\appiconfg.svg" />
+
+    <!-- Splash Screen (used on Android) -->
+    <MauiSplashScreen Include="Resources\Splash\splash.png" Color="#FFD93D" />
 
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />

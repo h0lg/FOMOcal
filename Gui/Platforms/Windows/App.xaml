@@ -10,7 +10,7 @@
         <DataTemplate x:Key="MauiAppTitleBarTemplate">
             <Border Canvas.ZIndex="1" VerticalAlignment="Stretch" Margin="0,0,0,0">
                 <StackPanel Orientation="Horizontal" Margin="12, 0, 0, 0" x:Name="RootStackPanel">
-                    <Image x:Name="AppFontIcon" HorizontalAlignment="Left" VerticalAlignment="Center" Source="appiconLogo.png" Visibility="Visible" Width="16" Height="16"/>
+                    <Image x:Name="AppFontIcon" HorizontalAlignment="Left" VerticalAlignment="Center" Source="appiconfgLogo.png" Visibility="Visible" Width="16" Height="16"/>
                     <TextBlock x:Name="AppTitle" VerticalAlignment="Center" Margin="{Binding WindowTitleMargin}" Text="{Binding WindowTitle}"
                                Foreground="{Binding WindowTitleForeground}" Style="{StaticResource CaptionTextBlockStyle}" />
                 </StackPanel>
