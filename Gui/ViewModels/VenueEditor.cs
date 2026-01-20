@@ -255,16 +255,15 @@ public partial class VenueEditor : ObservableObject
     }
 
     [RelayCommand]
-    private static async Task OpenUrlAsync(string url)
-        => await WebViewPage.OpenUrlAsync(url);
+    private static Task OpenUrl(string url) => WebViewPage.OpenUrlAsync(url);
 
     [RelayCommand]
-    private static async Task OpenFileAsync(string path) => await FileHelper.OpenFileAsync(path);
+    private static Task OpenScrapeLog(ScrapeLogFile.ForVenue log) => ScrapeLogFile.Open(log);
 
     [RelayCommand]
     private void DeleteScrapeLog(ScrapeLogFile.ForVenue log)
     {
-        File.Delete(log.Path);
+        ScrapeLogFile.Remove(log);
         ScrapeLogs!.Remove(log);
     }
 
@@ -557,8 +556,8 @@ public partial class VenueEditor : ObservableObject
                     commandSource: model, parameterPath: ".");
 
                 var label = BndLbl(nameof(ScrapeLogFile.ForVenue.TimeStamp)).Padding(10)
-                    .BindTapGesture(nameof(OpenFileCommand), commandSource: model,
-                        parameterPath: nameof(ScrapeLogFile.ForVenue.Path));
+                    .BindTapGesture(nameof(OpenScrapeLogCommand), commandSource: model,
+                        parameterPath: ".");
 
                 return HStack(5, deleteBtn, label).View;
             });

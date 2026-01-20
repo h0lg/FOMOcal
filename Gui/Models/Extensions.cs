@@ -148,6 +148,9 @@ internal static class FileHelper
             await Share.Default.RequestAsync(
                 new ShareFileRequest { Title = title, File = new ShareFile(filePath, contentType) }));
 
-    internal static Task OpenFileAsync(string path, string? header = null)
-        => Launcher.OpenAsync(new OpenFileRequest { Title = header, File = new ReadOnlyFile(path) });
+    internal static Task OpenFileAsync(string path, string? title = null, string? contentType = null)
+    {
+        ReadOnlyFile file = string.IsNullOrWhiteSpace(contentType) ? new(path) : new(path, contentType);
+        return Launcher.OpenAsync(new OpenFileRequest { Title = title, File = file });
+    }
 }

@@ -1,4 +1,6 @@
-﻿using FomoCal.Gui;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
+using FomoCal.Gui;
 
 namespace FomoCal;
 
@@ -35,6 +37,32 @@ public static class ScrapeLogFile
             await ErrorReport.WriteAsync(ex.ToString(), "writing scrape log");
             return null;
         }
+    }
+
+    internal static async Task Open(ForVenue log)
+    {
+        if (TrySanitizePath(log, out var path))
+            await FileHelper.OpenFileAsync(path, "Scrape log", MediaTypeNames.Text.Plain);
+    }
+
+    internal static void Remove(ForVenue log)
+    {
+        if (TrySanitizePath(log, out var path))
+            File.Delete(path);
+    }
+
+    private static bool TrySanitizePath(ForVenue log, [MaybeNullWhen(false)] out string path)
+    {
+        var fileName = Path.GetFileName(log.Path);
+
+        if (fileName == null)
+        {
+            path = null;
+            return false;
+        }
+
+        path = Path.Combine(folder, fileName);
+        return true;
     }
 
     /// <summary>Returns the existing scrape logs for the <paramref name="venue"/>,
