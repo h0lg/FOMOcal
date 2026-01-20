@@ -23,12 +23,13 @@ public static class ErrorReport
             if (path == null) await App.CurrentPage.DisplayAlertAsync($"{header} and writing report.", report, "OK");
             else
             {
-                const string share = "Share or copy the file.", open = "Open to read or copy the contents.";
+                const string share = "Share or copy the file.", open = "Open it to read or copy the contents.";
+                const string contentType = MediaTypeNames.Text.Plain;
                 var choice = await App.CurrentPage.DisplayActionSheetAsync(header + " - a report was generated.", null, null, share, open, "Ignore it.");
 
-                if (choice == open) await FileHelper.OpenFileAsync(path, header);
+                if (choice == open) await FileHelper.OpenFileAsync(path, header, contentType);
                 else if (choice == share)
-                    FileHelper.ShareFile(path, MediaTypeNames.Text.Plain, title: AppInfo.Name + " error report");
+                    FileHelper.ShareFile(path, contentType, title: AppInfo.Name + " error report");
             }
         });
     }
