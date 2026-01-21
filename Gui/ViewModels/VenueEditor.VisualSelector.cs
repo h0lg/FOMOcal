@@ -54,7 +54,6 @@ partial class VenueEditor
     {
         private readonly AbsoluteLayout visualSelector;
         private AutomatedEventPageView? pageView;
-        private string? selectedQuery;
 
         private AbsoluteLayout CreateVisualSelector()
         {
@@ -99,9 +98,12 @@ partial class VenueEditor
                     .Bind(Button.TextProperty, showSelectorOptions,
                         convert: static (bool showSelector) => showSelector ? "⏮ Back to ⛶ picking an element" : "🍒 Choose a selector next ⏭"));
 
+            Editor selectorDisplay = SelectableMultiLineLabel(displayedSelector)
+                .InlineTooltipOnFocus(HelpTexts.PickedSelectorDisplay, help);
+
             View[] appendSelection = [
                 Lbl("Select parts of the selector text and"),
-                Btn(Glyphs.Add + " append").TapGesture(AppendSelectedQuery)
+                Btn(Glyphs.Add + " append").TapGesture(() => AppendSelectedQuery(selectorDisplay))
                     .InlineTooltipOnFocus(HelpTexts.AppendSelectedQuery, help),
                 Lbl("them to your query to try them out."),
                 Btn("🍜 selector options").BindVisible(showSelectorOptions).TapGesture(model.ToggleSelectorDetail)
@@ -114,9 +116,6 @@ partial class VenueEditor
                 controlsAndInstructions.AddChild(
                     view.BindVisible(new Binding(showSelectorOptions),
                         Converters.And, new Binding(nameof(ShowSelectorDetail))));
-
-            Editor selectorDisplay = SelectorDisplay(displayedSelector)
-                .InlineTooltipOnFocus(HelpTexts.PickedSelectorDisplay, help);
 
             pickedSelectorScroller = new()
             {
@@ -145,23 +144,15 @@ partial class VenueEditor
             };
         }
 
-        private Editor SelectorDisplay(string propertyPath)
-        {
-            var display = SelectableMultiLineLabel(propertyPath);
-
-            // save selected part of selector query for AppendSelectedQuery
-            display.Unfocused += (o, e) => selectedQuery = display.Text?.Substring(display.CursorPosition, display.SelectionLength);
-            return display;
-        }
-
         private async void PickParent() => await pageView!.PickParent();
 
-        private void AppendSelectedQuery()
+        private void AppendSelectedQuery(Editor display)
         {
+            var selectedQuery = display.Text?.Substring(display.CursorPosition, display.SelectionLength);
+            string normalized = selectedQuery.NormalizeWhitespace();
             Entry host = model.visualSelectorHost!;
             var existing = host.Text ?? "";
             var hasXpath = FomoCal.ScrapeJob.TryGetXPathSelector(existing, out var existingXpath);
-            string normalized = selectedQuery.NormalizeWhitespace();
 
             if (model.selectorOptions.XPathSyntax)
             {

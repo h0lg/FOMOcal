@@ -28,6 +28,17 @@ public static class MauiProgram
                 Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("DisableMultiselectCheckbox",
                     (handler, _) => handler.PlatformView.IsMultiSelectCheckBoxEnabled = false);
 #endif
+
+#if ANDROID
+                Microsoft.Maui.Handlers.EditorHandler.Mapper.AppendToMapping("DisableKeyboardWhenReadOnly", (handler, view) =>
+                {
+                    if (view is Editor editor && editor.IsReadOnly) // used for read-only but selectable multi-line text
+                    {
+                        handler.PlatformView.SetTextIsSelectable(true);
+                        handler.PlatformView.ShowSoftInputOnFocus = false; // hides keyboard
+                    }
+                });
+#endif
             })
             .ConfigureFonts(fonts =>
             {
