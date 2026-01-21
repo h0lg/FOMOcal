@@ -40,7 +40,14 @@ internal static partial class Export
     {
         string filePath = GetExportFilePath(extension);
         await FileHelper.WriteAsync(filePath, contents);
-        ShareFile(fileTypeLabel, filePath, contentType);
+
+        const string share = "Share or copy the file.", open = "Open - to import or read it.";
+
+        var choice = await App.CurrentPage.DisplayActionSheetAsync($"{fileTypeLabel} export generated.", null, null,
+            share, open, "Ignore it.");
+
+        if (choice == open) await FileHelper.OpenFileAsync(filePath, $"Open {fileTypeLabel} export", contentType);
+        else if (choice == share) ShareFile(fileTypeLabel, filePath, contentType);
     }
 
     internal static void ShareFile(string fileTypeLabel, string filePath, string contentType)
