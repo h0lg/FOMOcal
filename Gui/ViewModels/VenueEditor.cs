@@ -375,7 +375,7 @@ public partial class VenueEditor : ObservableObject
         private Grid VenueFields()
         {
             const string programUrl = nameof(ProgramUrl);
-            var urlEntry = Entr(programUrl, placeholder: "Program page URL");
+            var urlEntry = Entr(programUrl, placeholder: "Program page URL", Keyboard.Url);
             var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
             var encoding = Entr(nameof(Encoding), placeholder: "encoding override").ToolTip(HelpTexts.Encoding);
             var comment = Entr(nameof(Comment), placeholder: "explain this config or something about it").ToolTip(HelpTexts.Comment);
