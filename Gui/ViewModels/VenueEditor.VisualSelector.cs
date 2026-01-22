@@ -102,11 +102,12 @@ partial class VenueEditor
                 .InlineTooltipOnFocus(HelpTexts.PickedSelectorDisplay, help);
 
             View[] appendSelection = [
-                Lbl("Select parts of the selector text and"),
+                Lbl("⇥Select⇤ parts from the"),
+                Lbl("full selector below and"),
                 Btn(Glyphs.Add + " append").TapGesture(() => AppendSelectedQuery(selectorDisplay))
                     .InlineTooltipOnFocus(HelpTexts.AppendSelectedQuery, help),
-                Lbl("them to your query to try them out."),
-                Btn("🍜 selector options").BindVisible(showSelectorOptions).TapGesture(model.ToggleSelectorDetail)
+                Lbl("them to the ones to use."),
+                Btn("🍜 selector detail").BindVisible(showSelectorOptions).TapGesture(model.ToggleSelectorDetail)
                     .InlineTooltipOnFocus(HelpTexts.ToggleSelectorDetail, help)];
 
             foreach (var view in appendSelection)
