@@ -42,6 +42,9 @@ internal static class Widgets
     internal static Entry Entr(string path, string? placeholder = null, Keyboard? keybord = null)
         => new Entry { Placeholder = placeholder, Keyboard = keybord }.Bind(Entry.TextProperty, path);
 
+    internal static Editor Edtr(string path, string? placeholder = null, Keyboard? keybord = null)
+        => new Editor { Placeholder = placeholder, AutoSize = EditorAutoSizeOption.TextChanges, Keyboard = keybord }.Bind(Editor.TextProperty, path);
+
     internal static Editor SelectableMultiLineLabel(string textPropertyPath = ".")
         => new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }
             .Bind(Editor.TextProperty, textPropertyPath, BindingMode.OneWay);

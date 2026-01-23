@@ -334,7 +334,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
                 LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),
                 TextEntry("attribute", nameof(Attribute), HelpTexts.ScrapeJobAttribute),
-                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, "a }} b"),
+                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, placeholder: "a }} b"),
                 TextEntry("match", nameof(Match), HelpTexts.ScrapeJobMatch)
             ];
 
@@ -342,7 +342,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 TextEntry(Glyphs.Date + "format", nameof(Format), HelpTexts.DateScrapeJobFormat),
                 TextEntry("culture", nameof(Culture), HelpTexts.DateScrapeJobCulture));
 
-            children.Add(TextEntry(Glyphs.Comment, nameof(Comment), HelpTexts.Comment));
+            children.Add(TextEntry(Glyphs.Comment, nameof(Comment), HelpTexts.Comment, multiLine: true));
 
             foreach (var child in children.Cast<Microsoft.Maui.Controls.View>())
             {
@@ -368,8 +368,11 @@ public partial class ScrapeJobEditor : ObservableObject
             return LbldView(label, input).DisplayWithSignificant(property);
         }
 
-        private HorizontalStackLayout TextEntry(string label, string property, string tooltip, string? placeholder = null)
-            => LabeledInput(label, Entr(property).Placeholder(placeholder), tooltip).DisplayWithSignificant(property);
+        private HorizontalStackLayout TextEntry(string label, string property, string tooltip, bool multiLine = false, string? placeholder = null)
+        {
+            InputView editor = multiLine ? Edtr(property) : Entr(property);
+            return LabeledInput(label, editor.Placeholder(placeholder), tooltip).DisplayWithSignificant(property);
+        }
 
         private HorizontalStackLayout LabeledInput(string label, Microsoft.Maui.Controls.View view, string tooltip)
             => LbldView(label, HintedInput(view, tooltip));

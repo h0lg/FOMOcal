@@ -382,7 +382,7 @@ public partial class VenueEditor : ObservableObject
             var urlEntry = Entr(programUrl, placeholder: "Program page URL", Keyboard.Url);
             var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
             var encoding = Entr(nameof(Encoding), placeholder: "encoding override").ToolTip(HelpTexts.Encoding);
-            var comment = Entr(nameof(Comment), placeholder: "explain this config or something about it").ToolTip(HelpTexts.Comment);
+            var comment = Edtr(nameof(Comment), placeholder: "explain this config or something about it").ToolTip(HelpTexts.Comment);
 
             var location = new Entry { Placeholder = "Location, contacts or other helpful info" }
                 .Bind(Entry.TextProperty,
