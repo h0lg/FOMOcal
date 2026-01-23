@@ -94,7 +94,7 @@ partial class VenueEditor
                 Lbl("if you need.")
                     .BindVisible(new Binding(displayedSelector, converter: Converters.IsSignificant),
                         Converters.And, new Binding(showSelectorOptions, converter: Converters.Not)),
-                new Button().BindIsVisibleToValueOf(displayedSelector).TapGesture(model.TogglePickedSelector)
+                new Button().BindVisibleToSignificanceOf(displayedSelector).TapGesture(model.TogglePickedSelector)
                     .Bind(Button.TextProperty, showSelectorOptions,
                         convert: static (bool showSelector) => showSelector ? "⏮ Back to ⛶ picking an element" : "🍒 Choose a selector next ⏭"));
 

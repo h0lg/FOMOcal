@@ -398,7 +398,7 @@ public partial class VenueEditor : ObservableObject
                     Converters.And, new Binding(nameof(IsEventPageLoading), converter: Converters.Not));
 
             var openUrl = Btn(Glyphs.Link, nameof(OpenUrlCommand), source: model, parameterPath: programUrl)
-                .BindIsVisibleToValueOf(programUrl);
+                .BindVisibleToSignificanceOf(programUrl);
 
             return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 FldLbl("🕸"), urlEntry.Column(1), loadingIndicator.Column(2), reload.Column(2), openUrl.Column(3),

@@ -109,14 +109,21 @@ internal static partial class ViewExtensions
         Func<ValueTuple<bool, bool>, bool> convert, BindingBase binding2) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, binding1, binding2, convert: convert);
 
-    internal static T BindVisibleToNotNullOf<T>(this T vis, string property) where T : VisualElement
-        => vis.Bind(VisualElement.IsVisibleProperty, property, converter: Converters.NotNull);
-
-    internal static T BindIsVisibleToValueOf<T>(this T vis, string textProperty) where T : VisualElement
+    /// <summary>Binds the visibility of <paramref name="vis"/> to whether
+    /// the <paramref name="textProperty"/> is <see cref="StringExtensions.IsSignificant(string?)"/>,
+    /// i.e. not null or white space.</summary>
+    internal static T BindVisibleToSignificanceOf<T>(this T vis, string textProperty) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, textProperty, converter: Converters.IsSignificant);
 
+    /// <summary>Binds the visibility of <paramref name="vis"/> to whether
+    /// the nullable <paramref name="property"/> of the current binding context has a value.</summary>
     internal static T BindIsVisibleToHasValueOf<T, TProp>(this T vis, string property) where T : VisualElement where TProp : struct
         => vis.Bind(VisualElement.IsVisibleProperty, property, converter: Converters<TProp>.HasValue);
+
+    /// <summary>Binds the visibility of <paramref name="vis"/> to whether
+    /// the reference typed <paramref name="property"/> of the current binding context is not null.</summary>
+    internal static T BindVisibleToNotNullOf<T>(this T vis, string property) where T : VisualElement
+        => vis.Bind(VisualElement.IsVisibleProperty, property, converter: Converters.NotNull);
 
     internal static Label Wrap(this Label label)
     {

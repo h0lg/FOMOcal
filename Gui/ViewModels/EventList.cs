@@ -182,7 +182,7 @@ public partial class EventList : ObservableObject
                     .Bind(Image.SourceProperty, nameof(EventView.ImageUrl),
                         convert: static (string? url) => url.IsNullOrWhiteSpace() ? null
                             : new UriImageSource { Uri = new Uri(url!), CacheValidity = TimeSpan.FromDays(30) })
-                    .BindIsVisibleToValueOf(nameof(EventView.ImageUrl));
+                    .BindVisibleToSignificanceOf(nameof(EventView.ImageUrl));
 
                 var header = VStack(5,
                     BndFmtLbl(nameof(EventView.Name), converter: textChunkConverter).Bold().Wrap().FontSize(16),
@@ -313,7 +313,7 @@ public partial class EventList : ObservableObject
         }
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)
-            => BndLbl(property, stringFormat: stringFormat).Wrap().BindIsVisibleToValueOf(property);
+            => BndLbl(property, stringFormat: stringFormat).Wrap().BindVisibleToSignificanceOf(property);
 
         private static Label OptionalFormattedLabel(string property)
             => BndFmtLbl(property, converter: textChunkConverter).BindVisibleToNotNullOf(property);
@@ -323,7 +323,7 @@ public partial class EventList : ObservableObject
 
         private static Button OpenUrlButton(string text, string urlProperty, object source)
             => Btn(text, nameof(OpenUrlCommand), source: source, parameterPath: urlProperty)
-                .BindIsVisibleToValueOf(urlProperty);
+                .BindVisibleToSignificanceOf(urlProperty);
     }
 
     // used in the AppShell for non-Desktop devices
