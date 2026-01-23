@@ -213,7 +213,12 @@ public partial class VenueEditor : ObservableObject
 
         HasRequiredInfo = hasName && hasProgramUrl;
         ShowRequiredEventFields = HasRequiredInfo && EventSelector.IsSignificant();
-        ShowOptionalEventFields = ShowRequiredEventFields && eventName.IsValidAsRequired && eventDate.IsValidAsRequired;
+
+        // always show optional fields if any are filled - even if a missing internet connection prevents required fields from validating
+        ShowOptionalEventFields = scrapeJobEditors.Any(e => e.IsOptional && !e.IsEmpty)
+            // otherwise only after required fields are filled to grow the form with progress
+            || (ShowRequiredEventFields && eventName.IsValidAsRequired && eventDate.IsValidAsRequired);
+
         Progress = (ShowOptionalEventFields ? 3 : ShowRequiredEventFields ? 2 : HasRequiredInfo ? 1 : 0) / 3d;
         if (ShowRequiredEventFields && previewedEvents == null) UpdateEventContainerPreview();
     }
@@ -333,8 +338,7 @@ public partial class VenueEditor : ObservableObject
                 .BindVisible(nameof(ShowRequiredEventFields));
 
             // Step 4: Additional Event Details
-            const string showOptionalEventFields = nameof(ShowOptionalEventFields);
-            var optionalEventFields = OptionalEventFields().BindVisible(showOptionalEventFields);
+            var optionalEventFields = OptionalEventFields().BindVisible(nameof(ShowOptionalEventFields));
 
             // Progress Indicator
             var progress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(Progress))
