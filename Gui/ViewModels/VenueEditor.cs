@@ -23,7 +23,7 @@ public partial class VenueEditor : ObservableObject
     private IDomDocument? programDocument;
     private IDomElement[]? previewedEvents;
 
-    [ObservableProperty] public partial bool IsEventPageLoading { get; set; } = true;
+    [ObservableProperty] public partial bool IsEventPageLoading { get; set; }
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(SaveCommand))] public partial bool HasRequiredInfo { get; set; }
     [ObservableProperty] public partial bool ShowRequiredEventFields { get; set; }
     [ObservableProperty] public partial bool ShowOptionalEventFields { get; set; }
@@ -40,13 +40,16 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial bool ShowBrowserLog { get; set; }
     [ObservableProperty] public partial ObservableCollection<string> BrowserLog { get; set; } = [];
 
+    /// <summary>Bound to the editor and eventually committed to <see cref="ProgramUrl"/>.</summary>
+    [ObservableProperty] public partial string EditingProgramUrl { get; set; }
+
     public string ProgramUrl
     {
         get => venue.ProgramUrl;
         set
         {
-            if (value == venue.ProgramUrl) return;
-            venue.ProgramUrl = value;
+            if (value == venue.ProgramUrl || !value.IsValidHttpUrl()) return;
+            venue.ProgramUrl = value; // triggers web view to navigate
             SetDocument(null);
             OnPropertyChanged();
             RevealMore();
@@ -163,6 +166,7 @@ public partial class VenueEditor : ObservableObject
         this.awaiter = awaiter;
         isDeletable = venue.ProgramUrl.IsSignificant();
         originalVenueName = venue.Name;
+        EditingProgramUrl = venue.ProgramUrl;
 
         debouncedRevealMore = new(TimeSpan.FromMilliseconds(100), UndebouncedRevealMore,
             async ex => await ErrorReport.WriteAsyncAndShare(ex.ToString(), "revealing more of the venue editor"));
@@ -378,8 +382,11 @@ public partial class VenueEditor : ObservableObject
 
         private Grid VenueFields()
         {
-            const string programUrl = nameof(ProgramUrl);
-            var urlEntry = Entr(programUrl, placeholder: "Program page URL", Keyboard.Url);
+            // bind to a draft model property without property change handler
+            var urlEntry = Entr(nameof(EditingProgramUrl), placeholder: "Program page URL", Keyboard.Url)
+                // commit changes on loss of focus to one that has - to avoid premature URL loading errors
+                .OnFocusChanged((_, focused) => { if (!focused) model.ProgramUrl = model.EditingProgramUrl; });
+
             var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
             var encoding = Entr(nameof(Encoding), placeholder: "encoding override").ToolTip(HelpTexts.Encoding);
             var comment = Edtr(nameof(Comment), placeholder: "explain this config or something about it").ToolTip(HelpTexts.Comment);
@@ -388,6 +395,8 @@ public partial class VenueEditor : ObservableObject
                 .Bind(Entry.TextProperty,
                     getter: static vm => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
+
+            const string programUrl = nameof(ProgramUrl);
 
             var loadingIndicator = new ActivityIndicator { IsRunning = true }
                 .BindVisible(new Binding(programUrl, converter: Converters.IsSignificant),
