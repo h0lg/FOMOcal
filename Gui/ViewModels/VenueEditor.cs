@@ -41,7 +41,10 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial ObservableCollection<string> BrowserLog { get; set; } = [];
 
     /// <summary>Bound to the editor and eventually committed to <see cref="ProgramUrl"/>.</summary>
-    [ObservableProperty] public partial string EditingProgramUrl { get; set; }
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsEditingProgramUrlValid))]
+    public partial string EditingProgramUrl { get; set; }
+
+    public bool IsEditingProgramUrlValid => EditingProgramUrl.IsSignificant() && EditingProgramUrl.IsValidHttpUrl();
 
     public string ProgramUrl
     {
@@ -396,21 +399,24 @@ public partial class VenueEditor : ObservableObject
                     getter: static vm => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
-            const string programUrl = nameof(ProgramUrl);
+            const string isValidUrl = nameof(IsEditingProgramUrlValid);
+
+            var invalidIndicator = Lbl("⚠").ToolTip("This is not a valid HTTP URL.").CenterVertical()
+                .BindVisible(isValidUrl, converter: Converters.Not);
 
             var loadingIndicator = new ActivityIndicator { IsRunning = true }
-                .BindVisible(new Binding(programUrl, converter: Converters.IsSignificant),
-                    Converters.And, new Binding(nameof(IsEventPageLoading)));
+                .BindVisible(new Binding(isValidUrl), Converters.And, new Binding(nameof(IsEventPageLoading)));
 
             var reload = Btn("⟳").TapGesture(Reload)
-                .BindVisible(new Binding(programUrl, converter: Converters.IsSignificant),
-                    Converters.And, new Binding(nameof(IsEventPageLoading), converter: Converters.Not));
+                .BindVisible(new Binding(isValidUrl), Converters.And,
+                    new Binding(nameof(IsEventPageLoading), converter: Converters.Not));
 
-            var openUrl = Btn(Glyphs.Link, nameof(OpenUrlCommand), source: model, parameterPath: programUrl)
-                .BindVisibleToSignificanceOf(programUrl);
+            var openUrl = Btn(Glyphs.Link, nameof(OpenUrlCommand), source: model, parameterPath: nameof(ProgramUrl))
+                .BindVisible(isValidUrl);
 
             return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
-                FldLbl("🕸"), urlEntry.Column(1), loadingIndicator.Column(2), reload.Column(2), openUrl.Column(3),
+                FldLbl("🕸"), urlEntry.Column(1), invalidIndicator.Column(2).ColumnSpan(2),
+                    loadingIndicator.Column(2), reload.Column(2), openUrl.Column(3),
                 FldLbl("🏷").Row(1), nameEntry.Row(1).Column(1).ColumnSpan(3),
                 FldLbl("📍").Row(2), location.Row(2).Column(1).ColumnSpan(3),
                 FldLbl("🔣").Row(3), encoding.Row(3).Column(1).ColumnSpan(3),
