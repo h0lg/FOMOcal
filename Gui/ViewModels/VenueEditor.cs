@@ -23,7 +23,7 @@ public partial class VenueEditor : ObservableObject
     private IDomDocument? programDocument;
     private IDomElement[]? previewedEvents;
 
-    [ObservableProperty] public partial bool IsEventPageLoading { get; set; }
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(CanReload))] public partial bool IsEventPageLoading { get; set; }
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(SaveCommand))] public partial bool HasRequiredInfo { get; set; }
     [ObservableProperty] public partial bool ShowRequiredEventFields { get; set; }
     [ObservableProperty] public partial bool ShowOptionalEventFields { get; set; }
@@ -41,10 +41,12 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial ObservableCollection<string> BrowserLog { get; set; } = [];
 
     /// <summary>Bound to the editor and eventually committed to <see cref="ProgramUrl"/>.</summary>
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsEditingProgramUrlValid))]
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsEditingProgramUrlValid)), NotifyPropertyChangedFor(nameof(CanReload))]
     public partial string EditingProgramUrl { get; set; }
 
     public bool IsEditingProgramUrlValid => EditingProgramUrl.IsSignificant() && EditingProgramUrl.IsValidHttpUrl();
+
+    public bool CanReload => IsEditingProgramUrlValid && !IsEventPageLoading;
 
     public string ProgramUrl
     {
@@ -407,9 +409,7 @@ public partial class VenueEditor : ObservableObject
             var loadingIndicator = new ActivityIndicator { IsRunning = true }
                 .BindVisible(new Binding(isValidUrl), Converters.And, new Binding(nameof(IsEventPageLoading)));
 
-            var reload = Btn("⟳").TapGesture(Reload)
-                .BindVisible(new Binding(isValidUrl), Converters.And,
-                    new Binding(nameof(IsEventPageLoading), converter: Converters.Not));
+            var reload = Btn("⟳").TapGesture(Reload).BindVisible(nameof(CanReload));
 
             var openUrl = Btn(Glyphs.Link, nameof(OpenUrlCommand), source: model, parameterPath: nameof(ProgramUrl))
                 .BindVisible(isValidUrl);
