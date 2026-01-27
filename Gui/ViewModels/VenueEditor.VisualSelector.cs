@@ -43,8 +43,11 @@ partial class VenueEditor
         var message = $"Navigation {navigationResult}{suffix}.";
 
         // using ErrorLoading to give user feedback about an invalid URL instead of validating before
-        if (navigationResult == WebNavigationResult.Failure && !ProgramUrl.IsValidHttpUrl())
-            message += $" '{ProgramUrl}' is not a valid HTTP URL.";
+        if (navigationResult == WebNavigationResult.Failure)
+        {
+            if (!ProgramUrl.IsValidHttpUrl()) message += $" '{ProgramUrl}' is not a valid HTTP URL.";
+            else if (!App.HasInternet) message += " Loading the event listing requires an internet connection.";
+        }
 
         await App.CurrentPage.DisplayAlertAsync("Error loading event page.", message, "OK");
         RevealMore();

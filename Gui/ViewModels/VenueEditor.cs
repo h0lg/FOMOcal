@@ -226,7 +226,11 @@ public partial class VenueEditor : ObservableObject
         // always show optional fields if any are filled - even if a missing internet connection prevents required fields from validating
         ShowOptionalEventFields = scrapeJobEditors.Any(e => e.IsOptional && !e.IsEmpty)
             // otherwise only after required fields are filled to grow the form with progress
-            || (ShowRequiredEventFields && eventName.IsValidAsRequired && eventDate.IsValidAsRequired);
+            || (ShowRequiredEventFields
+                // skip validation without internet access
+                && (!App.HasInternet
+                    // otherwise make sure fields are set and have no errors
+                    || (eventName.IsValidAsRequired && eventDate.IsValidAsRequired)));
 
         Progress = (ShowOptionalEventFields ? 3 : ShowRequiredEventFields ? 2 : HasRequiredInfo ? 1 : 0) / 3d;
         if (ShowRequiredEventFields && previewedEvents == null) UpdateEventContainerPreview();
@@ -617,8 +621,13 @@ public partial class VenueEditor : ObservableObject
 
             layout.ToolTip("🥢 pluck from the page").TapGesture(async () =>
             {
-                (string selector, bool pickDescendant) = pickRelativeTo.Invoke();
-                await ShowVisualSelectorForAsync(entry, selector, pickDescendant);
+                if (App.HasInternet)
+                {
+                    (string selector, bool pickDescendant) = pickRelativeTo.Invoke();
+                    await ShowVisualSelectorForAsync(entry, selector, pickDescendant);
+                }
+                else await App.CurrentPage.DisplayAlertAsync("Connect to the internet and retry",
+                    "Loading the event listing requires internet access.", "OK");
             });
 
             return HStack(0, entry, layout).View;
