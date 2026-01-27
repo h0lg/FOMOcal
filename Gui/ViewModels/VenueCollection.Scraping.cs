@@ -20,6 +20,8 @@ partial class VenueCollection
     [RelayCommand(AllowConcurrentExecutions = true, CanExecute = nameof(CanRefreshVenue))]
     private async Task RefreshVenueAsync(Venue venue)
     {
+        if (!await HasInternet()) return;
+
         (List<Exception> errors, string? warning) = await RefreshEvents(venue);
         await SaveVenues();
         RefreshList(); // after SaveVenues to have venue visually refreshed
@@ -30,6 +32,8 @@ partial class VenueCollection
     [RelayCommand]
     private async Task RefreshAllVenuesAsync()
     {
+        if (!await HasInternet()) return;
+
         var refreshs = Observable.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
         await Task.WhenAll(refreshs.Select(r => r.task));
         RefreshList();
@@ -50,6 +54,16 @@ partial class VenueCollection
             string warnings = scrapesWithWarnings.Select(r => r.task.Result.warning).LineJoin();
             await App.CurrentPage.DisplayAlertAsync("You may want to look into:", warnings, "OK");
         }
+    }
+
+    private static async ValueTask<bool> HasInternet()
+    {
+        if (App.HasInternet) return true;
+
+        await App.CurrentPage.DisplayAlertAsync("Connect to the internet and retry.",
+            "Loading event listings requires an internet connection.", "OK");
+
+        return false;
     }
 
     internal bool CanRefreshVenue(Venue? venue) => venue is not null && !IsRefreshing(venue);

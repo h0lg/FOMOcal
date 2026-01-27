@@ -5,6 +5,7 @@
         private readonly IServiceProvider services;
 
         internal static Page CurrentPage => Current!.Windows[0].Page!;
+        internal static bool HasInternet => Connectivity.Current.NetworkAccess == NetworkAccess.Internet;
 
         public App(IServiceProvider services)
         {
