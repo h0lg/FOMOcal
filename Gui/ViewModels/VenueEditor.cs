@@ -14,6 +14,7 @@ public partial class VenueEditor : ObservableObject
     private readonly string originalVenueName;
     private readonly Scraper scraper; // singleton, disposed of by the service provider
     private readonly TaskCompletionSource<Actions?> awaiter;
+    private readonly INavigation navigation;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
     private readonly Debouncer debouncedRevealMore;
     private readonly Venue venue;
@@ -142,11 +143,12 @@ public partial class VenueEditor : ObservableObject
 
     public ObservableCollection<ScrapeLogFile.ForVenue> ScrapeLogs { get; }
 
-    internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter)
+    internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter, INavigation navigation)
     {
         this.venue = venue;
         this.scraper = scraper;
         this.awaiter = awaiter;
+        this.navigation = navigation;
         isDeletable = venue.ProgramUrl.IsSignificant();
         originalVenueName = venue.Name;
         EditingProgramUrl = venue.ProgramUrl;

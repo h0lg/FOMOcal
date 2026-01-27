@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
@@ -19,9 +18,9 @@ partial class VenueEditor
     public string ProgramUrl
     {
         get => venue.ProgramUrl;
-        set
+        private set
         {
-            if (value == venue.ProgramUrl || !value.IsValidHttpUrl()) return;
+            if (value == venue.ProgramUrl) return;
             venue.ProgramUrl = value; // triggers web view to navigate
             SetDocument(null);
             OnPropertyChanged();
@@ -29,8 +28,83 @@ partial class VenueEditor
         }
     }
 
-    [RelayCommand]
-    private static Task OpenUrl(string url) => WebViewPage.OpenUrlAsync(url);
+    private async ValueTask CommitEditingProgramUrlAsync()
+    {
+        // only skip if both are the same and valid URLs - to enable searching previously saved draft
+        if (EditingProgramUrl == ProgramUrl && ProgramUrl.IsSignificantValidUrl()) return;
+
+        if (EditingProgramUrl.IsNullOrWhiteSpace())
+        {
+            ProgramUrl = EditingProgramUrl;
+            return;
+        }
+
+        if (EditingProgramUrl.IsDomainLike(out var validUrl))
+        {
+            EditingProgramUrl = ProgramUrl = validUrl!;
+            return;
+        }
+
+        if (App.HasInternet)
+        {
+            var luckyEngine = LuckyUrlSearch.Engine.Google;
+            var luckyUrl = await LuckyUrlSearch.TryAsync(EditingProgramUrl, luckyEngine);
+            var chosenUrl = await PickUrlAsync(EditingProgramUrl, luckyUrl, luckyEngine);
+            if (chosenUrl != null) EditingProgramUrl = ProgramUrl = chosenUrl!;
+            else ProgramUrl = EditingProgramUrl; // commit even if nothing was found or chosen to enable saving drafts
+        }
+        else ProgramUrl = EditingProgramUrl;
+    }
+
+    private static string LabelSearch(LuckyUrlSearch.Engine engine, string originalQuery)
+        => $"🔎 Search \"{originalQuery}\" with {engine.GetLabel()}";
+
+    private async Task<string?> PickUrlAsync(string originalQuery, string? suggestedUrl, LuckyUrlSearch.Engine luckyEngine)
+    {
+        const string previewSuggested = "👁 Preview suggested URL",
+            cancel = "🚫 Neither, let me rety";
+
+        string useSuggested = $"{Glyphs.Target}Use suggested URL",
+            google = LabelSearch(LuckyUrlSearch.Engine.Google, originalQuery),
+            duckDuckGo = LabelSearch(LuckyUrlSearch.Engine.DuckDuckGo, originalQuery);
+
+        string title;
+        var options = new List<string>();
+
+        if (suggestedUrl.IsSignificant())
+        {
+            title = $"{luckyEngine} suggests {suggestedUrl}";
+            options.Add(useSuggested);
+            options.Add(previewSuggested);
+        }
+        else title = $"That's not a web address and {luckyEngine} didn't suggest anything.";
+
+        options.Add(duckDuckGo);
+        options.Add(google);
+        var choice = await App.CurrentPage.DisplayActionSheetAsync(title, cancel, null, [.. options]);
+        if (choice == cancel || choice == null) return null;
+        if (choice == useSuggested) return suggestedUrl;
+
+        string previewUrl = choice == previewSuggested ? suggestedUrl!
+            : choice == google ? "https://www.google.com/search?q=" + Uri.EscapeDataString(originalQuery)
+            : choice == duckDuckGo ? "https://duckduckgo.com/?q=" + Uri.EscapeDataString(originalQuery)
+            : throw new NotImplementedException(nameof(choice));
+
+        return await PickUrlFromBrowserAsync(previewUrl);
+    }
+
+    private async Task RepickUrlAsync()
+    {
+        var chosenUrl = await PickUrlFromBrowserAsync(ProgramUrl);
+        if (chosenUrl != null) EditingProgramUrl = ProgramUrl = chosenUrl!;
+    }
+
+    private async Task<string?> PickUrlFromBrowserAsync(string previewUrl)
+    {
+        PickUrlPage preview = new(previewUrl);
+        await navigation.PushAsync(preview);
+        return await preview.Result;
+    }
 
     partial class Page
     {
@@ -38,9 +112,9 @@ partial class VenueEditor
             out ActivityIndicator loadingIndicator, out Button reload, out Button openUrl)
         {
             // bind to a draft model property without property change handler
-            urlEntry = Entr(nameof(EditingProgramUrl), placeholder: "Program page URL", Keyboard.Url)
+            urlEntry = Entr(nameof(EditingProgramUrl), placeholder: "event listing URL - or venue name and town", Keyboard.Url)
                 // commit changes on loss of focus to one that has - to avoid premature URL loading errors
-                .OnFocusChanged((_, focused) => { if (!focused) model.ProgramUrl = model.EditingProgramUrl; });
+                .OnFocusChanged(async (_, focused) => { if (!focused) await model.CommitEditingProgramUrlAsync(); });
 
             const string isValidUrl = nameof(IsEditingProgramUrlValid);
 
@@ -51,10 +125,7 @@ partial class VenueEditor
                 .BindVisible(new Binding(isValidUrl), Converters.And, new Binding(nameof(IsEventPageLoading)));
 
             reload = Btn("⟳").TapGesture(Reload).BindVisible(nameof(CanReload));
-
-            openUrl = Btn(Glyphs.Link, nameof(OpenUrlCommand), source: model, parameterPath: nameof(ProgramUrl))
-                .BindVisible(isValidUrl);
-
+            openUrl = Btn(Glyphs.Link).TapGesture(async () => await model.RepickUrlAsync()).BindVisible(isValidUrl);
         }
     }
 }
