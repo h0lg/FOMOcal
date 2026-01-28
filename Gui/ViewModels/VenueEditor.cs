@@ -110,19 +110,6 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
-    public string? NextEventPageSelector
-    {
-        get => venue.Event.NextPageSelector;
-        set
-        {
-            if (value == venue.Event.NextPageSelector) return;
-            venue.Event.NextPageSelector = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public List<Venue.PagingStrategy> PagingStrategies { get; } = [.. Enum.GetValues<Venue.PagingStrategy>()];
-
     public int? LastEventCount => venue.LastEventCount;
     public DateTime? LastRefreshed => venue.LastRefreshed;
 
@@ -234,15 +221,6 @@ public partial class VenueEditor : ObservableObject
         previewedEvents = null;
         LoadMoreCommand.NotifyCanExecuteChanged();
     }
-
-    private bool CanLoadMore()
-        => SelectedEventCount > 0
-            && venue.Event.PagingStrategy != Venue.PagingStrategy.AllOnOne
-            && programDocument?.CanLoadMore(venue) == true;
-
-    [RelayCommand(CanExecute = nameof(CanLoadMore))]
-    private async Task LoadMoreAsync(AutomatedEventPageView loader)
-        => await scraper.LoadMoreAsync(loader, venue, programDocument!);
 
     private bool CanSave() => HasRequiredInfo;
 
@@ -443,42 +421,6 @@ public partial class VenueEditor : ObservableObject
                     if (!previewRelated.Any(vis => vis.IsFocused)) model!.PreviewRelatedHasFocus = false;
                 }
             }
-        }
-
-        private FlexLayout PagingControls((Label label, Border layout) help)
-        {
-            Picker pagingStrategy = new()
-            {
-                ItemsSource = model!.PagingStrategies.ConvertAll(e => e.GetDescription()),
-                SelectedIndex = model.PagingStrategies.IndexOf(model.venue.Event.PagingStrategy)
-            };
-
-            pagingStrategy.OnFocusChanged(async (_, focused) => await SyncPagingStrategyHelp(focused));
-
-            pagingStrategy.SelectedIndexChanged += async (s, e) =>
-            {
-                if (pagingStrategy.SelectedIndex >= 0)
-                {
-                    model.venue.Event.PagingStrategy = model.PagingStrategies[pagingStrategy.SelectedIndex];
-                    model.LoadMoreCommand.NotifyCanExecuteChanged();
-                    await SyncPagingStrategyHelp(focused: true);
-                }
-                else await SyncPagingStrategyHelp(focused: false);
-            };
-
-            var nextPageSelector = SelectorEntry(
-                Entr(nameof(NextEventPageSelector)).Placeholder("next page")
-                    .InlineTooltipOnFocus(HelpTexts.NextEventPageSelector, help,
-                        cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis),
-                pickRelativeTo: () => (selector: "body", pickDescendant: true))
-                .BindVisible(nameof(Picker.SelectedIndex), pagingStrategy,
-                    Converters.Func<int>(i => model.PagingStrategies[i].RequiresNextPageSelector()));
-
-            var test = Btn("▶", nameof(LoadMoreCommand), parameterSource: pageView).ToolTip(HelpTexts.TestPagingStrategy);
-            return HWrap(5, Lbl("Loading").Bold(), pagingStrategy, nextPageSelector, test).View;
-
-            Task SyncPagingStrategyHelp(bool focused) =>
-                help.InlineHelpTextAsync(model.venue.Event.PagingStrategy.GetHelp()!, pagingStrategy, focused);
         }
 
         private VerticalStackLayout OptionalEventFields()
