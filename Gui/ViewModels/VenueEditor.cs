@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Markup;
+﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FomoCal.Gui.Resources;
@@ -36,9 +35,6 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial ushort TakeEvents { get; set; } = 5;
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))] public partial int SelectedEventCount { get; set; } = 0;
     [ObservableProperty] public partial int FilteredEventCount { get; set; } = 0;
-
-    [ObservableProperty] public partial bool ShowBrowserLog { get; set; }
-    [ObservableProperty] public partial ObservableCollection<string> BrowserLog { get; set; } = [];
 
     public string VenueName
     {
@@ -127,21 +123,8 @@ public partial class VenueEditor : ObservableObject
 
     public List<Venue.PagingStrategy> PagingStrategies { get; } = [.. Enum.GetValues<Venue.PagingStrategy>()];
 
-    public bool SaveScrapeLogs
-    {
-        get => venue.SaveScrapeLogs;
-        set
-        {
-            if (value == venue.SaveScrapeLogs) return;
-            venue.SaveScrapeLogs = value;
-            OnPropertyChanged();
-        }
-    }
-
     public int? LastEventCount => venue.LastEventCount;
     public DateTime? LastRefreshed => venue.LastRefreshed;
-
-    public ObservableCollection<ScrapeLogFile.ForVenue> ScrapeLogs { get; }
 
     internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter, INavigation navigation)
     {
@@ -250,16 +233,6 @@ public partial class VenueEditor : ObservableObject
         programDocument = document;
         previewedEvents = null;
         LoadMoreCommand.NotifyCanExecuteChanged();
-    }
-
-    [RelayCommand]
-    private static Task OpenScrapeLog(ScrapeLogFile.ForVenue log) => ScrapeLogFile.Open(log);
-
-    [RelayCommand]
-    private void DeleteScrapeLog(ScrapeLogFile.ForVenue log)
-    {
-        ScrapeLogFile.Remove(log);
-        ScrapeLogs!.Remove(log);
     }
 
     private bool CanLoadMore()
@@ -528,49 +501,6 @@ public partial class VenueEditor : ObservableObject
             ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
                => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute),
                     RelativeSelectorEntry, () => model.visualSelectorHost);
-        }
-
-        private static FlexLayout ScrapeLogs(VenueEditor model)
-        {
-            var save = Swtch(nameof(SaveScrapeLogs));
-            save.Switch.ToolTip(HelpTexts.SaveScrapLogs);
-
-            DataTemplate itemTemplate = new(() =>
-            {
-                var deleteBtn = Lbl(Glyphs.Delete).BindTapGesture(nameof(DeleteScrapeLogCommand),
-                    commandSource: model, parameterPath: ".");
-
-                var label = BndLbl(nameof(ScrapeLogFile.ForVenue.TimeStamp)).Padding(10)
-                    .BindTapGesture(nameof(OpenScrapeLogCommand), commandSource: model,
-                        parameterPath: ".");
-
-                return HStack(5, deleteBtn, label).View;
-            });
-
-            var logs = new CollectionView
-            {
-                ItemsSource = model.ScrapeLogs,
-                ItemsLayout = LinearItemsLayout.Horizontal,
-                ItemTemplate = itemTemplate
-            }
-                .ToolTip("Tap any log to open it.");
-
-            return HWrap(5, Lbl("📜 Scrape logs").Bold(), Lbl("save"), save.Wrapper, logs).View;
-        }
-
-        private static FlexLayout ScriptLog(VenueEditor model)
-        {
-            var toggle = Swtch(nameof(ShowBrowserLog));
-            toggle.Switch.ToolTip("View the browser log during the configuration process, e.g. to debug it.");
-
-            var log = new CollectionView
-            {
-                ItemsSource = model.BrowserLog,
-                ItemTemplate = new DataTemplate(() => BndLbl())
-            }
-                .BindVisible(nameof(ShowBrowserLog));
-
-            return HWrap(5, Lbl("📨 Browser log").Bold(), toggle.Wrapper, log).View;
         }
 
         private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)
