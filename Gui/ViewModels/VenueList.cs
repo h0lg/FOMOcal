@@ -132,11 +132,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
             }
             else // shell layout displaying lists separately
             {
-                SwipeItems items = [
-                    new SwipeItem() { Text = Glyphs.Add + " Add a venue" }.BindCommand(nameof(AddVenueCommand)),
-                    new SwipeItem() { Text = "📥 Import venues" }.BindCommand(nameof(ImportVenuesCommand)),
-                    new SwipeItem() { Text = Glyphs.Export+ " Export venues" }.BindCommand(nameof(ExportVenuesCommand)),
-                    new SwipeItem() { Text = Glyphs.Scrape + " Dig all gigs" }.BindCommand(nameof(VenueCollection.RefreshAllVenuesCommand), source: model.Venues)];
+                SwipeItems items = [new SwipeItemView() { Content = VStack(5, addVenue, refreshAll, importVenues, exportVenues) }];
 
                 Content = new SwipeView()
                 {
