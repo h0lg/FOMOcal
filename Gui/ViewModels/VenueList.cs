@@ -131,16 +131,11 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
                     openSettings.Row(3), addVenue.Row(3).Column(1), refreshAll.Row(3).Column(3).ColumnSpan(2));
             }
             else // shell layout displaying lists separately
-            {
-                SwipeItems items = [new SwipeItemView() { Content = VStack(5, addVenue, refreshAll, importVenues, exportVenues) }];
-
-                Content = new SwipeView()
-                {
-                    TopItems = items,
-                    Content = VStack(5, list, refreshAllProgress),
-                    BottomItems = items
-                };
-            }
+                Content = Grd(cols: [Auto, Auto, Auto, Star, Auto], rows: [Star, Auto, Auto], spacing: 5,
+                    list.ColumnSpan(5),
+                    refreshAllProgress.Row(1).ColumnSpan(5),
+                    addVenue.Row(2), importVenues.Row(2).Column(1), exportVenues.Row(2).Column(2),
+                    refreshAll.Row(2).Column(4));
         }
 
         private static void SwingPickaxeDuring(Button btn, ICommand cmd)
