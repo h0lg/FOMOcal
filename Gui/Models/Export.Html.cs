@@ -21,6 +21,11 @@ internal static partial class Export
         using var context = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
         using var doc = await context.OpenNewAsync();
 
+        // tell thick browsers about content encoding explicitly
+        var meta = (IHtmlMetaElement)doc.CreateElement("meta");
+        meta.Charset = "utf-8";
+        doc.Head!.AppendChild(meta);
+
         // styling
         var link = (IHtmlLinkElement)doc.CreateElement("link");
         link.Href = "https://unpkg.com/simple-datatables@10.0.0/dist/style.css";
