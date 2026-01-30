@@ -297,19 +297,17 @@ public partial class EventList : ObservableObject
             };
 
             var header = HWrap(new Thickness(0, 0, right: 5, 0));
-
-            if (isDesktop)
-            {
-                header.AddChild(pastEvents.View);
-                header.AddChild(Lbl("Gigs").StyleClass(Styles.Label.Headline));
-            }
-
+            if (isDesktop) header.AddChild(Lbl("Gigs").StyleClass(Styles.Label.Headline));
             header.AddChild(searchBar.Grow(1));
             header.AddChild(recentSearches);
-            if (!isDesktop) header.AddChild(pastEvents.View);
-            header.AddChild(SelectionMenu(model));
-            header.AddChild(export.View);
-            Content = Grd(cols: [Star], rows: [Auto, Star], spacing: 5, header.View, list.Row(1));
+
+            var footer = HWrap(new Thickness(0, 0, right: 5, 0));
+            footer.AddChild(pastEvents.View);
+            footer.AddChild(SelectionMenu(model));
+            footer.AddChild(export.View);
+
+            Content = Grd(cols: [Star], rows: [Auto, Star, Auto], spacing: 5,
+                header.View, list.Row(1), footer.View.Row(2));
         }
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)
