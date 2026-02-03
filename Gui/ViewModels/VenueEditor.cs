@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using FomoCal.Gui.Resources;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
@@ -22,7 +21,7 @@ public partial class VenueEditor : ObservableObject
     private Entry? visualSelectorHost;
     private IDomDocument? programDocument;
 
-    [ObservableProperty, NotifyCanExecuteChangedFor(nameof(SaveCommand))] public partial bool HasRequiredInfo { get; set; }
+    [ObservableProperty] public partial bool HasRequiredInfo { get; set; }
     [ObservableProperty] public partial bool ShowRequiredEventFields { get; set; }
     [ObservableProperty] public partial bool ShowOptionalEventFields { get; set; }
     [ObservableProperty] public partial double Progress { get; set; } = 0;
@@ -142,9 +141,6 @@ public partial class VenueEditor : ObservableObject
         LoadMoreCommand.NotifyCanExecuteChanged();
     }
 
-    private bool CanSave() => HasRequiredInfo;
-
-    [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
     {
         // reset empty optional scrape jobs
@@ -160,7 +156,6 @@ public partial class VenueEditor : ObservableObject
         SetActionTaken(Actions.Saved);
     }
 
-    [RelayCommand]
     private void Delete() => SetActionTaken(Actions.Deleted);
 
     private void SetActionTaken(Actions? action)
@@ -177,10 +172,23 @@ public partial class VenueEditor : ObservableObject
 
         public Page(VenueEditor model)
         {
-            if (Shell.Current != null) Shell.SetTabBarIsVisible(this, false);
             this.model = model;
             BindingContext = model;
             Title = model.isDeletable ? "Edit " + model.originalVenueName : "Add a venue";
+            if (Shell.Current != null) Shell.SetTabBarIsVisible(this, false);
+            Shell.SetNavBarIsVisible(this, true); // to show ToolbarItems and Title
+
+            ToolbarItems.Add(new ToolbarItem("💾 Save", null, model.Save)
+                .Bind(MenuItem.IsEnabledProperty, nameof(HasRequiredInfo)));
+
+            ToolbarItems.Add(new ToolbarItem(Glyphs.Back + "Cancel", null, async () =>
+            {
+                SignalCancelation();
+                await Navigation.PopAsync();
+            }));
+
+            if (model.isDeletable) ToolbarItems.Add(new ToolbarItem(
+                Glyphs.Delete + " Delete", null, model.Delete, ToolbarItemOrder.Secondary));
 
             /* CreateVisualSelector before EventContainer because the pageView 
              * created by the former is referenced as a command arg in the latter */
@@ -205,32 +213,10 @@ public partial class VenueEditor : ObservableObject
             var progress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(Progress))
                 .ToolTip("your progress towards the minimum required configuration to make this venue scrapable");
 
-            var cancel = Btn("🔙 cancel").TapGesture(async () =>
-            {
-                if (Shell.Current == null) OnBackButtonPressed(); // works if BackButton is visible
-                else
-                {
-                    SignalCancelation();
-                    await Shell.Current.GoToAsync("..");
-                }
-            });
-
-            var actions = HStack(10,
-                Btn("💾 Save", nameof(SaveCommand)),
-                Lbl("or").IsVisible(model.isDeletable),
-                Btn(Glyphs.Delete + " Delete", nameof(DeleteCommand)).IsVisible(model.isDeletable),
-                Lbl("this venue"));
-
-            var formControls = false // DeviceInfo.Idiom == DeviceIdiom.Desktop || DeviceInfo.Idiom == DeviceIdiom.Tablet
-                ? Grd(cols: [Auto, Star, Auto], rows: [Auto], spacing: 10,
-                    cancel, progress.Column(1), actions.View.Column(2))
-                : Grd(cols: [Auto, Star], rows: [Auto, Auto], spacing: 10,
-                    cancel, progress.Column(1), actions.View.Row(1).ColumnSpan(2).End());
-
             form = new ScrollView
             {
                 Content = VStack(20, venueFields, eventContainer,
-                    requiredEventFields, optionalEventFields, ScrapeLogs(model), formControls, ScriptLog(model))
+                    requiredEventFields, optionalEventFields, progress, ScrapeLogs(model), ScriptLog(model))
                     .Padding(20)
             };
 
