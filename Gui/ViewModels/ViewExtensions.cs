@@ -17,7 +17,7 @@ internal static class Glyphs
         Edit = "✏",
         Error = "⚠",
         EventPage = "📰 ",
-        Export = "🥡",
+        Export = "🎁",
         Genres = "🎶 ",
         Html = "🌐 ",
         Link = "🔗",
