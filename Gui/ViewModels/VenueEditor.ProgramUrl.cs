@@ -90,21 +90,17 @@ partial class VenueEditor
             : choice == duckDuckGo ? "https://duckduckgo.com/?q=" + Uri.EscapeDataString(originalQuery)
             : throw new NotImplementedException(nameof(choice));
 
-        return await PickUrlFromBrowserAsync(previewUrl);
+        return await PickUrlFromBrowser(previewUrl);
     }
 
     private async Task RepickUrlAsync()
     {
-        var chosenUrl = await PickUrlFromBrowserAsync(ProgramUrl);
+        var chosenUrl = await PickUrlFromBrowser(ProgramUrl);
         if (chosenUrl != null) EditingProgramUrl = ProgramUrl = chosenUrl!;
     }
 
-    private async Task<string?> PickUrlFromBrowserAsync(string previewUrl)
-    {
-        PickUrlPage preview = new(previewUrl);
-        await navigation.PushAsync(preview);
-        return await preview.Result;
-    }
+    private Task<string?> PickUrlFromBrowser(string url)
+        => new PickUrlPage(url).GetResult(navigation);
 
     partial class Page
     {

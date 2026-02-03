@@ -1,23 +1,37 @@
 ﻿namespace FomoCal.Gui.ViewModels;
 
-public partial class PickUrlPage : ContentPage
+public abstract class PickerPage<T> : ContentPage
 {
-    private readonly TaskCompletionSource<string?> tcs;
-    private readonly WebView webView;
+    private readonly TaskCompletionSource<T?> tcs = new();
 
-    internal Task<string?> Result => tcs.Task;
+    protected void SetResult(T result)
+    {
+        tcs.TrySetResult(result);
+        Navigation.PopAsync();
+    }
 
+    internal async Task<T?> GetResult(INavigation navigation)
+    {
+        await navigation.PushAsync(this);
+        return await tcs.Task;
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+
+        // Ensure a result is returned even if the user navigates back manually
+        if (!tcs.Task.IsCompleted) tcs.TrySetResult(default);
+    }
+}
+
+public partial class PickUrlPage : PickerPage<string>
+{
     internal PickUrlPage(string url)
     {
-        tcs = new TaskCompletionSource<string?>();
-        webView = new WebView { Source = url };
-        webView.Navigated += (object? sender, WebNavigatedEventArgs e) => url = e.Url;
-
-        ToolbarItems.Add(new ToolbarItem(Glyphs.Target + "Use this URL", null, () =>
-        {
-            tcs.TrySetResult(url);
-            Navigation.PopAsync();
-        }));
+        WebView webView = new() { Source = url };
+        webView.Navigated += (sender, e) => url = e.Url;
+        ToolbarItems.Add(new ToolbarItem(Glyphs.Target + "Use this URL", null, () => SetResult(url)));
 
         if (Shell.Current != null)
         {
@@ -26,13 +40,5 @@ public partial class PickUrlPage : ContentPage
         }
 
         Content = webView;
-    }
-
-    protected override void OnDisappearing()
-    {
-        base.OnDisappearing();
-
-        // Ensure a result is returned even if the user navigates back manually
-        if (!tcs.Task.IsCompleted) tcs.TrySetResult(null);
     }
 }
