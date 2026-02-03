@@ -18,6 +18,19 @@
         <Setter Property="StrokeThickness" Value="1"/>
     </Style>
 
+    <Style TargetType="Border" Class="RoundedSection">
+        <Setter Property="Padding" Value="5" />
+        <Setter Property="StrokeThickness" Value="5" />
+        <Setter Property="Stroke" Value="Transparent" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}" />
+
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="5" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- style the selected item of the EventList CollectionView, see
         https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/selection?view=net-maui-9.0#change-selected-item-color -->
     <Style TargetType="Border" Class="list-event">

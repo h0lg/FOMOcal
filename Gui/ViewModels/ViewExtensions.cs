@@ -25,6 +25,7 @@ internal static class Glyphs
         Export = "🥡",
         Add = "➕",
         Edit = "✏",
+        Back = "🔙 ",
         Target = "🎯 ",
         Delete = "🗑";
 }
@@ -47,6 +48,11 @@ internal static class Styles
         internal static Style LinkSpan = Get(), HighlitSpan = Get(), HelpHeaderSpan = Get(), HelpSpan = Get(),
             HelpLinkSpan = Get(), HelpFooterSpan = Get(),
             HelpFooterLinkSpan = MergedStyle.Combine(HelpFooterSpan, HelpLinkSpan)!;
+    }
+
+    internal static class Border
+    {
+        internal static string RoundedSection = GetName();
     }
 
     private static string GetName([CallerMemberName] string key = "") => key;

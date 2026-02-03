@@ -112,14 +112,6 @@ public partial class EventList : ObservableObject
         await OnEventsUpdated();
     }
 
-    [RelayCommand] private Task ExportToIcsAsync() => ExportSelected(Export.ExportToIcal);
-    [RelayCommand] private Task ExportToCsvAsync() => ExportSelected(Export.ExportToCsv);
-    [RelayCommand] private Task ExportToHtmlAsync() => ExportSelected(Export.ExportToHtml);
-    [RelayCommand] private Task ExportToTextAsync() => ExportSelected(events => events.ExportToText(Export.TextAlignedWithHeaders));
-
-    private Task ExportSelected(Func<IEnumerable<Event>, Task> export)
-        => HasSelection ? export(selected.GetEvents()) : Task.CompletedTask;
-
     [RelayCommand] private Task EditVenueAsync(EventView view) => venues.EditAsync(view.Model.Venue, navigation);
     [RelayCommand] private Task RefreshVenueAsync(EventView view) => venues.RefreshByNameAsync(view.Model.Venue);
 
@@ -154,24 +146,8 @@ public partial class EventList : ObservableObject
                     .TapGesture(() => model.ShowPastEvents = !model.ShowPastEvents),
                 Swtch(nameof(ShowPastEvents)).Wrapper);
 
-            const string configurableInSettings = "\nConfigure included event properties in the 🛠 Settings.";
-
-            var export = HStack(5,
-                Lbl(Glyphs.Export + " export as").BindVisible(nameof(HasSelection)),
-                ExportButton(Glyphs.Date + "ics", nameof(ExportToIcsCommand))
-                    .ToolTip("Export selected events for calendar apps in iCalendar format."),
-                ExportButton(Glyphs.Html + "html", nameof(ExportToHtmlCommand))
-                    .ToolTip("Export selected events as a rich HTML document to open and filter in a browser."
-                        + "\nProbably the most end-user friendly option." + configurableInSettings),
-                ExportButton(Glyphs.Text + "txt", nameof(ExportToTextCommand))
-                    .ToolTip("Export selected events as a plain text with configurable alignment."
-                        + "\nAn easily digestable format without frills or noise, e.g. for text messages."
-                        + " Also your best choice if you want to re-format the events in a text editor before sharing."
-                        + configurableInSettings),
-                ExportButton("▦ csv", nameof(ExportToCsvCommand))
-                    .ToolTip("Export selected events as a table for spreadsheet apps in comma-separated value CSV format."));
-
-            if (!isDesktop) export.View.BindVisible(nameof(ViewSelectedOnly));
+            var export = Btn(Glyphs.Export, nameof(ShareSelectedEventsCommand)).ToolTip("share selected events")
+                .BindVisible(isDesktop ? nameof(HasSelection) : nameof(ViewSelectedOnly));
 
             bool UseVerticalEventLayout() => Width < 800; // whether to stack image on top of event details
             var useVerticalEventLayout = UseVerticalEventLayout(); // caches the last result
@@ -304,7 +280,7 @@ public partial class EventList : ObservableObject
             var footer = HWrap(new Thickness(0, 0, right: 5, 0));
             footer.AddChild(pastEvents.View);
             footer.AddChild(SelectionMenu(model));
-            footer.AddChild(export.View);
+            footer.AddChild(export);
 
             Content = Grd(cols: [Star], rows: [Auto, Star, Auto], spacing: 5,
                 header.View, list.Row(1), footer.View.Row(2));
@@ -315,9 +291,6 @@ public partial class EventList : ObservableObject
 
         private static Label OptionalFormattedLabel(string property)
             => BndFmtLbl(property, converter: textChunkConverter).BindVisibleToNotNullOf(property);
-
-        private static Button ExportButton(string text, string command)
-            => Btn(text, command).BindVisible(nameof(HasSelection));
 
         private static Button OpenUrlButton(string text, string urlProperty, object source)
             => Btn(text, nameof(OpenUrlCommand), source: source, parameterPath: urlProperty)

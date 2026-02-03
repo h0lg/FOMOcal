@@ -68,6 +68,34 @@ partial class EventList
         ReapplySelection(); // because selected changed
     }
 
+    [RelayCommand]
+    private async Task ShareSelectedEventsAsync()
+    {
+        if (!HasSelection) return;
+        ShareEventsPage export = new();
+        var format = await export.GetResult(navigation);
+        if (format == null) return;
+        var events = selected.GetEvents();
+
+        switch (format.Value)
+        {
+            case ShareEventsPage.Format.iCalendar:
+                await events.ExportToIcal();
+                break;
+            case ShareEventsPage.Format.HTML:
+                await events.ExportToHtml();
+                break;
+            case ShareEventsPage.Format.text:
+                await events.ExportToText(Export.TextAlignedWithHeaders);
+                break;
+            case ShareEventsPage.Format.CSV:
+                await events.ExportToCsv();
+                break;
+            default:
+                break;
+        }
+    }
+
     /// <summary>Syncs the visible <see cref="SelectedEvents"/> with <see cref="selected"/> after the latter changed.
     /// Restores the remembered selection after <see cref="FilteredEvents"/> changed,
     /// clearing selection of visible elements.</summary>
