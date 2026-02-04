@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FomoCal.Gui.Resources;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
@@ -158,6 +159,15 @@ public partial class VenueEditor : ObservableObject
 
     private void Delete() => SetActionTaken(Actions.Deleted);
 
+    [RelayCommand]
+    private async Task CancelFromNavBarAsync()
+    {
+        SignalCancelation();
+        await navigation.PopAsync(); // to unify with OnBackButtonPressed behavior; awaiter expects popped navigation stack
+    }
+
+    private void SignalCancelation() => SetActionTaken(null);
+
     private void SetActionTaken(Actions? action)
     {
         if (!awaiter.Task.IsCompleted) awaiter.SetResult(action);
@@ -172,6 +182,9 @@ public partial class VenueEditor : ObservableObject
 
         public Page(VenueEditor model)
         {
+            // unify NavBar Back button with OnBackButtonPressed behavior triggered via key or swipe gesture on Android
+            Shell.SetBackButtonBehavior(this, new BackButtonBehavior { Command = model.CancelFromNavBarCommand });
+
             this.model = model;
             BindingContext = model;
             Title = model.isDeletable ? "Edit " + model.originalVenueName : "Add a venue";
@@ -180,12 +193,6 @@ public partial class VenueEditor : ObservableObject
 
             ToolbarItems.Add(new ToolbarItem("💾 Save", null, model.Save)
                 .Bind(MenuItem.IsEnabledProperty, nameof(HasRequiredInfo)));
-
-            ToolbarItems.Add(new ToolbarItem(Glyphs.Back + "Cancel", null, async () =>
-            {
-                SignalCancelation();
-                await Navigation.PopAsync();
-            }));
 
             if (model.isDeletable) ToolbarItems.Add(new ToolbarItem(
                 Glyphs.Delete + " Delete", null, model.Delete, ToolbarItemOrder.Secondary));
@@ -304,10 +311,8 @@ public partial class VenueEditor : ObservableObject
 
         protected override bool OnBackButtonPressed()
         {
-            SignalCancelation();
+            model!.SignalCancelation();
             return base.OnBackButtonPressed();
         }
-
-        private void SignalCancelation() => model!.SetActionTaken(null);
     }
 }
