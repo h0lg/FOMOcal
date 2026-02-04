@@ -158,14 +158,6 @@ public partial class VenueEditor : ObservableObject
     }
 
     private void Delete() => SetActionTaken(Actions.Deleted);
-
-    [RelayCommand]
-    private async Task CancelFromNavBarAsync()
-    {
-        SignalCancelation();
-        await navigation.PopAsync(); // to unify with OnBackButtonPressed behavior; awaiter expects popped navigation stack
-    }
-
     private void SignalCancelation() => SetActionTaken(null);
 
     private void SetActionTaken(Actions? action)
@@ -182,9 +174,6 @@ public partial class VenueEditor : ObservableObject
 
         public Page(VenueEditor model)
         {
-            // unify NavBar Back button with OnBackButtonPressed behavior triggered via key or swipe gesture on Android
-            Shell.SetBackButtonBehavior(this, new BackButtonBehavior { Command = model.CancelFromNavBarCommand });
-
             this.model = model;
             BindingContext = model;
             Title = model.isDeletable ? "Edit " + model.originalVenueName : "Add a venue";
@@ -309,10 +298,11 @@ public partial class VenueEditor : ObservableObject
                 return (selector, picksDescendant);
             });
 
-        protected override bool OnBackButtonPressed()
+        protected override void OnDisappearing()
         {
-            model!.SignalCancelation();
-            return base.OnBackButtonPressed();
+            base.OnDisappearing();
+            // ensure a cancelation result is returned if the user navigates back manually without saving or deleting
+            model.SignalCancelation();
         }
     }
 }
