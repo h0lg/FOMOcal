@@ -8,8 +8,7 @@ public partial class ShareEventsPage : PickerPage<ShareEventsPage.Format?>
     internal ShareEventsPage()
     {
         Title = Glyphs.Export + " Share selected events";
-        ToolbarItems.Add(new ToolbarItem(Glyphs.Back + "Cancel", null, () => SetResult(null)));
-        Shell.SetNavBarIsVisible(this, true); // to show Title and explicit cancel ToolbarItem
+        if (Shell.Current != null) Shell.SetNavBarIsVisible(this, true); // to show Title and Back Button for canceling
 
         const string configurableInSettings = "\nConfigure included event properties in the 🛠 Settings.";
 
