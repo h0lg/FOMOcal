@@ -13,10 +13,21 @@ partial class EventList
 
     [ObservableProperty] public partial IList<object> SelectedEvents { get; set; } = [];
 
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(ToggleViewMode))]
+    [ObservableProperty,
+        NotifyPropertyChangedFor(nameof(EventCounters)),
+        NotifyPropertyChangedFor(nameof(SelectedEventCounters))]
     public partial bool ViewSelectedOnly { get; set; }
 
-    public string ToggleViewMode => ViewSelectedOnly ? "👁 all" : $"👁 {SelectedEventCount} selected";
+    public string EventCounters =>
+        !ViewSelectedOnly && FilteredEvents.Count < allEvents?.Count // has filtered all events view
+            ? $"{FilteredEvents.Count} of {allEvents?.Count}"
+            : $"{allEvents?.Count ?? 0} total";
+
+    public string SelectedEventCounters =>
+        ViewSelectedOnly && FilteredEvents.Count < SelectedEventCount // has filtered selected only view
+            ? $"{FilteredEvents.Count} of {SelectedEventCount} selected"
+            : $"{SelectedEventCount} selected";
+
     public int SelectedEventCount => selected.Count;
     public bool HasSelection => SelectedEventCount > 0;
 
@@ -28,7 +39,7 @@ partial class EventList
         if (forSelectedEvents) OnPropertyChanged(nameof(SelectedEvents));
         OnPropertyChanged(nameof(SelectedEventCount));
         OnPropertyChanged(nameof(HasSelection));
-        if (!ViewSelectedOnly) OnPropertyChanged(nameof(ToggleViewMode));
+        OnPropertyChanged(nameof(SelectedEventCounters));
     }
 
     private async Task DeleteSelectedEventsAsync()
@@ -148,10 +159,21 @@ partial class EventList
 
     partial class View
     {
-        private static HorizontalStackLayout SelectionMenu(EventList model)
-            => HStack(5,
-                new Button().Bind(Button.TextProperty, nameof(ToggleViewMode)).BindVisible(nameof(HasSelection))
-                    .ToolTip("toggle between viewing all and only selected events")
-                    .TapGesture(() => model.ViewSelectedOnly = !model.ViewSelectedOnly)).View;
+        private static FlexLayout SelectionMenu()
+        {
+            FlexLayout layout = HWrap(5,
+                BndLbl(nameof(EventCounters)),
+                Swtch(nameof(ViewSelectedOnly)).Wrapper.BindVisible(nameof(HasSelection))
+                    .ToolTip("toggle between viewing all and only selected events"),
+                HStack(5, BndLbl(nameof(SelectedEventCounters)),
+                    Btn(Glyphs.Export + " Share", nameof(ShareSelectedEventsCommand)).ToolTip("share selected events"))
+                    .View.BindVisible(nameof(HasSelection)),
+                Lbl(" - tap an event to select it")
+                    .StyleClass(Styles.Label.Demoted).Margins(left: 5)
+                    .BindVisible(nameof(HasSelection), converter: Converters.Not)).View;
+
+            layout.JustifyContent = Microsoft.Maui.Layouts.FlexJustify.Center;
+            return layout;
+        }
     }
 }

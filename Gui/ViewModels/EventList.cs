@@ -94,6 +94,7 @@ public partial class EventList : ObservableObject
     /// In either way, the complete event collection is expected.</summary>
     private Task OnEventsUpdated(HashSet<Event>? events = null)
     {
+        OnPropertyChanged(nameof(EventCounters)); // uses allEvents count
         ApplyFilter(); // re-apply filter after events updated to refresh CollectionView
         ReapplySelection(); // because FilteredEvents changed
         return eventRepo.SaveCompleteAsync(events ?? GetEvents());
@@ -113,12 +114,14 @@ public partial class EventList : ObservableObject
 
     private async Task ShowMenu()
     {
-        const string selectAll = "☑ Select all filtered",
-            deselectAll = "☐ Deselect all filtered",
-            showPast = "👁 Show 🕞 past",
-            deleteSelected = Glyphs.Delete + " Delete ☑ selected",
+        const string showPast = "👁 Show 🕞 past",
+            deleteSelected = Glyphs.Delete + " Delete all ☑ selected",
             hidePast = "🙈 Hide 🕞 past",
             deletePast = Glyphs.Delete + " Delete 🕞 past";
+
+        string inView = ViewSelectedOnly ? SelectedEventCounters : EventCounters,
+            selectAll = Glyphs.Select + "Select all " + inView,
+            deselectAll = Glyphs.Deselect + "Deselect all " + inView;
 
         List<string> options = [];
 
@@ -135,15 +138,12 @@ public partial class EventList : ObservableObject
 
         var choice = await App.CurrentPage.DisplayActionSheetAsync("Gigs", null, null, [.. options]);
 
-        switch (choice)
-        {
-            case selectAll: SelectFilteredEvents(); break;
-            case deselectAll: DeselectFilteredEvents(); break;
-            case deleteSelected: await DeleteSelectedEventsAsync(); break;
-            case showPast: ShowPastEvents = true; break;
-            case hidePast: ShowPastEvents = false; break;
-            case deletePast: await CleanUpPastEventsAsync(); break;
-        }
+        if (choice == selectAll) SelectFilteredEvents();
+        else if (choice == deselectAll) DeselectFilteredEvents();
+        else if (choice == deleteSelected) await DeleteSelectedEventsAsync();
+        else if (choice == showPast) ShowPastEvents = true;
+        else if (choice == hidePast) ShowPastEvents = false;
+        else if (choice == deletePast) await CleanUpPastEventsAsync();
     }
 
     [RelayCommand] private Task EditVenueAsync(EventView view) => venues.EditAsync(view.Model.Venue, navigation);
@@ -173,9 +173,6 @@ public partial class EventList : ObservableObject
 
             var menuTrigger = Lbl("︙").StyleClass(Styles.Label.Headline).Bold()
                 .TapGesture(async () => await model.ShowMenu());
-
-            var export = Btn(Glyphs.Export, nameof(ShareSelectedEventsCommand)).ToolTip("share selected events")
-                .BindVisible(isDesktop ? nameof(HasSelection) : nameof(ViewSelectedOnly));
 
             bool UseVerticalEventLayout() => Width < 800; // whether to stack image on top of event details
             var useVerticalEventLayout = UseVerticalEventLayout(); // caches the last result
@@ -305,13 +302,8 @@ public partial class EventList : ObservableObject
                 searchBar.Column(1),
                 menuTrigger.CenterVertical().Margins(left: 5, right: 5).Column(2));
 
-            var footer = HWrap(new Thickness(0, 0, right: 5, 0));
-            footer.AddChild(SelectionMenu(model));
-            footer.AddChild(export);
-            footer.AddChild(menuTrigger);
-
             Content = Grd(cols: [Star], rows: [Auto, Auto, Star, Auto], spacing: 5,
-                header, recentSearches.Row(1), list.Row(2), footer.View.Row(3));
+                header, recentSearches.Row(1), list.Row(2), SelectionMenu().Row(3));
         }
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)

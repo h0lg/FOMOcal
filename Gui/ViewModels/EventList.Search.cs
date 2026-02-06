@@ -47,6 +47,7 @@ partial class EventList
         }
 
         suspendSelectionChange = false;
+        OnPropertyChanged(ViewSelectedOnly ? nameof(SelectedEventCounters) : nameof(EventCounters));
     }
 
     private void SaveSearch()

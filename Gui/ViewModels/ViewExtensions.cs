@@ -21,6 +21,8 @@ internal static class Glyphs
         Scrape = "⛏",
         Settings = "🛠",
         Comment = "💬",
+        Select = "☑ ",
+        Deselect = "☐ ",
         Link = "🔗",
         Export = "🥡",
         Add = "➕",
