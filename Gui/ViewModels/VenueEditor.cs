@@ -191,6 +191,14 @@ public partial class VenueEditor : ObservableObject
             if (Shell.Current != null) Shell.SetTabBarIsVisible(this, false);
             Shell.SetNavBarIsVisible(this, true); // to show ToolbarItems and Title
 
+            // Progress Indicator
+            var progress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(Progress))
+                .ToolTip("your progress towards the minimum required configuration to make this venue scrapable");
+
+            Shell.SetTitleView(this, VStack(null,
+                Lbl(Title).StyleClass(Styles.Label.Headline),
+                progress));
+
             ToolbarItems.Add(new ToolbarItem("💾 Save", null, model.Save)
                 .Bind(MenuItem.IsEnabledProperty, nameof(HasRequiredInfo)));
 
@@ -216,14 +224,10 @@ public partial class VenueEditor : ObservableObject
             // Step 4: Additional Event Details
             var optionalEventFields = OptionalEventFields().BindVisible(nameof(ShowOptionalEventFields));
 
-            // Progress Indicator
-            var progress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(Progress))
-                .ToolTip("your progress towards the minimum required configuration to make this venue scrapable");
-
             form = new ScrollView
             {
                 Content = VStack(20, venueFields, eventContainer,
-                    requiredEventFields, optionalEventFields, progress,
+                    requiredEventFields, optionalEventFields,
                     ScrapeLogs(model).BindVisible(nameof(ShowOptionalEventFields)),
                     ScriptLog(model).BindVisible(nameof(ShowOptionalEventFields)))
                     .Padding(20)
