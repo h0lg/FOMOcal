@@ -100,15 +100,9 @@ internal static class Widgets
         void AddChild(View child) => layout.Children.Add(child.CenterVertical());
     }
 
-    internal static (FlexLayout View, Action<View> AddChild) HWrap(params View[] children) => HWrap(null, children);
-
-    internal static (FlexLayout View, Action<View> AddChild) HWrap(Thickness? childMargin = null, params View[] children)
+    internal static (FlexLayout View, Action<View> AddChild) Flx(Thickness? childMargin = null, params View[] children)
     {
-        FlexLayout layout = new()
-        {
-            Wrap = FlexWrap.Wrap,
-            AlignItems = FlexAlignItems.Center
-        };
+        FlexLayout layout = new() { AlignItems = FlexAlignItems.Center };
 
         foreach (var child in children) AddChild(child);
         return (layout, AddChild);
@@ -120,5 +114,14 @@ internal static class Widgets
             if (childMargin.HasValue && child.Margin == default)
                 child.Margin = childMargin.Value;
         }
+    }
+
+    internal static (FlexLayout View, Action<View> AddChild) HWrap(params View[] children) => HWrap(null, children);
+
+    internal static (FlexLayout View, Action<View> AddChild) HWrap(Thickness? childMargin = null, params View[] children)
+    {
+        var (view, addChild) = Flx(childMargin, children);
+        view.Wrap = FlexWrap.Wrap;
+        return (view, addChild);
     }
 }

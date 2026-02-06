@@ -17,7 +17,7 @@ partial class EventList
 
     private void ApplyFilter()
     {
-        CanDeletePastEvents = ShowPastEvents && allEvents!.Any(e => e.IsPast);
+        hasPastEvents = allEvents!.Any(e => e.IsPast);
         var filtered = ViewSelectedOnly ? selected : ShowPastEvents ? allEvents! : allEvents!.Where(e => !e.IsPast);
         string[] searchTerms;
 

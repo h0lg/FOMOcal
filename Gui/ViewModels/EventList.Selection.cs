@@ -31,7 +31,6 @@ partial class EventList
         if (!ViewSelectedOnly) OnPropertyChanged(nameof(ToggleViewMode));
     }
 
-    [RelayCommand]
     private async Task DeleteSelectedEventsAsync()
     {
         bool isConfirmed = await App.CurrentPage.DisplayAlertAsync("Confirm Deletion",
@@ -50,21 +49,20 @@ partial class EventList
         await OnEventsUpdated();
     }
 
-    [RelayCommand]
-    private void SelectAllEvents()
+    private void SelectFilteredEvents()
     {
-        // if all visisble are selected, toggle selection, de-selecting visible
-        if (FilteredEvents.All(selected.Contains))
-        {
-            foreach (var evt in FilteredEvents)
-                selected.Remove(evt);
+        foreach (var evt in FilteredEvents)
+            selected.Add(evt);
 
-            SwitchBackToViewingAllIfSelectionIsEmpty();
-        }
-        else // otherwise select all visible
-            foreach (var evt in FilteredEvents)
-                selected.Add(evt);
+        ReapplySelection(); // because selected changed
+    }
 
+    private void DeselectFilteredEvents()
+    {
+        foreach (var evt in FilteredEvents)
+            selected.Remove(evt);
+
+        SwitchBackToViewingAllIfSelectionIsEmpty();
         ReapplySelection(); // because selected changed
     }
 
@@ -152,12 +150,8 @@ partial class EventList
     {
         private static HorizontalStackLayout SelectionMenu(EventList model)
             => HStack(5,
-                Btn("✨ de/select all", nameof(SelectAllEventsCommand))
-                    .ToolTip("...events included by the filter in the list below. Or tap and toggle them separately."),
                 new Button().Bind(Button.TextProperty, nameof(ToggleViewMode)).BindVisible(nameof(HasSelection))
                     .ToolTip("toggle between viewing all and only selected events")
-                    .TapGesture(() => model.ViewSelectedOnly = !model.ViewSelectedOnly),
-                Btn(Glyphs.Delete, nameof(DeleteSelectedEventsCommand)).BindVisible(nameof(ViewSelectedOnly))
-                    .ToolTip("remove all selected events")).View;
+                    .TapGesture(() => model.ViewSelectedOnly = !model.ViewSelectedOnly)).View;
     }
 }

@@ -13,9 +13,9 @@ public partial class EventList : ObservableObject
     private readonly EventRepository eventRepo;
     private readonly INavigation navigation;
     private HashSet<EventView>? allEvents;
+    private bool hasPastEvents;
 
     [ObservableProperty] public partial bool ShowPastEvents { get; set; }
-    [ObservableProperty] public partial bool CanDeletePastEvents { get; set; }
 
     public EventList(EventRepository eventRepo, VenueCollection venues, INavigation navigation)
     {
@@ -105,11 +105,45 @@ public partial class EventList : ObservableObject
     private static async Task OpenUrlAsync(string url)
         => await WebViewPage.OpenUrlAsync(url);
 
-    [RelayCommand]
-    private async Task CleanUpPastEvents()
+    private async Task CleanUpPastEventsAsync()
     {
         allEvents!.RemoveWhere(e => e.IsPast);
         await OnEventsUpdated();
+    }
+
+    private async Task ShowMenu()
+    {
+        const string selectAll = "☑ Select all filtered",
+            deselectAll = "☐ Deselect all filtered",
+            showPast = "👁 Show 🕞 past",
+            deleteSelected = Glyphs.Delete + " Delete ☑ selected",
+            hidePast = "🙈 Hide 🕞 past",
+            deletePast = Glyphs.Delete + " Delete 🕞 past";
+
+        List<string> options = [];
+
+        var overlap = FilteredEvents.Intersect(selected).ToArray();
+        if (overlap.Length < FilteredEvents.Count) options.Add(selectAll); // allow select all if not all are selected
+        if (0 < overlap.Length) options.Add(deselectAll); // allow deselect all if any are selected
+        if (HasSelection) options.Add(deleteSelected);
+
+        if (hasPastEvents)
+        {
+            options.Add(ShowPastEvents ? hidePast : showPast);
+            options.Add(deletePast);
+        }
+
+        var choice = await App.CurrentPage.DisplayActionSheetAsync("Gigs", null, null, [.. options]);
+
+        switch (choice)
+        {
+            case selectAll: SelectFilteredEvents(); break;
+            case deselectAll: DeselectFilteredEvents(); break;
+            case deleteSelected: await DeleteSelectedEventsAsync(); break;
+            case showPast: ShowPastEvents = true; break;
+            case hidePast: ShowPastEvents = false; break;
+            case deletePast: await CleanUpPastEventsAsync(); break;
+        }
     }
 
     [RelayCommand] private Task EditVenueAsync(EventView view) => venues.EditAsync(view.Model.Venue, navigation);
@@ -137,14 +171,8 @@ public partial class EventList : ObservableObject
             bool isDesktop = DeviceInfo.Idiom == DeviceIdiom.Desktop;
             (SearchBar searchBar, ScrollView recentSearches) = BuildSearch(model);
 
-            var pastEvents = HStack(5,
-                Btn(Glyphs.Delete, nameof(CleanUpPastEventsCommand))
-                    .BindVisible(nameof(CanDeletePastEvents))
-                    .ToolTip("Remove old gig pasta"),
-
-                Lbl("🕞 Past").Bold()
-                    .TapGesture(() => model.ShowPastEvents = !model.ShowPastEvents),
-                Swtch(nameof(ShowPastEvents)).Wrapper);
+            var menuTrigger = Lbl("︙").StyleClass(Styles.Label.Headline).Bold()
+                .TapGesture(async () => await model.ShowMenu());
 
             var export = Btn(Glyphs.Export, nameof(ShareSelectedEventsCommand)).ToolTip("share selected events")
                 .BindVisible(isDesktop ? nameof(HasSelection) : nameof(ViewSelectedOnly));
@@ -272,18 +300,18 @@ public partial class EventList : ObservableObject
                 list.ItemTemplate = eventTemplate;
             };
 
-            var header = HWrap(new Thickness(0, 0, right: 5, 0));
-            if (isDesktop) header.AddChild(Lbl("Gigs").StyleClass(Styles.Label.Headline));
-            header.AddChild(searchBar.Grow(1));
-            header.AddChild(recentSearches);
+            var header = Grd(cols: [Auto, Star, Auto], rows: [Auto], spacing: 5,
+                Lbl("Gigs").StyleClass(Styles.Label.Headline).CenterVertical().IsVisible(isDesktop),
+                searchBar.Column(1),
+                menuTrigger.CenterVertical().Margins(left: 5, right: 5).Column(2));
 
             var footer = HWrap(new Thickness(0, 0, right: 5, 0));
-            footer.AddChild(pastEvents.View);
             footer.AddChild(SelectionMenu(model));
             footer.AddChild(export);
+            footer.AddChild(menuTrigger);
 
-            Content = Grd(cols: [Star], rows: [Auto, Star, Auto], spacing: 5,
-                header.View, list.Row(1), footer.View.Row(2));
+            Content = Grd(cols: [Star], rows: [Auto, Auto, Star, Auto], spacing: 5,
+                header, recentSearches.Row(1), list.Row(2), footer.View.Row(3));
         }
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)
