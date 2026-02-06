@@ -171,9 +171,6 @@ public partial class EventList : ObservableObject
             bool isDesktop = DeviceInfo.Idiom == DeviceIdiom.Desktop;
             (SearchBar searchBar, ScrollView recentSearches) = BuildSearch(model);
 
-            var menuTrigger = Lbl("︙").StyleClass(Styles.Label.Headline).Bold()
-                .TapGesture(async () => await model.ShowMenu());
-
             bool UseVerticalEventLayout() => Width < 800; // whether to stack image on top of event details
             var useVerticalEventLayout = UseVerticalEventLayout(); // caches the last result
 
@@ -300,7 +297,7 @@ public partial class EventList : ObservableObject
             var header = Grd(cols: [Auto, Star, Auto], rows: [Auto], spacing: 5,
                 Lbl("Gigs").StyleClass(Styles.Label.Headline).CenterVertical().IsVisible(isDesktop),
                 searchBar.Column(1),
-                menuTrigger.CenterVertical().Margins(left: 5, right: 5).Column(2));
+                MenuTrigger(async () => await model.ShowMenu()).Column(2));
 
             Content = Grd(cols: [Star], rows: [Auto, Auto, Star, Auto], spacing: 5,
                 header, recentSearches.Row(1), list.Row(2), SelectionMenu().Row(3));

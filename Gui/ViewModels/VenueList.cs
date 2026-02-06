@@ -16,11 +16,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
     [RelayCommand] private Task EditVenueAsync(Venue original) => Venues.EditAsync(original, navigation);
     [RelayCommand] private Task DeleteVenueAsync(Venue venue) => Venues.DeleteAsync(venue);
 
-    [RelayCommand]
-    private void ExportVenues() => Venues.ShareFile();
-
-    [RelayCommand]
-    private async Task ImportVenues()
+    private async Task ImportVenuesAsync()
     {
         var file = await FilePicker.Default.PickAsync(new PickOptions
         {
@@ -49,8 +45,20 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
         }
     }
 
-    [RelayCommand]
-    private async Task OpenSettingsAsync() => await navigation.PushAsync(new Settings.Page(new Settings()));
+    private async Task ShowMenu()
+    {
+        const string import = "📥 Import",
+            share = Glyphs.Export + " Share",
+            openSettings = $"Open {Glyphs.Settings} Settings";
+
+        List<string> options = [import, share];
+        if (Shell.Current == null) options.Add(openSettings); // add open settings menu entry outside of shell
+        var choice = await App.CurrentPage.DisplayActionSheetAsync(Glyphs.Venue + "Venues", null, null, [.. options]);
+
+        if (choice == import) await ImportVenuesAsync();
+        else if (choice == share) Venues.ShareFile();
+        else if (choice == openSettings) await Settings.Page.GoHere(navigation);
+    }
 
     public partial class View : ContentView
     {
@@ -103,13 +111,13 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
                     };
                 }));
 
-            var importVenues = Btn("📥", nameof(ImportVenuesCommand)).ToolTip("import venues");
-            var exportVenues = Btn(Glyphs.Export, nameof(ExportVenuesCommand)).ToolTip("export venues");
             var addVenue = Btn(Glyphs.Add, nameof(AddVenueCommand)).ToolTip("add a venue");
 
             var refreshAll = Btn(Glyphs.Scrape + " dig all gigs",
                 nameof(VenueCollection.RefreshAllVenuesCommand), source: model.Venues)
                 .ToolTip("refresh events from all venues");
+
+            var menuTrigger = MenuTrigger(async () => await model.ShowMenu());
 
             var refreshAllProgress = new ProgressBar()
                 .Bind(ProgressBar.ProgressProperty, nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues)
@@ -122,20 +130,18 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
             {
                 // title display and settings access are take care of by tabs in the Shell
                 var title = Lbl(Glyphs.Venue + "Venues").StyleClass(Styles.Label.Headline).CenterVertical();
-                var openSettings = Btn(Glyphs.Settings, nameof(OpenSettingsCommand)).ToolTip("open Settings");
 
-                Content = Grd(cols: [Auto, Auto, Star, Auto, Auto], rows: [Auto, Star, Auto, Auto], spacing: 5,
-                    title.ColumnSpan(3), importVenues.Column(3), exportVenues.Column(4),
-                    list.Row(1).ColumnSpan(5),
-                    refreshAllProgress.Row(2).ColumnSpan(5),
-                    openSettings.Row(3), addVenue.Row(3).Column(1), refreshAll.Row(3).Column(3).ColumnSpan(2));
+                Content = Grd(cols: [Star, Auto], rows: [Auto, Star, Auto, Auto], spacing: 0,
+                    title, menuTrigger.Column(2).End(),
+                    list.Row(1).ColumnSpan(2),
+                    refreshAllProgress.Row(2).ColumnSpan(2),
+                    addVenue.Row(3).Start(), refreshAll.Row(3).Column(1));
             }
             else // shell layout displaying lists separately
-                Content = Grd(cols: [Auto, Auto, Auto, Star, Auto], rows: [Star, Auto, Auto], spacing: 5,
-                    list.ColumnSpan(5),
-                    refreshAllProgress.Row(1).ColumnSpan(5),
-                    addVenue.Row(2), importVenues.Row(2).Column(1), exportVenues.Row(2).Column(2),
-                    refreshAll.Row(2).Column(4));
+                Content = Grd(cols: [Auto, Star, Auto], rows: [Star, Auto, Auto], spacing: 0,
+                    list.ColumnSpan(3),
+                    refreshAllProgress.Row(1).ColumnSpan(3),
+                    addVenue.Row(2).Start(), refreshAll.Row(2).Column(1).CenterHorizontal(), menuTrigger.Row(2).Column(2));
         }
 
         private static void SwingPickaxeDuring(Button btn, ICommand cmd)

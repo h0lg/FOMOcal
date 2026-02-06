@@ -124,4 +124,7 @@ internal static class Widgets
         view.Wrap = FlexWrap.Wrap;
         return (view, addChild);
     }
+
+    internal static Label MenuTrigger(Action onTap)
+        => Lbl("︙").StyleClass(Styles.Label.Headline).CenterVertical().Paddings(left: 5, right: 5).Bold().TapGesture(onTap);
 }

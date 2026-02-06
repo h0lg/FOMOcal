@@ -136,6 +136,8 @@ public partial class Settings : ObservableObject
                 .Paddings(10, top: 0, 10, 10);
         }
 
+        internal static Task GoHere(INavigation navigation) => navigation.PushAsync(new Page(new Settings()));
+
         private Label SubHeadline(string text)
         {
             Label label = Lbl(text).StyleClass(Styles.Label.SubHeadline).CenterVertical();
