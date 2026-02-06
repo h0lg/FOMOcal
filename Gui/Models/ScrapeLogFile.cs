@@ -11,9 +11,6 @@ public interface ISaveScrapeLogFiles
 
 internal class DefaultScrapeLogFileSaver : ISaveScrapeLogFiles
 {
-    public Task<string?> SaveScrapeLogAsync(VenueScrapeContext venueScrape)
-        => ScrapeLogFile.Save(venueScrape.Venue, venueScrape.GetScrapeLog());
-
     public Task<string?> SaveScrapeLogAsync(Venue venue, string log) => ScrapeLogFile.Save(venue, log);
 }
 

@@ -107,7 +107,6 @@ internal static class Widgets
         FlexLayout layout = new()
         {
             Wrap = FlexWrap.Wrap,
-            //JustifyContent = FlexJustify.SpaceAround,
             AlignItems = FlexAlignItems.Center
         };
 
