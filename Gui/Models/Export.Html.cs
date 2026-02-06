@@ -1,5 +1,6 @@
 ﻿using System.Net.Mime;
 using System.Reflection;
+using System.Text;
 using AngleSharp;
 using AngleSharp.Html.Dom;
 
@@ -113,6 +114,7 @@ img { max-height: 100px; }";
         initScript.Text = $"new simpleDatatables.DataTable('#{table.Id}')";
         doc.Body!.AppendChild(initScript);
 
-        await ExportFile(fileTypeLabel: "HTML", contents: doc.ToHtml(), extension: "html", contentType: MediaTypeNames.Text.Html);
+        await ExportFile(fileTypeLabel: "HTML", contents: doc.ToHtml(),
+            extension: "html", contentType: MediaTypeNames.Text.Html, Encoding.UTF8);
     }
 }

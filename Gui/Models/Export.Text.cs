@@ -68,6 +68,7 @@ internal static partial class Export
             sb.AppendLine();
         }
 
-        await ExportFile(fileTypeLabel: "Text", contents: sb.ToString(), extension: "txt", contentType: MediaTypeNames.Text.Plain);
+        await ExportFile(fileTypeLabel: "Text", contents: sb.ToString(),
+            extension: "txt", contentType: MediaTypeNames.Text.Plain, Encoding.UTF8);
     }
 }

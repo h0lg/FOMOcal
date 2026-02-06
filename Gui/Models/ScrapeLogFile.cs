@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
+using System.Text;
 using FomoCal.Gui;
 
 namespace FomoCal;
@@ -26,7 +27,7 @@ public static class ScrapeLogFile
         try
         {
             string filePath = GeneratePath(venue);
-            await FileHelper.WriteAsync(filePath, contents);
+            await FileHelper.WriteAsync(filePath, contents, Encoding.UTF8);
             return filePath;
         }
         catch (Exception ex)

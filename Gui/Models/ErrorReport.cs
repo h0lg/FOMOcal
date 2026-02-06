@@ -1,5 +1,6 @@
 ﻿using System.Net.Mime;
 using System.Runtime.InteropServices;
+using System.Text;
 using FomoCal.Gui;
 
 namespace FomoCal;
@@ -48,7 +49,7 @@ public static class ErrorReport
         try
         {
             var path = Path.Combine(MauiProgram.StoragePath, "error reports", $"{AppInfo.Name} error {DateTime.Now:yyyy-MM-dd HH-mm-ss}.txt");
-            await FileHelper.WriteAsync(path, report);
+            await FileHelper.WriteAsync(path, report, Encoding.UTF8);
             return (path, report);
         }
         catch (Exception ex)

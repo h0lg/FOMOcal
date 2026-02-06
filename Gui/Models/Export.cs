@@ -33,18 +33,20 @@ internal static partial class Export
                 return value?.ToString() ?? "";
             }).Join(","));
 
-        await ExportFile("CSV", contents: sb.ToString(), extension: "csv", contentType: MediaTypeNames.Text.Csv);
+        await ExportFile("CSV", contents: sb.ToString(),
+            extension: "csv", contentType: MediaTypeNames.Text.Csv, Encoding.UTF8);
     }
 
-    private static async Task ExportFile(string fileTypeLabel, string contents, string extension, string contentType)
+    private static async Task ExportFile(string fileTypeLabel, string contents,
+        string extension, string contentType, Encoding? encoding = null)
     {
         string filePath = GetExportFilePath(extension);
-        await FileHelper.WriteAsync(filePath, contents);
+        await FileHelper.WriteAsync(filePath, contents, encoding);
 
         const string share = "Share or copy the file.", open = "Open - to import or read it.";
 
-        var choice = await App.CurrentPage.DisplayActionSheetAsync($"{fileTypeLabel} export generated.", null, null,
-            share, open, "Ignore it.");
+        var choice = await App.CurrentPage.DisplayActionSheetAsync(
+            $"{fileTypeLabel} export generated.", null, null, share, open, "Ignore it.");
 
         if (choice == open) await FileHelper.OpenFileAsync(filePath, $"Open {fileTypeLabel} export", contentType);
         else if (choice == share) ShareFile(fileTypeLabel, filePath, contentType);

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace FomoCal;
@@ -171,10 +172,12 @@ internal static class EnumExtensions
 
 internal static class FileHelper
 {
-    internal static async Task WriteAsync(string filePath, string contents)
+    internal static async Task WriteAsync(string filePath, string contents, Encoding? encoding = null)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-        await File.WriteAllTextAsync(filePath, contents);
+
+        if (encoding == null) await File.WriteAllTextAsync(filePath, contents); // saves UTF-8 w/o BOM by default
+        else await File.WriteAllTextAsync(filePath, contents, encoding);
     }
 
     internal static void ShareFile(string filePath, string contentType, string title)
