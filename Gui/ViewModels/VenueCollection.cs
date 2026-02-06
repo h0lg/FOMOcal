@@ -128,8 +128,7 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
         venues ??= [.. Observable];
         Observable.Clear();
 
-        // order unscraped (new) venues on top, then by latest refresh
-        foreach (var venue in venues.OrderByDescending(v => v.LastRefreshed ?? DateTime.Now))
+        foreach (var venue in venues.OrderBy(v => v.Name))
             Observable.Add(venue);
     }
 
