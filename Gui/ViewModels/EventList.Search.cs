@@ -34,14 +34,14 @@ partial class EventList
         }
         else searchTerms = [];
 
-        foreach (var evt in filtered)
-            evt.SetSearchTerms(searchTerms);
-
         suspendSelectionChange = true; // while FilteredEvents are modified, which reset the selection
         FilteredEvents.Clear();
 
         foreach (var evt in filtered.OrderBy(e => e.Date))
+        {
+            evt.SetSearchTerms(searchTerms);
             FilteredEvents.Add(evt);
+        }
 
         suspendSelectionChange = false;
     }
