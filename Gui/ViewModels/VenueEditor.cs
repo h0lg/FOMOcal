@@ -223,7 +223,9 @@ public partial class VenueEditor : ObservableObject
             form = new ScrollView
             {
                 Content = VStack(20, venueFields, eventContainer,
-                    requiredEventFields, optionalEventFields, progress, ScrapeLogs(model), ScriptLog(model))
+                    requiredEventFields, optionalEventFields, progress,
+                    ScrapeLogs(model).BindVisible(nameof(ShowOptionalEventFields)),
+                    ScriptLog(model).BindVisible(nameof(ShowOptionalEventFields)))
                     .Padding(20)
             };
 
