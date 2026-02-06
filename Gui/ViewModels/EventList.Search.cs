@@ -23,7 +23,7 @@ partial class EventList
 
         if (SearchText.IsSignificant())
         {
-            searchTerms = [.. SearchText.Split("|", StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim())];
+            searchTerms = [.. SearchText.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim())];
 
             filtered = filtered.Where(e => e.Model.Name.ContainsAny(searchTerms)
                 || e.Model.SubTitle?.ContainsAny(searchTerms) == true
@@ -69,7 +69,7 @@ partial class EventList
     {
         private static (SearchBar searchBar, ScrollView recentSearches) BuildSearch(EventList model)
         {
-            var searchBar = new SearchBar() { Placeholder = "filter by pipe | separated | terms" }
+            var searchBar = new SearchBar() { Placeholder = "filter by comma,separated,terms" }
                 .Bind(SearchBar.TextProperty, nameof(SearchText))
                 .ToolTip("[Enter] or tap the 🔎 icon to remember the current search for the future");
 
