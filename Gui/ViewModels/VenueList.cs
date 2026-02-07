@@ -7,7 +7,7 @@ using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
 
-public partial class VenueList(INavigation navigation, VenueCollection venues) : ObservableObject
+public partial class VenueList(INavigation navigation, VenueCollection venues, EventRepository eventRepo) : ObservableObject
 {
     private readonly VenueCollection Venues = venues;
     private readonly INavigation navigation = navigation;
@@ -26,7 +26,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
         if (Shell.Current == null) options.Add(openSettings); // add open settings menu entry outside of shell
         var choice = await App.CurrentPage.DisplayActionSheetAsync(Glyphs.Venue + "Venues", null, null, [.. options]);
 
-        if (choice == import) await Venues.Import();
+        if (choice == import) await Venues.Import(navigation, eventRepo);
         else if (choice == share) Venues.ShareFile();
         else if (choice == openSettings) await Settings.Page.GoHere(navigation);
     }
@@ -164,7 +164,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
         public Page(VenueCollection venues, EventRepository eventRepo)
         {
             Title = "Venues";
-            VenueList venueList = new(Navigation, venues);
+            VenueList venueList = new(Navigation, venues, eventRepo);
             venues.EventsScraped += async (venue, events) => await eventRepo.AddOrUpdateAsync(venue, events);
             venues.Renamed += async (oldName, newName) => await eventRepo.RenameVenueAsync(oldName, newName);
             venues.Deleted += async (venueName) => await eventRepo.DeleteVenueAsync(venueName);

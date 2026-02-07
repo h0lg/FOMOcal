@@ -10,7 +10,7 @@ public partial class MainPage : ContentPage
     public MainPage(VenueCollection venues, EventRepository eventRepo)
     {
         EventList eventList = new(eventRepo, venues, Navigation);
-        VenueList venueList = new(Navigation, venues);
+        VenueList venueList = new(Navigation, venues, eventRepo);
         venues.EventsScraped += eventList.RefreshWith;
         venues.Renamed += eventList.RenameVenue;
         venues.Deleted += eventList.DeleteForVenue;

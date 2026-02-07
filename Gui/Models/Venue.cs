@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
@@ -54,7 +53,7 @@ public class Venue
     internal string Serialize() => JsonSerializer.Serialize(this);
     internal Venue DeepCopy() => JsonSerializer.Deserialize<Venue>(Serialize())!;
 
-    public class EventScrapeJob
+    public class EventScrapeJob : IHaveAComment
     {
         public required string Selector { get; set; }
         public bool LazyLoaded { get; set; }
@@ -153,6 +152,11 @@ public class Venue
     }
 }
 
+public interface IHaveAComment
+{
+    string? Comment { get; set; }
+}
+
 public static class VenueExtensions
 {
     internal static T Migrate<T>(this T venues) where T : IEnumerable<Venue>
@@ -165,25 +169,6 @@ public static class VenueExtensions
                 job.Replace = StringExtensions.MigrateInlinedReplacements(job.Replace);
 
         return venues;
-    }
-
-    internal static void Import(this Collection<Venue> existing, HashSet<Venue> imported)
-    {
-        foreach (var import in imported)
-        {
-            var local = existing.SingleOrDefault(v => v.ProgramUrl == import.ProgramUrl);
-
-            if (local != null)
-            {
-                if (import.Event.Equals(local.Event)) continue;
-                import.Name += $" (imported {DateTime.Now:g})";
-            }
-
-            import.LastRefreshed = null;
-            import.LastEventCount = null;
-            import.SaveScrapeLogs = false;
-            existing.Add(import);
-        }
     }
 
     public static bool RequiresNextPageSelector(this PagingStrategy strategy)

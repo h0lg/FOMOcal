@@ -56,8 +56,8 @@ internal static class Widgets
         };
     }
 
-    internal static Label BndLbl(string path = ".", string? stringFormat = null, object? source = null)
-        => new Label().Bind(Label.TextProperty, path, stringFormat: stringFormat, source: source);
+    internal static Label BndLbl(string path = ".", string? stringFormat = null, object? source = null, IValueConverter? converter = null)
+        => new Label().Bind(Label.TextProperty, path, converter: converter, stringFormat: stringFormat, source: source);
 
     internal static Label BndFmtLbl(string path = ".", IValueConverter? converter = null)
         => new Label().Bind(Label.FormattedTextProperty, path, converter: converter);

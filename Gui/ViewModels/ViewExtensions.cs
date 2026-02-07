@@ -53,7 +53,9 @@ internal static class Styles
 
     internal static class Border
     {
-        internal static string RoundedSection = GetName();
+        internal static string RoundedSection = GetName(),
+            Error = GetName(),
+            ScrapedValue = GetName();
     }
 
     internal static class RadioButton
@@ -122,6 +124,10 @@ internal static partial class ViewExtensions
 
     internal static T BindVisible<T>(this T vis, BindingBase binding1,
         Func<ValueTuple<bool, bool>, bool> predicate, BindingBase binding2) where T : VisualElement
+        => vis.BindVisible<T, bool, bool>(binding1, binding2, predicate);
+
+    internal static Tvis BindVisible<Tvis, Tbinding1, Tbinding2>(this Tvis vis, BindingBase binding1,
+        BindingBase binding2, Func<ValueTuple<Tbinding1?, Tbinding2?>, bool> predicate) where Tvis : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, binding1, binding2, convert: predicate);
 
     /// <summary>Binds the visibility of <paramref name="vis"/> to whether
@@ -139,6 +145,21 @@ internal static partial class ViewExtensions
     /// the reference typed <paramref name="property"/> of the current binding context is not null.</summary>
     internal static T BindVisibleToNotNullOf<T>(this T vis, string property) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, property, converter: Converters.NotNull);
+
+    /// <summary>Binds the <see cref="RadioButtonGroup.SelectedValueProperty"/>
+    /// to the given <paramref name="layout"/> and <paramref name="pathToSelectedValue"/>.</summary>
+    /// <param name="pathToGroupName">The unique group name to bind to - for use inside <see cref="DataTemplate"/>s.</param>
+    internal static T BindRadioButtonGroupSelectedValue<T>(this T layout, string pathToSelectedValue,
+        string? pathToGroupName = null) where T : BindableObject
+    {
+        layout.Bind(RadioButtonGroup.SelectedValueProperty, pathToSelectedValue);
+
+        // setting or binding group name seems to be required for RadioButtonGroup.SelectedValueProperty binding to work
+        if (pathToGroupName == null) RadioButtonGroup.SetGroupName(layout, pathToSelectedValue);
+        else layout.Bind(RadioButtonGroup.GroupNameProperty, pathToGroupName);
+
+        return layout;
+    }
 
     internal static Label Wrap(this Label label)
     {
@@ -260,6 +281,7 @@ internal static class Converters
     internal static FuncConverter<string, bool> IsSignificant = new(value => value.IsSignificant());
     internal static FuncConverter<object, bool> NotNull = new(value => value != null);
     internal static FuncConverter<T, bool> Predicate<T>(Func<T?, bool> predicate) => new(predicate);
+    internal static FuncConverter<Tin?, Tout?> Func<Tin, Tout>(Func<Tin?, Tout?> convert) => new(convert);
 }
 
 internal static class Converters<T> where T : struct

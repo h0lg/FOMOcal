@@ -110,13 +110,22 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
         }
     }
 
-    internal async Task Import()
+    internal async Task Import(INavigation navigation, EventRepository eventRepo)
     {
         HashSet<Venue>? imported = await VenueImport.ChooseSourceAndLoadAsync();
         if (imported == null || imported.Count < 1) return;
-        Observable.Import(imported!);
-        await SaveVenues();
+        VenueImport model = new();
+        var page = new VenueImport.Page(model);
+        var events = await eventRepo.LoadAllAsync();
+        await navigation.PushAsync(page);
+        var renames = await model.ImportAsync(Observable, imported, events); // wait for import
+
+        foreach (var rename in renames)
+            Renamed?.Invoke(rename.Key, rename.Value);
+
+        await navigation.PopAsync(); // navigate back
         RefreshList();
+        await SaveVenues();
     }
 
     internal void ShareFile() => repo.ShareFile("venues");

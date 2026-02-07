@@ -31,6 +31,30 @@
         </Setter>
     </Style>
 
+    <Style TargetType="Border" Class="Error">
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
+
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="3" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Border" Class="ScrapedValue">
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource Tertiary}}" />
+
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="3" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- style the selected item of the EventList CollectionView, see
         https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/selection?view=net-maui-9.0#change-selected-item-color -->
     <Style TargetType="Border" Class="list-event">

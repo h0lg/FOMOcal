@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace FomoCal;
 
-public partial class ScrapeJob
+public class ScrapeJob : IHaveAComment
 {
     internal const string XPathSelectorPrefix = "XPATH^";
     internal static string FormatXpathSelector(string selector) => XPathSelectorPrefix + selector;
