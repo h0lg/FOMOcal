@@ -110,8 +110,10 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
         }
     }
 
-    internal async Task Import(HashSet<Venue> imported)
+    internal async Task Import()
     {
+        HashSet<Venue>? imported = await VenueImport.ChooseSourceAndLoadAsync();
+        if (imported == null || imported.Count < 1) return;
         Observable.Import(imported!);
         await SaveVenues();
         RefreshList();

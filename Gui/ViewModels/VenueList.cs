@@ -16,35 +16,6 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
     [RelayCommand] private Task EditVenueAsync(Venue original) => Venues.EditAsync(original, navigation);
     [RelayCommand] private Task DeleteVenueAsync(Venue venue) => Venues.DeleteAsync(venue);
 
-    private async Task ImportVenuesAsync()
-    {
-        var file = await FilePicker.Default.PickAsync(new PickOptions
-        {
-            PickerTitle = "Pick a venues config",
-            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>> {
-                { DevicePlatform.Android, ["application/json"] },
-                { DevicePlatform.WinUI, [".json"] } })
-        });
-
-        if (file != null)
-        {
-            HashSet<Venue>? imported;
-
-            try
-            {
-                imported = await JsonFileStore.DeserializeFrom<HashSet<Venue>>(file.FullPath);
-            }
-            catch (Exception ex)
-            {
-                await App.CurrentPage.DisplayAlertAsync("Error importing venues", ex.Message, "OK");
-                return;
-            }
-
-            if (imported?.Count < 1) return;
-            await Venues.Import(imported!);
-        }
-    }
-
     private async Task ShowMenu()
     {
         const string import = "📥 Import",
@@ -55,7 +26,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
         if (Shell.Current == null) options.Add(openSettings); // add open settings menu entry outside of shell
         var choice = await App.CurrentPage.DisplayActionSheetAsync(Glyphs.Venue + "Venues", null, null, [.. options]);
 
-        if (choice == import) await ImportVenuesAsync();
+        if (choice == import) await Venues.Import();
         else if (choice == share) Venues.ShareFile();
         else if (choice == openSettings) await Settings.Page.GoHere(navigation);
     }

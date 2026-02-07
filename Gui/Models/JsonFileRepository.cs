@@ -68,6 +68,9 @@ public class JsonFileStore(string storagePath)
         return JsonSerializer.Deserialize<T>(json, jsonOptions);
     }
 
+    internal static ValueTask<T?> DeserializeFromAsync<T>(Stream utf8Json)
+        => JsonSerializer.DeserializeAsync<T>(utf8Json, jsonOptions);
+
     internal void ShareFile(string fileLabel, string fileName)
         => Export.ShareFile(fileLabel, GetFilePath(fileName), MediaTypeNames.Application.Json);
 }
