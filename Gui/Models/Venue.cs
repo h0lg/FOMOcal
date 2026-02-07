@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json;
 using FomoCal.Gui.Resources;
 using static FomoCal.Venue;
@@ -156,17 +157,12 @@ public static class VenueExtensions
 {
     internal static T Migrate<T>(this T venues) where T : IEnumerable<Venue>
     {
-        foreach (var venue in venues)
-        {
-            ScrapeJob[] scrapeJobs = [
-                .. typeof(EventScrapeJob).GetProperties()
-                    .Where(p => p.PropertyType.IsAssignableTo(typeof(ScrapeJob)))
-                    .Select(p => p.GetValue(venue.Event))
-                    .WithValue().Cast<ScrapeJob>()];
+        PropertyInfo[] scrapJobProperties = [.. typeof(EventScrapeJob).GetProperties()
+            .Where(p => p.PropertyType.IsAssignableTo(typeof(ScrapeJob)))];
 
-            foreach (var job in scrapeJobs)
+        foreach (var venue in venues)
+            foreach (var job in scrapJobProperties.Select(p => p.GetValue(venue.Event)).WithValue().Cast<ScrapeJob>())
                 job.Replace = StringExtensions.MigrateInlinedReplacements(job.Replace);
-        }
 
         return venues;
     }
