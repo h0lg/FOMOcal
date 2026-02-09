@@ -164,7 +164,7 @@ public partial class Settings : ObservableObject
 
         private static RadioButton ThemeVariantToggle(string label, AppTheme theme, string tooltip)
             => new RadioButton { Content = label, StyleClass = ["SingleSelectToggleButton"] }.ToolTip(tooltip)
-                .Bind(RadioButton.IsCheckedProperty, nameof(UserTheme), mode: BindingMode.TwoWay,
+                .Bind(RadioButton.IsCheckedProperty, nameof(UserTheme),
                     convert: (AppTheme t) => t == theme, convertBack: isChecked => isChecked ? theme : Theme.Get());
     }
 }
