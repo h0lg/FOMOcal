@@ -124,7 +124,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
                 .ToolTip("the progress of refreshing the events of all venues ")
                 // hide when none is refreshing
                 .BindVisible(nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues,
-                    converter: Converters.Func<double>(progress => progress < 1d));
+                    converter: Converters.Predicate<double>(progress => progress < 1d));
 
             if (Shell.Current == null) // desktop layout with Venue and Event list side by side
             {

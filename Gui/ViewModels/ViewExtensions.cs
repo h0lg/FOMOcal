@@ -252,7 +252,7 @@ internal static class Converters
     internal static Func<ValueTuple<bool, bool>, bool> And = ((bool a, bool b) values) => values.a && values.b;
     internal static FuncConverter<string, bool> IsSignificant = new(value => value.IsSignificant());
     internal static FuncConverter<object, bool> NotNull = new(value => value != null);
-    internal static FuncConverter<T, bool> Func<T>(Func<T?, bool> predicate) => new(predicate);
+    internal static FuncConverter<T, bool> Predicate<T>(Func<T?, bool> predicate) => new(predicate);
 }
 
 internal static class Converters<T> where T : struct

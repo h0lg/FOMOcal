@@ -58,7 +58,7 @@ partial class VenueEditor
                         cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis),
                 pickRelativeTo: () => (selector: "body", pickDescendant: true))
                 .BindVisible(nameof(Picker.SelectedIndex), pagingStrategy,
-                    Converters.Func<int>(i => model.PagingStrategies[i].RequiresNextPageSelector()));
+                    Converters.Predicate<int>(i => model.PagingStrategies[i].RequiresNextPageSelector()));
 
             var test = Btn("▶", nameof(LoadMoreCommand), parameterSource: pageView).ToolTip(HelpTexts.TestPagingStrategy);
             return HWrap(5, Lbl("Loading").Bold(), pagingStrategy, nextPageSelector, test).View;
