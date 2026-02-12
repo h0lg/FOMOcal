@@ -11,6 +11,9 @@ partial class EventList
 {
     private readonly RememberedStrings recentSearches = new("EventList.RecentSearches", "🔍");
 
+    private static IEnumerable<string> MigrateRecentSearches(string[] oldSearches)
+        => oldSearches.Select(e => e.Replace('|', ','));
+
     [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
     [ObservableProperty] public partial ObservableCollection<EventView> FilteredEvents { get; private set; } = [];
     [ObservableProperty] public partial ObservableCollection<string> RecentSearches { get; private set; }

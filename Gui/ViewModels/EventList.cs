@@ -22,7 +22,7 @@ public partial class EventList : ObservableObject
         this.venues = venues;
         this.eventRepo = eventRepo;
         this.navigation = navigation;
-        RecentSearches = new(recentSearches.Get());
+        RecentSearches = new(MigrateRecentSearches(recentSearches.Get()));
 
         PropertyChanged += (o, e) =>
         {
