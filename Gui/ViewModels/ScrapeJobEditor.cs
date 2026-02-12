@@ -294,7 +294,7 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
-    public partial class View : VerticalStackLayout
+    public partial class View : Border
     {
         private readonly (Label label, Border layout) help;
         private readonly ScrapeJobEditor model;
@@ -309,11 +309,8 @@ public partial class ScrapeJobEditor : ObservableObject
             this.createVisualSelectorEntry = createVisualSelectorEntry;
             this.getVisualSelectorHost = getVisualSelectorHost;
             help = HelpLabel();
-
+            StyleClass = [Styles.Border.RoundedSection];
             BindingContext = model;
-            Spacing = 5;
-
-            FlexLayout form = new() { Wrap = FlexWrap.Wrap, AlignItems = FlexAlignItems.Center };
 
             (Switch Switch, Grid Wrapper) displayInputs = Swtch(nameof(DisplayInputs),
                 BindingMode.OneWayToSource); // avoids triggering set by reaction to PropertyChanged, falsifying field value
@@ -344,17 +341,17 @@ public partial class ScrapeJobEditor : ObservableObject
 
             children.Add(TextEntry(Glyphs.Comment, nameof(Comment), HelpTexts.Comment, multiLine: true));
 
+            FlexLayout form = new() { Wrap = FlexWrap.Wrap, AlignItems = FlexAlignItems.Center };
+
             foreach (var child in children.Cast<Microsoft.Maui.Controls.View>())
             {
                 child.Margins(left: 10);
                 form.Children.Add(child);
             }
 
-            Children.Add(help.layout);
-            Children.Add(form);
-
-            Children.Add(PreviewOrErrorList(itemsSource: nameof(PreviewResults),
-                hasFocus: nameof(HasFocus), hasError: nameof(HasErrors), source: model, editor: model));
+            Content = VStack(5, help.layout, form,
+                PreviewOrErrorList(itemsSource: nameof(PreviewResults),
+                    hasFocus: nameof(HasFocus), hasError: nameof(HasErrors), source: model, editor: model));
 
             model.UpdatePreview(); // once initially
         }

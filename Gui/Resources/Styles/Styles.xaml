@@ -18,7 +18,7 @@
         <Setter Property="StrokeThickness" Value="1"/>
     </Style>
 
-    <Style TargetType="Border" Class="RoundedSection">
+    <Style TargetType="Border" Class="RoundedSection" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="5" />
         <Setter Property="StrokeThickness" Value="5" />
         <Setter Property="Stroke" Value="Transparent" />
