@@ -3,7 +3,6 @@ using System.Reflection;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
@@ -24,134 +23,50 @@ public partial class Settings : ObservableObject
 
     public partial class Page : ContentPage
     {
-        private readonly bool layoutVertically;
-
         public Page(Settings model)
         {
             BindingContext = model;
             Title = "Settings";
-            layoutVertically = DeviceInfo.Idiom == DeviceIdiom.Watch || DeviceInfo.Idiom == DeviceIdiom.Phone;
-
-            Label themeTitle = SubHeadline("🎨 Theme");
-            HorizontalStackLayout themeSwitches = ThemeSwitches();
 
             var htmlExport = EventPropertySelection.Views(model.ExportedHtmlEventFields);
-            Label htmlExportTitle = SubHeadline(Glyphs.Html + "HTML export");
-            Label htmlIncludedSection = Section("included fields");
-            Label htmlIncludedInfo = ContextLabel(EventPropertySelection.IncludedInfo);
-            Label htmlExcludedSection = Section("excluded fields").StyleClass(Styles.Label.Demoted);
-            Label htmlExcludedInfo = ContextLabel(EventPropertySelection.ExcludedInfo);
-
-            const string alignedWithHeaders = "aligned with headers";
             var exportTextAlignedWithHeaders = Swtch(nameof(ExportTextAlignedWithHeaders)).Wrapper;
-            Label exportTextAlignedInfo = ContextLabel("whether to column-align the plain text export using spaces and include column headers");
-
             var textExport = EventPropertySelection.Views(model.ExportedTextEventFields);
-            Label textExportTitle = SubHeadline(Glyphs.Text + "Text export");
-            Label textIncluded = Section("included fields");
-            Label textIncludedInfo = ContextLabel(EventPropertySelection.IncludedInfo);
-            Label textExcluded = Section("excluded fields").StyleClass(Styles.Label.Demoted);
-            Label textExcludedInfo = ContextLabel(EventPropertySelection.ExcludedInfo);
 
-            Label browserTiming = SubHeadline("⏱ Browser timing");
+            const string includedFields = Glyphs.Select + "included fields",
+                excludedFields = Glyphs.Deselect + "excluded fields";
 
-            Label timingInfo = ContextLabel(
-                "You can tweak the automation engine here if you experience problems, e.g. due to a slow internet connection."
-                + " Tread lightly - footguns ahead!");
+            var layout = VStack(5,
+                Headline("🎨 Theme"), ThemeSwitches().CenterHorizontal(),
 
-            Label loadingLazySection = TimingSection("loading lazy or more");
-            FlexLayout loadingLazy = LoadingLazyOrMore();
+                Expndr(Headline(Glyphs.Html + "HTML export"),
+                    ExportSection(includedFields), htmlExport.included,
+                    ContextLabel(EventPropertySelection.IncludedInfo),
+                    ExportSection(excludedFields),
+                    htmlExport.excluded, ContextLabel(EventPropertySelection.ExcludedInfo)),
 
-            Label scrollPagingSection = TimingSection("scroll paging");
-            FlexLayout scrollPaging = ScrollPaging();
+                Expndr(Headline(Glyphs.Text + "Text export"),
+                    HStack(5, Lbl("aligned with headers"), exportTextAlignedWithHeaders).View.CenterHorizontal(),
+                    ContextLabel("whether to column-align the plain text export using spaces and include column headers"),
+                    ExportSection(includedFields), textExport.included, ContextLabel(EventPropertySelection.IncludedInfo),
+                    ExportSection(excludedFields), textExport.excluded, ContextLabel(EventPropertySelection.ExcludedInfo)),
 
-            Label swapPagingSection = TimingSection("swap paging");
-            FlexLayout swapPaging = SwapPaging();
-
-            View layout;
-
-            if (layoutVertically)
-            {
-                layout = VStack(5, themeTitle, themeSwitches.CenterHorizontal(),
-                    Expndr(htmlExportTitle,
-                        htmlIncludedSection, htmlExport.included, htmlIncludedInfo,
-                        htmlExcludedSection, htmlExport.excluded, htmlExcludedInfo),
-
-                    Expndr(textExportTitle,
-                        HStack(5, Lbl(alignedWithHeaders), exportTextAlignedWithHeaders).View.CenterHorizontal(),
-                        exportTextAlignedInfo,
-                        textIncluded, textExport.included, textIncludedInfo,
-                        textExcluded, textExport.excluded, textExcludedInfo),
-
-                    browserTiming,
-                    timingInfo,
-                    Expndr(loadingLazySection, loadingLazy),
-                    Expndr(scrollPagingSection, scrollPaging),
-                    Expndr(swapPagingSection, swapPaging));
-            }
-            else
-            {
-                const int sectionEnd = 20;
-
-                GridLength[] rows = [Auto, sectionEnd,
-                    /*  2 */ Auto, Auto, Auto, Auto, Auto, sectionEnd,
-                    /*  8 */ Auto, Auto, Auto, Auto, Auto, Auto, sectionEnd,
-                    /* 15 */ Auto, Auto, Auto, Auto];
-
-                layout = Grd(cols: [Auto, Star], rows, spacing: 5,
-                    themeTitle, themeSwitches.Column(1),
-
-                    htmlExportTitle.Row(2),
-                    htmlIncludedSection.Row(3),
-                    htmlExport.included.CenterVertical().Row(3).Column(1),
-                    htmlIncludedInfo.Row(4).Column(1),
-                    htmlExcludedSection.Row(5),
-                    htmlExport.excluded.Row(5).Column(1),
-                    htmlExcludedInfo.Row(6).Column(1),
-
-                    textExportTitle.Row(8),
-                    Section(alignedWithHeaders).Row(9),
-                    HStack(5,
-                        exportTextAlignedWithHeaders.CenterVertical(),
-                        exportTextAlignedInfo).View.Row(9).Column(1),
-                    textIncluded.Row(10),
-                    textExport.included.CenterVertical().Row(10).Column(1),
-                    textIncludedInfo.Row(11).Column(1),
-                    textExcluded.Row(12),
-                    textExport.excluded.Row(12).Column(1),
-                    textExcludedInfo.Row(13).Column(1),
-
-                    browserTiming.Row(15),
-                    timingInfo.Center().Row(15).Column(1),
-                    loadingLazySection.Row(16),
-                    loadingLazy.Top().Row(16).Column(1),
-                    scrollPagingSection.Row(17),
-                    scrollPaging.Top().Row(17).Column(1),
-                    swapPagingSection.Row(18),
-                    swapPaging.Top().Row(18).Column(1));
-            }
+                Headline("⏱ Browser timing"),
+                ContextLabel(
+                    "You can tweak the automation engine here if you experience problems, e.g. due to a slow internet connection."
+                    + " Tread lightly - footguns ahead!"),
+                Expndr(TimingSection("loading 💤 lazy or more"), LoadingLazyOrMore()),
+                Expndr(TimingSection("📜 scroll paging"), ScrollPaging()),
+                Expndr(TimingSection("↹ swap paging"), SwapPaging()));
 
             Content = new ScrollView { Content = layout.Center() }
                 .Paddings(10, top: 0, 10, 10);
         }
 
         internal static Task GoHere(INavigation navigation) => navigation.PushAsync(new Page(new Settings()));
-
-        private Label SubHeadline(string text)
-        {
-            Label label = Lbl(text).StyleClass(Styles.Label.SubHeadline).CenterVertical();
-            return layoutVertically ? label : label.End();
-        }
-
-        private Label Section(string text, int topMargin = 10)
-        {
-            Label label = Lbl(text);
-
-            return layoutVertically ? label.Center() : label.End();
-        }
-
-        private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted);
-        private Label TimingSection(string text) => Section(text);
+        private static Label Headline(string text) => Lbl(text).StyleClass(Styles.Label.Headline);
+        private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted).TextCenterHorizontal();
+        private static Label TimingSection(string text) => Lbl(text).StyleClass(Styles.Label.SubHeadline);
+        private static Label ExportSection(string text) => TimingSection(text).Margins(top: 20);
 
         private static HorizontalStackLayout ThemeSwitches()
             => HStack(0, ThemeVariantToggle("🌑 dark", AppTheme.Dark, "always use dark theme"),
