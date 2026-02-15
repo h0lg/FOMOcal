@@ -35,21 +35,24 @@ internal static class Widgets
 
     internal static Border Expndr(Label header, params View[] toggledViews)
     {
-        header.TapGesture(() => ToggleVisible(toggledViews, !toggledViews[0].IsVisible));
-        header.FillHorizontal(); // so tapping anywhere in the header row works
-        ToggleVisible(toggledViews, false); // hide toggledViews initially
+        /* used to animate the expanding/collapsing of toggledViews
+         * while allowing to determine how much Height they'd need on screen when expanding them
+         * and allowing access to the toggledViews if the container is resized */
+        var scroller = new ScrollView
+        {
+            Content = VStack(5, toggledViews),
+            HeightRequest = 0 // hide toggledViews initially
+        };
+
+        // toggle visibility of toggledViews on header tap
+        header.FillHorizontal() // so tapping anywhere in the header row works
+            .TapGesture(async () => await scroller.AnimateHeightRequest(scroller.HeightRequest == 0 ? scroller.Content.Height : 0));
 
         return new()
         {
             StyleClass = [Styles.Border.RoundedSection],
-            Content = VStack(5, [header, .. toggledViews])
+            Content = VStack(5, header, scroller)
         };
-
-        static void ToggleVisible(View[] toggledViews, bool visible)
-        {
-            foreach (var view in toggledViews)
-                view.IsVisible = visible;
-        }
     }
 
     internal static Label BndLbl(string path = ".", string? stringFormat = null, object? source = null)
