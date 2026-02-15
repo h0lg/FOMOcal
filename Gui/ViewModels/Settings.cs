@@ -71,25 +71,24 @@ public partial class Settings : ObservableObject
             View layout;
 
             if (layoutVertically)
+            {
                 layout = VStack(5, themeTitle, themeSwitches.CenterHorizontal(),
+                    Expndr(htmlExportTitle,
+                        htmlIncludedSection, htmlExport.included, htmlIncludedInfo,
+                        htmlExcludedSection, htmlExport.excluded, htmlExcludedInfo),
 
-                    htmlExportTitle, htmlIncludedSection, htmlExport.included, htmlIncludedInfo,
-                    htmlExcludedSection, htmlExport.excluded, htmlExcludedInfo,
-
-                    textExportTitle,
-                    HStack(5, Lbl(alignedWithHeaders), exportTextAlignedWithHeaders).View.CenterHorizontal(),
-                    exportTextAlignedInfo,
-                    textIncluded, textExport.included, textIncludedInfo,
-                    textExcluded, textExport.excluded, textExcludedInfo,
+                    Expndr(textExportTitle,
+                        HStack(5, Lbl(alignedWithHeaders), exportTextAlignedWithHeaders).View.CenterHorizontal(),
+                        exportTextAlignedInfo,
+                        textIncluded, textExport.included, textIncludedInfo,
+                        textExcluded, textExport.excluded, textExcludedInfo),
 
                     browserTiming,
                     timingInfo,
-                    loadingLazySection,
-                    loadingLazy,
-                    scrollPagingSection,
-                    scrollPaging,
-                    swapPagingSection,
-                    swapPaging);
+                    Expndr(loadingLazySection, loadingLazy),
+                    Expndr(scrollPagingSection, scrollPaging),
+                    Expndr(swapPagingSection, swapPaging));
+            }
             else
             {
                 const int sectionEnd = 20;
@@ -141,20 +140,18 @@ public partial class Settings : ObservableObject
         private Label SubHeadline(string text)
         {
             Label label = Lbl(text).StyleClass(Styles.Label.SubHeadline).CenterVertical();
-            return layoutVertically ? label.Margins(top: 60, bottom: 25) : label.End();
+            return layoutVertically ? label : label.End();
         }
 
         private Label Section(string text, int topMargin = 10)
         {
-            Label label = Lbl(text).Margins(
-                top: layoutVertically ? 25 : topMargin,
-                bottom: layoutVertically ? 15 : 0);
+            Label label = Lbl(text);
 
             return layoutVertically ? label.Center() : label.End();
         }
 
         private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted);
-        private Label TimingSection(string text) => Section(text, topMargin: 24);
+        private Label TimingSection(string text) => Section(text);
 
         private static HorizontalStackLayout ThemeSwitches()
             => HStack(0, ThemeVariantToggle("🌑 dark", AppTheme.Dark, "always use dark theme"),

@@ -33,6 +33,25 @@ internal static class Widgets
         return wrapper;
     }
 
+    internal static Border Expndr(Label header, params View[] toggledViews)
+    {
+        header.TapGesture(() => ToggleVisible(toggledViews, !toggledViews[0].IsVisible));
+        header.FillHorizontal(); // so tapping anywhere in the header row works
+        ToggleVisible(toggledViews, false); // hide toggledViews initially
+
+        return new()
+        {
+            StyleClass = [Styles.Border.RoundedSection],
+            Content = VStack(5, [header, .. toggledViews])
+        };
+
+        static void ToggleVisible(View[] toggledViews, bool visible)
+        {
+            foreach (var view in toggledViews)
+                view.IsVisible = visible;
+        }
+    }
+
     internal static Label BndLbl(string path = ".", string? stringFormat = null, object? source = null)
         => new Label().Bind(Label.TextProperty, path, stringFormat: stringFormat, source: source);
 
