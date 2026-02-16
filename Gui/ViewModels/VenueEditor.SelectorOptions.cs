@@ -88,7 +88,7 @@ partial class VenueEditor
 
             var syntax = HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath"));
 
-            return [syntax.View,
+            return [syntax,
                 Lbl("detail").Bold(),
                 SelectorOption("ancestor path", nameof(SelectorOptions.IncludeAncestorPath), HelpTexts.IncludePickedSelectorPath),
                 SelectorOption("tag name", nameof(SelectorOptions.TagName), HelpTexts.TagName),

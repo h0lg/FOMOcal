@@ -28,7 +28,7 @@ internal static class Widgets
 
     internal static HorizontalStackLayout LbldView(string label, View view, string? tooltip = null)
     {
-        HorizontalStackLayout wrapper = HStack(5, Lbl(label), view).View;
+        HorizontalStackLayout wrapper = HStack(5, Lbl(label), view);
         if (tooltip.IsSignificant()) wrapper.ToolTip(tooltip);
         return wrapper;
     }
@@ -109,7 +109,10 @@ internal static class Widgets
         return layout;
     }
 
-    internal static (HorizontalStackLayout View, Action<View> AddChild) HStack(double? spacing = null, params IView[] children)
+    internal static HorizontalStackLayout HStack(double? spacing = null, params IView[] children)
+        => HStackable(spacing, children).View;
+
+    internal static (HorizontalStackLayout View, Action<View> AddChild) HStackable(double? spacing = null, params IView[] children)
     {
         HorizontalStackLayout layout = [];
         if (spacing.HasValue) layout.Spacing = spacing.Value;

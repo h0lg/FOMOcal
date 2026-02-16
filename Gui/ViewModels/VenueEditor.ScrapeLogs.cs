@@ -50,7 +50,7 @@ partial class VenueEditor
                     .BindTapGesture(nameof(OpenScrapeLogCommand), commandSource: model,
                         parameterPath: ".");
 
-                return HStack(5, deleteBtn, label).View;
+                return HStack(5, deleteBtn, label);
             });
 
             var logs = new CollectionView

@@ -302,7 +302,7 @@ public partial class VenueEditor : ObservableObject
                     "Loading the event listing requires internet access.", "OK");
             });
 
-            return HStack(0, entry, layout).View;
+            return HStack(0, entry, layout);
         }
 
         private HorizontalStackLayout RelativeSelectorEntry(Entry entry, Func<string?>? maybeGetDescendantOfClosest)

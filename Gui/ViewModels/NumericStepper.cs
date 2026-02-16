@@ -21,7 +21,7 @@ internal static class NumericStepper
         entry.SetBinding(Entry.TextProperty, property, BindingMode.TwoWay,
             converter: new ClampedIntConverter(min, max), stringFormat: "{0}");
 
-        var layout = HStack();
+        var layout = HStackable();
         if (startLabel != null) layout.AddChild(Lbl(startLabel).Margins(right: 5));
 
         layout.AddChild(new Border

@@ -91,7 +91,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues) :
                             name.ColumnSpan(2),
                             location.Row(1),
                             refresh.Row(1).Column(1).RowSpan(2).Bottom(),
-                            HStack(5, lastEventCount, lastRefreshed).View.Row(2).End())
+                            HStack(5, lastEventCount, lastRefreshed).Row(2).End())
                     }.BindTapGesture(nameof(EditVenueCommand), commandSource: model, parameterPath: ".");
 
                     if (DeviceInfo.Idiom == DeviceIdiom.Desktop)

@@ -167,7 +167,7 @@ partial class EventList
                     .ToolTip("toggle between viewing all and only selected events"),
                 HStack(5, BndLbl(nameof(SelectedEventCounters)),
                     Btn(Glyphs.Export + " Share", nameof(ShareSelectedEventsCommand)).ToolTip("share selected events"))
-                    .View.BindVisible(nameof(HasSelection)),
+                    .BindVisible(nameof(HasSelection)),
                 Lbl(" - tap an event to select it")
                     .StyleClass(Styles.Label.Demoted).Margins(left: 5)
                     .BindVisible(nameof(HasSelection), converter: Converters.Not)).View;

@@ -45,7 +45,7 @@ public partial class Settings : ObservableObject
                     htmlExport.excluded, ContextLabel(EventPropertySelection.ExcludedInfo)),
 
                 Expndr(Headline(Glyphs.Text + "Text export"),
-                    HStack(5, Lbl("aligned with headers"), exportTextAlignedWithHeaders).View.CenterHorizontal(),
+                    HStack(5, Lbl("aligned with headers"), exportTextAlignedWithHeaders).CenterHorizontal(),
                     ContextLabel("whether to column-align the plain text export using spaces and include column headers"),
                     ExportSection(includedFields), textExport.included, ContextLabel(EventPropertySelection.IncludedInfo),
                     ExportSection(excludedFields), textExport.excluded, ContextLabel(EventPropertySelection.ExcludedInfo)),
@@ -72,7 +72,7 @@ public partial class Settings : ObservableObject
             => HStack(0, ThemeVariantToggle("🌑 dark", AppTheme.Dark, "always use dark theme"),
                 ThemeVariantToggle("🌓 switch with OS", AppTheme.Unspecified,
                     "use light or dark depending on the theme variant selected on the operating system level"),
-                ThemeVariantToggle("🌕 light", AppTheme.Light, "always use light theme")).View;
+                ThemeVariantToggle("🌕 light", AppTheme.Light, "always use light theme"));
 
         private static RadioButton ThemeVariantToggle(string label, AppTheme theme, string tooltip)
             => new RadioButton { Content = label, StyleClass = [Styles.RadioButton.SingleSelectToggleButton] }.ToolTip(tooltip)
