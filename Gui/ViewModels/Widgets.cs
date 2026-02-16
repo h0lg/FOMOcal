@@ -26,11 +26,12 @@ internal static class Widgets
         return (label, layout);
     }
 
-    internal static HorizontalStackLayout LbldView(string label, View view, string? tooltip = null)
+    internal static (Grid Wrapper, Label Label) LbldView(string label, View view, string? tooltip = null)
     {
-        HorizontalStackLayout wrapper = HStack(5, Lbl(label), view);
+        Label lbl = Lbl(label).TextCenterVertical();
+        var wrapper = Grd(cols: [Auto, Star], rows: [Auto], spacing: 5, lbl, view.Column(1));
         if (tooltip.IsSignificant()) wrapper.ToolTip(tooltip);
-        return wrapper;
+        return (wrapper, lbl);
     }
 
     internal static Border Expndr(Label header, params View[] toggledViews)

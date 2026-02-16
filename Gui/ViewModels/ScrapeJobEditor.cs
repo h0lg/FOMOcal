@@ -329,7 +329,7 @@ public partial class ScrapeJobEditor : ObservableObject
                     () => model.Closest, // for picking descendant, preferably from Closest if set
                     HelpTexts.ScrapeJobSelector),
 
-                LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),
+                LbldView("ignore nested text", ignoreNestedText.Wrapper).Wrapper.DisplayWithChecked(nameof(IgnoreNestedText)),
                 TextEntry("attribute", nameof(Attribute), HelpTexts.ScrapeJobAttribute),
                 TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, placeholder: "a }} b"),
                 TextEntry("match", nameof(Match), HelpTexts.ScrapeJobMatch)
@@ -356,22 +356,30 @@ public partial class ScrapeJobEditor : ObservableObject
             model.UpdatePreview(); // once initially
         }
 
-        private HorizontalStackLayout SelectorEntry(string label, string property, Func<string?>? maybeGetDescendantOfClosest, string tooltip)
+        private Grid SelectorEntry(string label, string property, Func<string?>? maybeGetDescendantOfClosest, string tooltip)
         {
             var input = createVisualSelectorEntry(HintedInput(Entr(property), tooltip,
                 cancelFocusChanged: (vis, focused) => !focused && getVisualSelectorHost() == vis),
                 maybeGetDescendantOfClosest);
 
-            return LbldView(label, input).DisplayWithSignificant(property);
+            return LbldView(label, input).Wrapper.DisplayWithSignificant(property);
         }
 
-        private HorizontalStackLayout TextEntry(string label, string property, string tooltip, bool multiLine = false, string? placeholder = null)
+        private Grid TextEntry(string label, string property, string tooltip, bool multiLine = false, string? placeholder = null)
         {
             InputView editor = multiLine ? Edtr(property) : Entr(property);
-            return LabeledInput(label, editor.Placeholder(placeholder), tooltip).DisplayWithSignificant(property);
+            (Grid wrapper, Label _) = LabeledInput(label, editor.Placeholder(placeholder), tooltip);
+
+            if (multiLine)
+            {
+                FlexLayout.SetGrow(wrapper, 1); // grow multiLine Editor to use the remaining space
+                FlexLayout.SetShrink(wrapper, 1); // but shrink it to fit in the same row if possible
+            }
+
+            return wrapper.DisplayWithSignificant(property);
         }
 
-        private HorizontalStackLayout LabeledInput(string label, Microsoft.Maui.Controls.View view, string tooltip)
+        private (Grid Wrapper, Label Label) LabeledInput(string label, Microsoft.Maui.Controls.View view, string tooltip)
             => LbldView(label, HintedInput(view, tooltip));
 
         private T HintedInput<T>(T vis, string tooltip,

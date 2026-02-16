@@ -101,16 +101,19 @@ partial class VenueEditor
                 SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues), HelpTexts.OtherAttributeValues),
                 SelectorOption("position", nameof(SelectorOptions.Position), HelpTexts.ElementPosition)];
 
-            HorizontalStackLayout SelectorOption(string label, string isCheckedPropertyPath, string helpText)
+            Grid SelectorOption(string label, string isCheckedPropertyPath, string helpText)
             {
                 CheckBox checkBox = Check(isCheckedPropertyPath, source: model.selectorOptions).InlineTooltipOnFocus(helpText, help);
+                (Grid wrapper, Label lbl) = LbldView(label, checkBox);
 
                 // "forward" tap on label to checkbox, which is hard to hit on a touch screen
-                return LbldView(label, checkBox).TapGesture(() =>
+                lbl.TapGesture(() =>
                 {
                     checkBox.IsChecked = !checkBox.IsChecked; // toggle
                     checkBox.Focus(); // to inline tooltip
                 });
+
+                return wrapper;
             }
         }
     }
