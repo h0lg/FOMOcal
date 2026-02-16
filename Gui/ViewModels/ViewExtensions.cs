@@ -91,6 +91,7 @@ internal static partial class ViewExtensions
         {
             help.label.BindingContext = host; // abusing unused BindingContext to remember host
             help.label.FormattedText = tooltip.ParseMarkdown(); // set its help text
+            help.layout.IsVisible = true;
             await Task.WhenAll(help.layout.FadeToAsync(1, 300), help.layout.ScaleToAsync(1, 300, Easing.CubicOut)); // show label
         }
         else if (help.label.BindingContext == host) // only react to unfocused if remembered host matches
@@ -99,6 +100,7 @@ internal static partial class ViewExtensions
             await Task.Delay(100); // defer unfocus reaction to allow another control to take focus
             if (help.label.BindingContext != null) return; // another host took focus, do not hide
             await Task.WhenAll(help.layout.FadeToAsync(0, 300), help.layout.ScaleToAsync(0, 300, Easing.CubicIn)); // hide label
+            help.layout.IsVisible = false;
             if (help.label.BindingContext == null) help.label.FormattedText = null; // only reset content if no other host took focus
         }
     }

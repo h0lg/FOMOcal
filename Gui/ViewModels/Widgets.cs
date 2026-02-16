@@ -22,7 +22,7 @@ internal static class Widgets
     internal static (Label label, Border layout) HelpLabel()
     {
         Label label = new();
-        Border layout = new() { StyleClass = ["help"], Content = label };
+        Border layout = new() { StyleClass = ["help"], Content = label, IsVisible = false };
         return (label, layout);
     }
 
