@@ -20,6 +20,7 @@ public partial class ScrapeJobEditor : ObservableObject
     public string EventProperty { get; }
 
     [ObservableProperty] public partial string?[]? PreviewResults { get; set; }
+    [ObservableProperty] public partial string? PreviewSummary { get; set; }
     [ObservableProperty] public partial bool HasErrors { get; set; }
     [ObservableProperty] public partial bool IsEmpty { get; set; }
 
@@ -256,8 +257,9 @@ public partial class ScrapeJobEditor : ObservableObject
 
             if (events == null || events.Length == 0)
             {
-                PreviewResults = ["Event Selector matched no events for preview."];
-                HasErrors = true;
+                PreviewResults = [];
+                HasErrors = false;
+                PreviewSummary = "❔";
                 if (!IsOptional) ValidateAsRequired();
                 return;
             }
@@ -282,12 +284,14 @@ public partial class ScrapeJobEditor : ObservableObject
             {
                 PreviewResults = [.. errors.Select(ex => ex.Message)];
                 HasErrors = true;
+                PreviewSummary = null;
                 if (!IsOptional) ValidateAsRequired();
             }
             else
             {
                 PreviewResults = [.. results.Select(r => r.value)];
                 HasErrors = false;
+                PreviewSummary = PreviewResults.Length + "✅";
                 if (!IsOptional) ValidateAsRequired();
             }
         }
@@ -295,6 +299,7 @@ public partial class ScrapeJobEditor : ObservableObject
         {
             PreviewResults = [ex.Message];
             HasErrors = true;
+            PreviewSummary = null;
         }
     }
 
@@ -368,6 +373,9 @@ public partial class ScrapeJobEditor : ObservableObject
                 child.Margins(left: 10);
                 form.Children.Add(child);
             }
+
+            var previewSummary = BndLbl(nameof(PreviewSummary)).BindVisibleToNotNullOf(nameof(PreviewSummary));
+            form.Children.Add(previewSummary.End().Grow(1));
 
             Content = VStack(5, help.layout, form,
                 PreviewOrErrorList(itemsSource: nameof(PreviewResults),
