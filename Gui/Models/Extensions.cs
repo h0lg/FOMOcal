@@ -156,8 +156,8 @@ public static partial class StringExtensions
 internal static class EnumerableExtensions
 {
     /// <summary>Returns only the non-null elements from <paramref name="nullables"/>.</summary>
-    internal static IEnumerable<T> WithValue<T>(this IEnumerable<T> nullables)
-        => nullables.Where(v => v != null).Select(v => v);
+    internal static IEnumerable<T> WithValue<T>(this IEnumerable<T?> nullables)
+        => nullables.Where(v => v != null).Select(v => v!);
 }
 
 internal static class EnumExtensions

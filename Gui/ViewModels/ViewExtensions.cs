@@ -8,6 +8,7 @@ internal static class Glyphs
 {
     internal const string Html = "🌐 ",
         Text = "𝕋 ",
+        Test = "🧪",
         Venue = "🏟 ",
         Stage = "🏛 ",
         Doors = "🚪 ",

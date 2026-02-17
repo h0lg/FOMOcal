@@ -230,6 +230,20 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
+    private IEnumerable<string> GetPreviewValues(ScrapeJob.Step? before)
+    {
+        var events = getEventsForPreview();
+        if (events == null || events.Length == 0) return [];
+
+        var results = events.Select(e =>
+        {
+            try { return ScrapeJob.PreviewValue(e, before); }
+            catch { return null; }
+        }).ToArray();
+
+        return results.WithValue().Distinct();
+    }
+
     internal void UpdatePreview()
     {
         if (IsEmpty) return;
@@ -331,8 +345,12 @@ public partial class ScrapeJobEditor : ObservableObject
 
                 LbldView("ignore nested text", ignoreNestedText.Wrapper).Wrapper.DisplayWithChecked(nameof(IgnoreNestedText)),
                 TextEntry("attribute", nameof(Attribute), HelpTexts.ScrapeJobAttribute),
-                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, placeholder: "a }} b"),
-                TextEntry("match", nameof(Match), HelpTexts.ScrapeJobMatch)
+
+                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, placeholder: "a }} b",
+                    regex101DeepLink: ScrapeJob.Step.Replacements),
+
+                TextEntry("match", nameof(Match), HelpTexts.ScrapeJobMatch,
+                    regex101DeepLink: ScrapeJob.Step.Match)
             ];
 
             if (model.DateScrapeJob is not null) children.AddRange(
@@ -365,10 +383,16 @@ public partial class ScrapeJobEditor : ObservableObject
             return LbldView(label, input).Wrapper.DisplayWithSignificant(property);
         }
 
-        private Grid TextEntry(string label, string property, string tooltip, bool multiLine = false, string? placeholder = null)
+        private Grid TextEntry(string label, string property, string tooltip,
+            bool multiLine = false, string? placeholder = null, ScrapeJob.Step? regex101DeepLink = null)
         {
-            InputView editor = multiLine ? Edtr(property) : Entr(property);
-            (Grid wrapper, Label _) = LbldView(label, HintedInput(editor.Placeholder(placeholder), tooltip));
+            InputView input = multiLine ? Edtr(property) : Entr(property);
+            HintedInput(input, tooltip).Placeholder(placeholder);
+
+            Microsoft.Maui.Controls.View editor = regex101DeepLink == null ? input
+                : HStack(0, input, Regex101.DeepLink(regex101DeepLink.Value, input, model.GetPreviewValues));
+
+            (Grid wrapper, Label _) = LbldView(label, editor);
 
             if (multiLine)
             {

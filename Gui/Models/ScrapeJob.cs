@@ -62,6 +62,9 @@ public class ScrapeJob : IHaveAComment
     public string? Comment { get; set; }
 
     public virtual string? GetValue(IDomElement element, List<Exception>? errors = null)
+        => PreviewValue(element, null, errors);
+
+    internal string? PreviewValue(IDomElement element, Step? before, List<Exception>? errors = null)
     {
         try
         {
@@ -93,7 +96,9 @@ public class ScrapeJob : IHaveAComment
 
             if (text.IsNullOrWhiteSpace()) return null;
             text = text.NormalizeWhitespace(); // trims text as well
+            if (before == Step.Replacements) return text;
             if (Replace.IsSignificant() && Replacements.Count > 0) text = text.ApplyReplacements(Replacements);
+            if (before == Step.Match) return text;
             return Match.IsSignificant() ? ApplyRegex(text!, Match!) : text;
         }
         catch (Exception ex)
@@ -132,6 +137,10 @@ public class ScrapeJob : IHaveAComment
         Match == other.Match;
 
     public override int GetHashCode() => HashCode.Combine(Closest, Selector, IgnoreNestedText, Attribute, Replace, Match);
+
+    /// <summary>Scrape job steps before which <see cref="PreviewValue(IDomElement, Step?, List{Exception}?)"/>
+    /// can return, e.g. to debug the step.</summary>
+    public enum Step { Replacements, Match }
 
     public class Error : Exception
     {
