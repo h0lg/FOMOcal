@@ -76,6 +76,12 @@ public partial class EventList : ObservableObject
         try
         {
             var events = await eventRepo.LoadAllAsync();
+
+            // auto-clean up events older than 3 months
+            var oldest = DateTime.Today.AddMonths(-3);
+            var removed = events.RemoveWhere(evt => evt.Date < oldest);
+            if (removed > 0) await eventRepo.SaveCompleteAsync(events);
+
             // transform events into view model collection once
             allEvents = [.. events.Select(e => new EventView(e))];
         }
