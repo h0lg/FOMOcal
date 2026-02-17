@@ -198,7 +198,9 @@ public partial class ScrapeJobEditor : ObservableObject
     }
 
     private void UpdateEmpty() => IsEmpty = !scrapeJobStringProperties.Any(p => ((string?)p.GetValue(this, null)).IsSignificant());
-    private void ValidateAsRequired() => IsValidAsRequired = !HasErrors && PreviewResults?.Length == getEventsForPreview()?.Length;
+
+    private void ValidateAsRequired() =>
+        IsValidAsRequired = !HasErrors && PreviewResults?.Length > 0 && PreviewResults.Length == getEventsForPreview()?.Length;
 
     private Guid? focusedId; // tracks the child that currently has focus
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayInputs))] public partial bool HasFocus { get; set; }
@@ -256,7 +258,7 @@ public partial class ScrapeJobEditor : ObservableObject
             {
                 PreviewResults = ["Event Selector matched no events for preview."];
                 HasErrors = true;
-                ValidateAsRequired();
+                if (!IsOptional) ValidateAsRequired();
                 return;
             }
 
@@ -280,13 +282,13 @@ public partial class ScrapeJobEditor : ObservableObject
             {
                 PreviewResults = [.. errors.Select(ex => ex.Message)];
                 HasErrors = true;
-                ValidateAsRequired();
+                if (!IsOptional) ValidateAsRequired();
             }
             else
             {
                 PreviewResults = [.. results.Select(r => r.value)];
                 HasErrors = false;
-                ValidateAsRequired();
+                if (!IsOptional) ValidateAsRequired();
             }
         }
         catch (Exception ex)
