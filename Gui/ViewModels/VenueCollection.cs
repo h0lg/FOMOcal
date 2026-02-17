@@ -22,7 +22,7 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
     {
         TaskCompletionSource<VenueEditor.Actions?> editing = new();
         Venue edited = original.DeepCopy(); // so that original is not changed by the editor
-        VenueEditor model = new(edited, scraper, editing, navigation);
+        VenueEditor model = new(edited, scraper, editing, navigation, Observable);
         await navigation.PushAsync(new VenueEditor.Page(model));
         VenueEditor.Actions? result = await editing.Task; // wait for editor
         if (result == null) return; // canceled & navigation stack popped, do nothing
@@ -59,7 +59,7 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
             Event = new() { Selector = "", Name = new(), Date = new() }
         };
 
-        VenueEditor model = new(added, scraper, adding, navigation);
+        VenueEditor model = new(added, scraper, adding, navigation, Observable);
         await navigation.PushAsync(new VenueEditor.Page(model));
         VenueEditor.Actions? result = await adding.Task; // wait for editor
         if (result == null) return;  // canceled & navigation stack popped, do nothing

@@ -28,6 +28,7 @@ internal static class Glyphs
         Export = "🥡",
         Add = "➕",
         Edit = "✏",
+        Error = "⚠",
         Target = "🎯 ",
         Delete = "🗑";
 }

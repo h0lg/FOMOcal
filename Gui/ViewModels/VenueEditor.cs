@@ -14,6 +14,7 @@ public partial class VenueEditor : ObservableObject
     private readonly Scraper scraper; // singleton, disposed of by the service provider
     private readonly TaskCompletionSource<Actions?> awaiter;
     private readonly INavigation navigation;
+    private readonly string[] existingVenueNames;
     private readonly List<ScrapeJobEditor> scrapeJobEditors = [];
     private readonly Debouncer debouncedRevealMore;
     private readonly Venue venue;
@@ -23,6 +24,7 @@ public partial class VenueEditor : ObservableObject
     private IDomDocument? programDocument;
 
     [ObservableProperty] public partial bool HasRequiredInfo { get; set; }
+    [ObservableProperty] public partial bool IsVenueNameTaken { get; set; }
     [ObservableProperty] public partial bool ShowRequiredEventFields { get; set; }
     [ObservableProperty] public partial bool ShowOptionalEventFields { get; set; }
     [ObservableProperty] public partial double Progress { get; set; } = 0;
@@ -35,6 +37,7 @@ public partial class VenueEditor : ObservableObject
             if (value == venue.Name) return;
             venue.Name = value;
             OnPropertyChanged();
+            IsVenueNameTaken = existingVenueNames.Contains(value);
             RevealMore();
         }
     }
@@ -61,7 +64,8 @@ public partial class VenueEditor : ObservableObject
         }
     }
 
-    internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter, INavigation navigation)
+    internal VenueEditor(Venue venue, Scraper scraper, TaskCompletionSource<Actions?> awaiter,
+        INavigation navigation, IReadOnlyList<Venue> existingVenues)
     {
         this.venue = venue;
         this.scraper = scraper;
@@ -70,6 +74,7 @@ public partial class VenueEditor : ObservableObject
         isDeletable = venue.ProgramUrl.IsSignificant();
         originalVenueName = venue.Name;
         EditingProgramUrl = venue.ProgramUrl;
+        existingVenueNames = [.. existingVenues.Select(v => v.Name)];
 
         debouncedRevealMore = new(TimeSpan.FromMilliseconds(100), UndebouncedRevealMore,
             async ex => await ErrorReport.WriteAsyncAndShare(ex.ToString(), "revealing more of the venue editor"));
@@ -118,7 +123,7 @@ public partial class VenueEditor : ObservableObject
             hasName = true;
         }
 
-        HasRequiredInfo = hasName && hasProgramUrl;
+        HasRequiredInfo = hasName && hasProgramUrl && !IsVenueNameTaken;
         ShowRequiredEventFields = HasRequiredInfo && EventSelector.IsSignificant();
 
         // always show optional fields if any are filled - even if a missing internet connection prevents required fields from validating
@@ -242,6 +247,10 @@ public partial class VenueEditor : ObservableObject
                 out ActivityIndicator loadingIndicator, out Button reload, out Button openUrl);
 
             var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
+
+            var nameTakenIndicator = ErrorIcon("That venue name is taken already. Choose a different one.")
+                .BindVisible(nameof(IsVenueNameTaken));
+
             var encoding = Entr(nameof(Encoding), placeholder: "encoding override").ToolTip(HelpTexts.Encoding);
             var comment = Edtr(nameof(Comment), placeholder: "explain this config or something about it").ToolTip(HelpTexts.Comment);
 
@@ -253,13 +262,16 @@ public partial class VenueEditor : ObservableObject
             return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 FldLbl("🕸"), urlEntry.Column(1), invalidIndicator.Column(2).ColumnSpan(2),
                     loadingIndicator.Column(2), reload.Column(2), openUrl.Column(3),
-                FldLbl("🏷").Row(1), nameEntry.Row(1).Column(1).ColumnSpan(3),
+                FldLbl("🏷").Row(1), nameEntry.Row(1).Column(1).ColumnSpan(2),
+                    nameTakenIndicator.Row(1).Column(3),
                 FldLbl("📍").Row(2), location.Row(2).Column(1).ColumnSpan(3),
                 FldLbl("🔣").Row(3), encoding.Row(3).Column(1).ColumnSpan(3),
                 FldLbl(Glyphs.Comment).Row(4), comment.Row(4).Column(1).ColumnSpan(3));
 
             static Label FldLbl(string Text) => Lbl(Text).CenterVertical();
         }
+
+        private static Label ErrorIcon(string tooltip) => Lbl(Glyphs.Error).TextCenter().ToolTip(tooltip);
 
         private VerticalStackLayout OptionalEventFields()
         {

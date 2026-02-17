@@ -114,7 +114,7 @@ partial class VenueEditor
 
             const string isValidUrl = nameof(IsEditingProgramUrlValid);
 
-            invalidIndicator = Lbl("⚠").ToolTip("This is not a valid HTTP URL.").CenterVertical()
+            invalidIndicator = ErrorIcon("This is not a valid HTTP URL.")
                 .BindVisible(isValidUrl, converter: Converters.Not);
 
             loadingIndicator = new ActivityIndicator { IsRunning = true }
