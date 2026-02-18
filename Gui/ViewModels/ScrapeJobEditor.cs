@@ -368,7 +368,7 @@ public partial class ScrapeJobEditor : ObservableObject
         private Grid TextEntry(string label, string property, string tooltip, bool multiLine = false, string? placeholder = null)
         {
             InputView editor = multiLine ? Edtr(property) : Entr(property);
-            (Grid wrapper, Label _) = LabeledInput(label, editor.Placeholder(placeholder), tooltip);
+            (Grid wrapper, Label _) = LbldView(label, HintedInput(editor.Placeholder(placeholder), tooltip));
 
             if (multiLine)
             {
@@ -378,9 +378,6 @@ public partial class ScrapeJobEditor : ObservableObject
 
             return wrapper.DisplayWithSignificant(property);
         }
-
-        private (Grid Wrapper, Label Label) LabeledInput(string label, Microsoft.Maui.Controls.View view, string tooltip)
-            => LbldView(label, HintedInput(view, tooltip));
 
         private T HintedInput<T>(T vis, string tooltip,
             Func<VisualElement, bool, bool>? cancelFocusChanged = null) where T : VisualElement
