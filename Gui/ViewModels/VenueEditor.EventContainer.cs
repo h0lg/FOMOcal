@@ -12,7 +12,7 @@ partial class VenueEditor
 
     [ObservableProperty] public partial bool PreviewRelatedHasFocus { get; set; } // for when related controls have focus
     [ObservableProperty] public partial bool EventSelectorHasError { get; set; }
-    [ObservableProperty] public partial string[]? PreviewedEventTexts { get; set; }
+    [ObservableProperty] public partial ValuePreview[]? PreviewedEventTexts { get; set; }
     [ObservableProperty] public partial ushort SkipEvents { get; set; }
     [ObservableProperty] public partial ushort TakeEvents { get; set; } = 5;
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))] public partial int SelectedEventCount { get; set; } = 0;
@@ -77,14 +77,14 @@ partial class VenueEditor
             SelectedEventCount = selectedEvents.Length;
             FilteredEventCount = filtered.Length;
             previewedEvents = [.. filtered.Skip(SkipEvents).Take(TakeEvents)];
-            PreviewedEventTexts = [.. previewedEvents.Select(e => e.TextContent.NormalizeWhitespace())];
+            PreviewedEventTexts = [.. previewedEvents.Select(e => ValuePreview.Create(e.TextContent.NormalizeWhitespace()))];
             scrapeJobEditors.ForEach(e => e.UpdatePreview());
             EventSelectorHasError = false;
         }
         catch (Exception ex)
         {
             previewedEvents = null;
-            PreviewedEventTexts = [ex.Message];
+            PreviewedEventTexts = [ValuePreview.Error(ex)];
             EventSelectorHasError = true;
         }
     }
@@ -115,7 +115,7 @@ partial class VenueEditor
 
             var eventFilter = Entr(nameof(EventFilter), placeholder: "text or XPath");
 
-            var previewOrErrors = ScrapeJobEditor.View.PreviewOrErrorList(
+            var previewOrErrors = ValuePreview.List(
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(PreviewRelatedHasFocus),
                 hasError: nameof(EventSelectorHasError), source: model!);
 

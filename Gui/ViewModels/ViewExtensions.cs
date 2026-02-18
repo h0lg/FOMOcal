@@ -43,7 +43,8 @@ internal static class Styles
 
     internal static class Editor
     {
-        internal static string Error = GetName(), Success = GetName();
+        internal static Style Error = Get(nameof(Editor)),
+            Success = Get(nameof(Editor));
     }
 
     internal static class Span
