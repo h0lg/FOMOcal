@@ -132,7 +132,7 @@ public partial class VenueEditor : ObservableObject
             || (ShowRequiredEventFields
                 // skip validation without internet access
                 && (!App.HasInternet
-                    // otherwise make sure fields are set and have no errors
+                    // otherwise make sure required fields have values
                     || (eventName.IsValidAsRequired && eventDate.IsValidAsRequired)));
 
         Progress = (ShowOptionalEventFields ? 3 : ShowRequiredEventFields ? 2 : HasRequiredInfo ? 1 : 0) / 3d;

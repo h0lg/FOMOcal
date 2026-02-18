@@ -19,7 +19,7 @@ public sealed class ValuePreview(string? result, ValuePreview.States state)
     internal static ValuePreview Create(string? result)
         => new(result, result.IsSignificant() ? States.Success : States.Empty);
 
-    internal static FlexLayout List(string itemsSource, string hasFocus, string hasError, object source, ScrapeJobEditor? editor = null)
+    internal static FlexLayout List(string itemsSource, string hasFocus, object source, ScrapeJobEditor? editor = null)
     {
         var observable = source as ObservableObject;
 
@@ -39,18 +39,17 @@ public sealed class ValuePreview(string? result, ValuePreview.States state)
         // attaching event handler to set StyleClass on Label children because that property is not bindable
         observable!.PropertyChanged += (o, e) =>
         {
-            if (e.PropertyName == hasError || e.PropertyName == hasFocus) debouncedUpdateVisibility.Run();
+            if (e.PropertyName == hasFocus) debouncedUpdateVisibility.Run();
         };
 
         return list;
 
-        // Animate show/hide when hasError or hasFocus changes
+        // Animate show/hide when hasFocus changes
         async void UpdateVisibilityUndebouncedAsync()
         {
             Type type = observable!.GetType();
 
-            bool shouldBeVisible = (bool)type.GetProperty(hasError)!.GetValue(source)!
-                || (bool)type.GetProperty(hasFocus)!.GetValue(source)!;
+            bool shouldBeVisible = (bool)type.GetProperty(hasFocus)!.GetValue(source)!;
 
             if (shouldBeVisible && !list.IsVisible)
             {

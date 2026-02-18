@@ -20,7 +20,6 @@ public partial class ScrapeJobEditor : ObservableObject
 
     [ObservableProperty] public partial ValuePreview[]? PreviewResults { get; set; }
     [ObservableProperty] public partial string? PreviewSummary { get; set; }
-    [ObservableProperty] public partial bool HasErrors { get; set; }
     [ObservableProperty] public partial bool IsEmpty { get; set; }
 
     #region ScrapeJob proxy properties
@@ -208,7 +207,7 @@ public partial class ScrapeJobEditor : ObservableObject
     private void UpdateEmpty() => IsEmpty = ScrapeJob.IsEmpty();
 
     private void ValidateAsRequired() =>
-        IsValidAsRequired = !HasErrors && PreviewResults?.Length > 0 && PreviewResults.Length == getEventsForPreview()?.Length;
+        IsValidAsRequired = PreviewResults?.Count(p => p.State == ValuePreview.States.Success) == getEventsForPreview()?.Length;
 
     private Guid? focusedId; // tracks the child that currently has focus
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayInputs))] public partial bool HasFocus { get; set; }
@@ -265,7 +264,6 @@ public partial class ScrapeJobEditor : ObservableObject
             if (events == null || events.Length == 0)
             {
                 PreviewResults = [];
-                HasErrors = false;
                 PreviewSummary = "❔";
                 if (!IsOptional) ValidateAsRequired();
                 return;
@@ -292,8 +290,13 @@ public partial class ScrapeJobEditor : ObservableObject
             PreviewResults = [ValuePreview.Error(ex)];
         }
 
-        HasErrors = PreviewResults.Any(p => p.State == ValuePreview.States.Error);
-        PreviewSummary = HasErrors ? null : PreviewResults.Count(p => p.State == ValuePreview.States.Success) + "✅";
+        int errors = PreviewResults.Count(p => p.State == ValuePreview.States.Error);
+        int successes = PreviewResults.Count(p => p.State == ValuePreview.States.Success);
+
+        string?[] states = [(errors > 0 ? errors + Glyphs.Error : null),
+             (successes > 0 ? successes + "✅" : null)];
+
+        PreviewSummary = states.Join(" ");
         if (!IsOptional) ValidateAsRequired();
     }
 
@@ -365,7 +368,7 @@ public partial class ScrapeJobEditor : ObservableObject
 
             Content = VStack(5, help.layout, form,
                 ValuePreview.List(itemsSource: nameof(PreviewResults),
-                    hasFocus: nameof(HasFocus), hasError: nameof(HasErrors), source: model, editor: model));
+                    hasFocus: nameof(HasFocus), source: model, editor: model));
 
             model.UpdatePreview(); // once initially
         }
