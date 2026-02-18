@@ -157,7 +157,7 @@ public partial class VenueEditor : ObservableObject
         }
 
         foreach (var editor in scrapeJobEditors.WithValue())
-            editor.ResetInsignificantValues(); // to reduce noise in serialized JSON
+            editor.ScrapeJob.ResetInsignificantStrings(); // to reduce noise in serialized JSON
 
         SetActionTaken(Actions.Saved);
     }

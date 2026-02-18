@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using CommunityToolkit.Maui.Markup;
+﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FomoCal.Gui.Resources;
 using Microsoft.Maui.Layouts;
@@ -25,12 +24,6 @@ public partial class ScrapeJobEditor : ObservableObject
     [ObservableProperty] public partial bool IsEmpty { get; set; }
 
     #region ScrapeJob proxy properties
-    private static readonly string[] scrapeJobStringPropertyNames = [nameof(Closest), nameof(Selector), nameof(Attribute), nameof(Replace), nameof(Match), nameof(Comment)];
-    private static readonly string[] scrapeJobPropertyNames = [.. scrapeJobStringPropertyNames, nameof(IgnoreNestedText), nameof(Format), nameof(Culture)];
-
-    private static readonly PropertyInfo[] scrapeJobStringProperties =
-        [.. typeof(ScrapeJobEditor).GetProperties().Where(p => scrapeJobStringPropertyNames.Contains(p.Name))];
-
     public string? Closest
     {
         get => ScrapeJob.Closest;
@@ -168,6 +161,19 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
+#if DEBUG
+    static ScrapeJobEditor()
+    {
+        var properties = typeof(ScrapeJobEditor).GetProperties();
+
+        foreach (var required in DateScrapeJob.Properties)
+        {
+            if (!properties.Any(p => p.Name == required.Name)) throw new NotImplementedException(
+                $"{nameof(ScrapeJobEditor)} requires property {required.Name} for property change comparison to work.");
+        }
+    }
+#endif
+
     internal ScrapeJobEditor(string label, ScrapeJob scrapeJob,
         Func<IDomElement[]?> getEventsForPreview, Func<VisualElement?> getVisualSelectorHost,
         string eventProperty, bool isOptional, string? defaultAttribute = null)
@@ -182,9 +188,10 @@ public partial class ScrapeJobEditor : ObservableObject
 
         PropertyChanged += (o, e) =>
         {
-            if (!scrapeJobPropertyNames.Contains(e.PropertyName)) return;
+            // use DateScrapeJob properties as the definitive collection; it inherits and enhances ScrapeJob properties
+            if (!DateScrapeJob.PropertyNames.Contains(e.PropertyName)) return;
 
-            if (scrapeJobStringPropertyNames.Contains(e.PropertyName))
+            if (DateScrapeJob.StringPropertyNames.Contains(e.PropertyName))
             {
                 UpdateEmpty();
 
@@ -198,7 +205,7 @@ public partial class ScrapeJobEditor : ObservableObject
         UpdateEmpty(); // to initialize it correctly
     }
 
-    private void UpdateEmpty() => IsEmpty = !scrapeJobStringProperties.Any(p => ((string?)p.GetValue(this, null)).IsSignificant());
+    private void UpdateEmpty() => IsEmpty = ScrapeJob.IsEmpty();
 
     private void ValidateAsRequired() =>
         IsValidAsRequired = !HasErrors && PreviewResults?.Length > 0 && PreviewResults.Length == getEventsForPreview()?.Length;
@@ -288,18 +295,6 @@ public partial class ScrapeJobEditor : ObservableObject
         HasErrors = PreviewResults.Any(p => p.State == ValuePreview.States.Error);
         PreviewSummary = HasErrors ? null : PreviewResults.Count(p => p.State == ValuePreview.States.Success) + "✅";
         if (!IsOptional) ValidateAsRequired();
-    }
-
-    internal void ResetInsignificantValues()
-    {
-        foreach (var property in scrapeJobStringProperties)
-        {
-            var value = property.GetValue(this, null);
-            if (value == null) continue;
-
-            if (value is string str && !str.IsSignificant())
-                property.SetValue(this, null, null);
-        }
     }
 
     public partial class View : Border

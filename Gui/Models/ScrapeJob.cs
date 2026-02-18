@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace FomoCal;
@@ -6,6 +7,10 @@ namespace FomoCal;
 public class ScrapeJob : IHaveAComment
 {
     internal const string XPathSelectorPrefix = "XPATH^";
+
+    private static readonly PropertyInfo[] stringProperties =
+        [.. typeof(ScrapeJob).GetProperties().Where(p => p.PropertyType == typeof(string))];
+
     internal static string FormatXpathSelector(string selector) => XPathSelectorPrefix + selector;
 
     internal static bool TryGetXPathSelector(string selector, [MaybeNullWhen(false)] out string xPathSelector)
@@ -123,6 +128,21 @@ public class ScrapeJob : IHaveAComment
     {
         var match = Regex.Match(input, pattern);
         return match.Success ? match.Value : null;
+    }
+
+    protected virtual PropertyInfo[] StringProperties => stringProperties;
+    internal bool IsEmpty() => !StringProperties.Any(p => ((string?)p.GetValue(this, null)).IsSignificant());
+
+    internal void ResetInsignificantStrings()
+    {
+        foreach (var property in StringProperties)
+        {
+            var value = property.GetValue(this, null);
+            if (value == null) continue;
+
+            if (value is string str && !str.IsSignificant())
+                property.SetValue(this, null, null);
+        }
     }
 
     public override bool Equals(object? obj) => obj is ScrapeJob other && Equals(other);

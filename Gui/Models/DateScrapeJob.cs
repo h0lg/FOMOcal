@@ -1,9 +1,15 @@
 ﻿using System.Globalization;
+using System.Reflection;
 
 namespace FomoCal;
 
 public class DateScrapeJob : ScrapeJob
 {
+    internal static readonly PropertyInfo[] Properties = [.. typeof(DateScrapeJob).GetProperties()];
+    private static readonly PropertyInfo[] stringProperties = [.. Properties.Where(p => p.PropertyType == typeof(string))];
+    internal static readonly string[] PropertyNames = [.. Properties.Select(p => p.Name)];
+    internal static readonly string[] StringPropertyNames = [.. stringProperties.Select(p => p.Name)];
+
     private string culture = "en";
     private CultureInfo? cultureInfo;
     private string[]? formats, formatsWithWeekDayButNoYear; // caches
@@ -78,6 +84,7 @@ public class DateScrapeJob : ScrapeJob
         return null;
     }
 
+    protected override PropertyInfo[] StringProperties => stringProperties;
     public override string? GetValue(IDomElement element, List<Exception>? errors = null) => GetDate(element, errors)?.ToString("D");
     public override bool Equals(object? obj) => obj is DateScrapeJob other && Equals(other);
     public bool Equals(DateScrapeJob? other) => base.Equals(other) && Format == other!.Format && Culture == other.Culture;
