@@ -19,16 +19,16 @@ public sealed class ValuePreview(string? result, ValuePreview.States state)
     internal static ValuePreview Create(string? result)
         => new(result, result.IsSignificant() ? States.Success : States.Empty);
 
-    internal static VerticalStackLayout List(string itemsSource, string hasFocus, string hasError, object source, ScrapeJobEditor? editor = null)
+    internal static FlexLayout List(string itemsSource, string hasFocus, string hasError, object source, ScrapeJobEditor? editor = null)
     {
         var observable = source as ObservableObject;
 
-        var list = new VerticalStackLayout { Spacing = 10, Margin = new Thickness(0, verticalSize: 10) }
+        var list = HWrap().View.Margins(top: 5)
             .IsVisible(false) // closed initially, toggled via debouncedUpdateVisibility
             .Bind(BindableLayout.ItemsSourceProperty, itemsSource)
             .ItemTemplate(() =>
             {
-                Editor display = SelectableMultiLineLabel(nameof(Result));
+                Editor display = SelectableMultiLineLabel(nameof(Result)).Margins(right: 2, bottom: 2);
                 if (editor is not null) display.ForwardFocusTo(editor); // to avoid collapsing editor when selecting text from the display
                 return display.Bind(VisualElement.StyleProperty, nameof(Style)); // bind item with correct class on construction
             });
