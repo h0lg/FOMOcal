@@ -48,9 +48,12 @@ internal static class Styles
 
     internal static class Span
     {
-        internal static Style LinkSpan = Get(), HighlitSpan = Get(), HelpHeaderSpan = Get(), HelpSpan = Get(),
-            HelpLinkSpan = Get(), HelpFooterSpan = Get(),
-            HelpFooterLinkSpan = MergedStyle.Combine(HelpFooterSpan, HelpLinkSpan)!;
+        internal static Style Link = Get(), Highlit = Get(),
+            HelpHeader = Get(), Help = Get(),
+            HelpLink = Get(), HelpFooter = Get(),
+            HelpFooterLink = MergedStyle.Combine(HelpFooter, HelpLink)!;
+
+        private static Style Get([CallerMemberName] string key = "") => Styles.Get(nameof(Span), key);
     }
 
     internal static class Border
@@ -65,7 +68,9 @@ internal static class Styles
     }
 
     private static string GetName([CallerMemberName] string key = "") => key;
-    private static Style Get([CallerMemberName] string key = "") => (Style)Application.Current!.Resources[key];
+
+    private static Style Get(string typeName, [CallerMemberName] string key = "")
+        => (Style)Application.Current!.Resources[typeName + "." + key];
 }
 
 internal static partial class ViewExtensions
@@ -198,7 +203,7 @@ internal static partial class ViewExtensions
             if (trimmedLine.StartsWith(footerPrefix))
             {
                 var footerText = trimmedLine[footerPrefix.Length..].TrimStart();
-                AppendWithLinks(formatted, footerText, Styles.Span.HelpFooterLinkSpan, Styles.Span.HelpFooterSpan);
+                AppendWithLinks(formatted, footerText, Styles.Span.HelpFooterLink, Styles.Span.HelpFooter);
                 AppendEmptyLine(formatted, lines, i);
                 continue;
             }
@@ -214,14 +219,14 @@ internal static partial class ViewExtensions
                 formatted.Spans.Add(new Span
                 {
                     Text = headerText + Environment.NewLine,
-                    Style = Styles.Span.HelpHeaderSpan
+                    Style = Styles.Span.HelpHeader
                 });
 
                 continue;
             }
 
             // Default: normal paragraph with possible links
-            AppendWithLinks(formatted, trimmedLine, Styles.Span.HelpLinkSpan, Styles.Span.HelpSpan);
+            AppendWithLinks(formatted, trimmedLine, Styles.Span.HelpLink, Styles.Span.Help);
             AppendEmptyLine(formatted, lines, i);
         }
 

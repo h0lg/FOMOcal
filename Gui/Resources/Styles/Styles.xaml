@@ -276,28 +276,28 @@
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
     </Style>
 
-    <Style TargetType="Span" x:Key="LinkSpan">
+    <Style TargetType="Span" x:Key="Span.Link">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LinkTextLight}, Dark={StaticResource LinkTextDark}}" />
         <Setter Property="TextDecorations" Value="Underline" />
     </Style>
 
-    <Style TargetType="Span" x:Key="HighlitSpan">
+    <Style TargetType="Span" x:Key="Span.Highlit">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource HighlitTextLight}, Dark={StaticResource HighlitTextDark}}" />
         <Setter Property="FontAttributes" Value="Bold" />
     </Style>
 
-    <Style TargetType="Span" x:Key="HelpSpan">
+    <Style TargetType="Span" x:Key="Span.Help">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Help}, Dark={StaticResource HelpDark}}" />
     </Style>
 
-    <Style TargetType="Span" x:Key="HelpLinkSpan" BasedOn="{StaticResource LinkSpan}">
+    <Style TargetType="Span" x:Key="Span.HelpLink" BasedOn="{StaticResource Span.Link}">
     </Style>
 
-    <Style TargetType="Span" x:Key="HelpHeaderSpan" BasedOn="{StaticResource HelpSpan}">
+    <Style TargetType="Span" x:Key="Span.HelpHeader" BasedOn="{StaticResource Span.Help}">
         <Setter Property="FontSize" Value="16" />
     </Style>
 
-    <Style TargetType="Span" x:Key="HelpFooterSpan" BasedOn="{StaticResource HelpSpan}">
+    <Style TargetType="Span" x:Key="Span.HelpFooter" BasedOn="{StaticResource Span.Help}">
         <Setter Property="FontSize" Value="12" />
     </Style>
 

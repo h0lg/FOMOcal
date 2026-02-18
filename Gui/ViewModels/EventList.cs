@@ -169,7 +169,7 @@ public partial class EventList : ObservableObject
     public partial class View : ContentView
     {
         private static readonly TextChunkConverter textChunkConverter =
-            new(linkStyle: Styles.Span.LinkSpan, highlitStyle: Styles.Span.HighlitSpan);
+            new(linkStyle: Styles.Span.Link, highlitStyle: Styles.Span.Highlit);
 
         public View(EventList model)
         {
