@@ -277,7 +277,7 @@ public partial class VenueEditor : ObservableObject
         {
             var evt = model!.venue.Event;
 
-            return VStack(0,
+            (ScrapeJobEditor.View editor, bool empty)[] fields = [
                 OptionalScrapeJob("‼ Subtitle", evt.SubTitle, nameof(Venue.EventScrapeJob.SubTitle)),
                 OptionalScrapeJob("📜 Description", evt.Description, nameof(Venue.EventScrapeJob.Description)),
                 OptionalScrapeJob(Glyphs.Genres + "Genres", evt.Genres, nameof(Venue.EventScrapeJob.Genres)),
@@ -288,11 +288,14 @@ public partial class VenueEditor : ObservableObject
                 OptionalScrapeJob(Glyphs.DoorPrice + "Door price", evt.DoorsPrice, nameof(Venue.EventScrapeJob.DoorsPrice)),
                 OptionalScrapeJob(Glyphs.EventPage + "Event page " + Glyphs.Link, evt.Url, nameof(Venue.EventScrapeJob.Url), defaultAttribute: "href"),
                 OptionalScrapeJob("🖼 Image", evt.ImageUrl, nameof(Venue.EventScrapeJob.ImageUrl), defaultAttribute: "src"),
-                OptionalScrapeJob(Glyphs.Tickets + "Tickets " + Glyphs.Link, evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href"));
+                OptionalScrapeJob(Glyphs.Tickets + "Tickets " + Glyphs.Link, evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href")
+            ];
 
-            ScrapeJobEditor.View OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
-               => new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute),
-                    RelativeSelectorEntry, () => model.visualSelectorHost);
+            return VStack(0, [.. fields.OrderBy(f => f.empty).Select(f => f.editor)]); // order empty editors last
+
+            (ScrapeJobEditor.View editor, bool empty) OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
+               => (new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute),
+                    RelativeSelectorEntry, () => model.visualSelectorHost), scrapeJob == null);
         }
 
         private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)
