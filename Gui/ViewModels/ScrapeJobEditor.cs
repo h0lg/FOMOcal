@@ -207,7 +207,7 @@ public partial class ScrapeJobEditor : ObservableObject
     private void UpdateEmpty() => IsEmpty = ScrapeJob.IsEmpty();
 
     private void ValidateAsRequired() =>
-        IsValidAsRequired = PreviewResults?.Count(p => p.State == ValuePreview.States.Success) == getEventsForPreview()?.Length;
+        IsValidAsRequired = PreviewResults?.CountSucceeded(true) == getEventsForPreview()?.Length;
 
     private Guid? focusedId; // tracks the child that currently has focus
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayInputs))] public partial bool HasFocus { get; set; }
@@ -290,8 +290,8 @@ public partial class ScrapeJobEditor : ObservableObject
             PreviewResults = [ValuePreview.Error(ex)];
         }
 
-        int errors = PreviewResults.Count(p => p.State == ValuePreview.States.Error);
-        int successes = PreviewResults.Count(p => p.State == ValuePreview.States.Success);
+        int errors = PreviewResults.CountSucceeded(false);
+        int successes = PreviewResults.CountSucceeded(true);
 
         string?[] states = [(errors > 0 ? errors + Glyphs.Error : null),
              (successes > 0 ? successes + "✅" : null)];

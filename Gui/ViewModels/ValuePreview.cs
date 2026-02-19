@@ -4,20 +4,20 @@ using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
 
-public sealed class ValuePreview(string? result, ValuePreview.States state)
+public sealed class ValuePreview(string? result, bool? succeeded)
 {
     public string? Result { get; } = result;
-    public States State { get; } = state;
+    internal bool? Succeeded { get; } = succeeded;
 
     public Style? Style { get; }
-        = state == States.Success ? Styles.Editor.Success
-        : state == States.Error ? Styles.Editor.Error
+        = succeeded == true ? Styles.Editor.Success
+        : succeeded == false ? Styles.Editor.Error
         : null;
 
-    internal static ValuePreview Error(Exception ex) => new(ex.Message, States.Error);
+    internal static ValuePreview Error(Exception ex) => new(ex.Message, false);
 
     internal static ValuePreview Create(string? result)
-        => new(result, result.IsSignificant() ? States.Success : States.Empty);
+        => new(result, result.IsSignificant() ? true : null);
 
     internal static FlexLayout List(string itemsSource, string hasFocus, object source, ScrapeJobEditor? editor = null)
     {
@@ -67,6 +67,10 @@ public sealed class ValuePreview(string? result, ValuePreview.States state)
             }
         }
     }
+}
 
-    public enum States { Empty, Success, Error }
+internal static class ValuePreviewExtensions
+{
+    internal static int CountSucceeded(this IEnumerable<ValuePreview> previews, bool? succeeded)
+        => previews.Count(p => p.Succeeded == succeeded);
 }
