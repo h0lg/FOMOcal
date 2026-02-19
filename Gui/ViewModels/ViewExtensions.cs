@@ -56,6 +56,11 @@ internal static class Styles
         internal static string RoundedSection = GetName();
     }
 
+    internal static class RadioButton
+    {
+        internal static string SingleSelectToggleButton = GetName();
+    }
+
     private static string GetName([CallerMemberName] string key = "") => key;
     private static Style Get([CallerMemberName] string key = "") => (Style)Application.Current!.Resources[key];
 }

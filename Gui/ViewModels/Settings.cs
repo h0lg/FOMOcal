@@ -163,7 +163,7 @@ public partial class Settings : ObservableObject
                 ThemeVariantToggle("🌕 light", AppTheme.Light, "always use light theme")).View;
 
         private static RadioButton ThemeVariantToggle(string label, AppTheme theme, string tooltip)
-            => new RadioButton { Content = label, StyleClass = ["SingleSelectToggleButton"] }.ToolTip(tooltip)
+            => new RadioButton { Content = label, StyleClass = [Styles.RadioButton.SingleSelectToggleButton] }.ToolTip(tooltip)
                 .Bind(RadioButton.IsCheckedProperty, nameof(UserTheme),
                     convert: (AppTheme t) => t == theme, convertBack: isChecked => isChecked ? theme : Theme.Get());
     }
