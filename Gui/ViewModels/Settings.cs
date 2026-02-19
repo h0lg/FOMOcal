@@ -34,6 +34,7 @@ public partial class Settings : ObservableObject
 
             var layout = VStack(5,
                 Headline("🎨 Theme"), ThemeSwitches().CenterHorizontal(),
+                PreferredDateCultures.Expander(new()),
 
                 Expndr(Headline(Glyphs.Html + "HTML export"),
                     ExportSection(includedFields), htmlExport.included,
@@ -60,8 +61,8 @@ public partial class Settings : ObservableObject
         }
 
         internal static Task GoHere(INavigation navigation) => navigation.PushAsync(new Page(new Settings()));
-        private static Label Headline(string text) => Lbl(text).StyleClass(Styles.Label.Headline);
-        private static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted).TextCenterHorizontal();
+        internal static Label Headline(string text) => Lbl(text).StyleClass(Styles.Label.Headline);
+        internal static Label ContextLabel(string text) => Lbl(text).StyleClass(Styles.Label.Demoted).TextCenterHorizontal();
         private static Label TimingSection(string text) => Lbl(text).StyleClass(Styles.Label.SubHeadline);
         private static Label ExportSection(string text) => TimingSection(text).Margins(top: 20);
 

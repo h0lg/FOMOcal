@@ -45,9 +45,20 @@ internal static class Widgets
             HeightRequest = 0 // hide toggledViews initially
         };
 
+        bool isOpen = false;
+
+        // adjust open expander to the size of its contents
+        scroller.Content.SizeChanged += async (o, e) =>
+        {
+            if (isOpen) await scroller.AnimateHeightRequest(scroller.Content.DesiredSize.Height);
+        };
+
         // toggle visibility of toggledViews on header tap
-        header.FillHorizontal() // so tapping anywhere in the header row works
-            .TapGesture(async () => await scroller.AnimateHeightRequest(scroller.HeightRequest == 0 ? scroller.Content.Height : 0));
+        header.TapGesture(async () =>
+        {
+            isOpen = !isOpen; // toggle state before animation to prevent size adjustment from interfering with closing animation
+            await scroller.AnimateHeightRequest(isOpen ? scroller.Content.Height : 0); // isOpen was already toggled
+        }).FillHorizontal(); // so tapping anywhere in the header row works
 
         return new()
         {

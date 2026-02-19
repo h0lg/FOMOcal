@@ -313,4 +313,7 @@ For odd venue listings that page into unscrapable events, e.g. into the past ins
 
 ^^Used to prevent returning the document early, before all mutations are completed.</value>
   </data>
+  <data name="PreferredDateCultures" xml:space="preserve">
+    <value>Which week day and month names (full or abbreviated) to expect for dates. Used to guess the date format required for parsing a (sortable) date from a string of characters in date scrape jobs.</value>
+  </data>
 </root>

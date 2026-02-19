@@ -98,6 +98,12 @@ public static partial class StringExtensions
         StringComparison stringComparison = StringComparison.InvariantCultureIgnoreCase)
         => terms.Any(t => text.Contains(t, stringComparison));
 
+    /// <summary>Indicates whether <paramref name="text"/> contains all of the supplied
+    /// <paramref name="terms"/> using <paramref name="stringComparison"/> to compare.</summary>
+    internal static bool ContainsAll(this string text, IEnumerable<string> terms,
+        StringComparison stringComparison = StringComparison.InvariantCultureIgnoreCase)
+        => terms.All(t => text.Contains(t, stringComparison));
+
     [GeneratedRegex(@"\[(?<label>[^\]]+)\]\((?<url>https?:\/\/[^\s)]+)\)|(?<urlonly>https?:\/\/[^\s\[\]()]+)")]
     private static partial Regex LinkRegex();
 

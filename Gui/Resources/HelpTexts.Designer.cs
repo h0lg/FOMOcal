@@ -349,6 +349,15 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Which week day and month names (full or abbreviated) to expect for dates. Used to guess the date format required for parsing a (sortable) date from a string of characters in date scrape jobs..
+        /// </summary>
+        internal static string PreferredDateCultures {
+            get {
+                return ResourceManager.GetString("PreferredDateCultures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Log the scrape process, across event paging if configured.
         ///Automatically included in the error log if an error occurs.
         ///
