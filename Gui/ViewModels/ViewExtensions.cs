@@ -36,7 +36,7 @@ internal static class Styles
     internal static class Label
     {
         internal static string Headline = GetName(), SubHeadline = GetName(),
-            Demoted = GetName(), VenueRowDetail = GetName();
+            Demoted = GetName(), EndingEntryButton = GetName(), VenueRowDetail = GetName();
     }
 
     internal static class Editor
@@ -53,9 +53,8 @@ internal static class Styles
 
     internal static class Border
     {
-        internal static string RoundedSection = GetName(),
-            Error = GetName(),
-            ScrapedValue = GetName();
+        internal static string RoundedSection = GetName(), Error = GetName(),
+            EndingEntryButton = GetName(), ScrapedValue = GetName();
     }
 
     internal static class RadioButton

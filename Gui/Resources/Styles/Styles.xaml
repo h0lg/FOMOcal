@@ -341,7 +341,7 @@
         <Setter Property="LineBreakMode" Value="WordWrap" />
     </Style>
 
-    <Style TargetType="Border" Class="showVisualSelector">
+    <Style TargetType="Border" Class="EndingEntryButton">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
         <Setter Property="Margin" Value="-4,0,0,0" />
         <Setter Property="StrokeThickness" Value="0" />
@@ -361,7 +361,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="Label" Class="showVisualSelectorLabel">
+    <Style TargetType="Label" Class="EndingEntryButton">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
         <Setter Property="FontSize" Value="20" />
     </Style>

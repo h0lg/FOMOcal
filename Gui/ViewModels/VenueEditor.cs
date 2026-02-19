@@ -287,8 +287,8 @@ public partial class VenueEditor : ObservableObject
         {
             Border layout = new()
             {
-                StyleClass = ["showVisualSelector"],
-                Content = Lbl("🥢").StyleClass("showVisualSelectorLabel")
+                StyleClass = [Styles.Border.EndingEntryButton],
+                Content = Lbl("🥢").StyleClass(Styles.Label.EndingEntryButton)
             };
 
             layout.ToolTip("🥢 pluck from the page").TapGesture(async () =>
