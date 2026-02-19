@@ -119,8 +119,8 @@ internal static partial class ViewExtensions
         => vis.Bind(VisualElement.IsVisibleProperty, property, converter: converter, source: source);
 
     internal static T BindVisible<T>(this T vis, BindingBase binding1,
-        Func<ValueTuple<bool, bool>, bool> convert, BindingBase binding2) where T : VisualElement
-        => vis.Bind(VisualElement.IsVisibleProperty, binding1, binding2, convert: convert);
+        Func<ValueTuple<bool, bool>, bool> predicate, BindingBase binding2) where T : VisualElement
+        => vis.Bind(VisualElement.IsVisibleProperty, binding1, binding2, convert: predicate);
 
     /// <summary>Binds the visibility of <paramref name="vis"/> to whether
     /// the <paramref name="textProperty"/> is <see cref="StringExtensions.IsSignificant(string?)"/>,
