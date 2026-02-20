@@ -12,6 +12,7 @@ namespace FomoCal.Gui.ViewModels;
 public partial class PreferredDateCultures : ObservableObject
 {
     private static readonly RememberedStrings remembered = new("PreferredDateCultures.remembered", "📆");
+    internal static IEnumerable<CultureInfo> Remembered => remembered.Get().Select(name => new CultureInfo(name));
 
     private readonly ImmutableList<CultureInfo> availableCultures
         = [.. CultureInfo.GetCultures(CultureTypes.AllCultures).OrderBy(c => c.DisplayName)];
@@ -40,9 +41,7 @@ public partial class PreferredDateCultures : ObservableObject
 
     internal PreferredDateCultures()
     {
-        Selected = new(remembered.Get()
-            .Select(name => availableCultures.SingleOrDefault(c => c.Name == name)).WithValue());
-
+        Selected = new(Remembered);
         Selected.CollectionChanged += (o, e) => remembered.Set(Selected.Select(c => c.Name));
     }
 

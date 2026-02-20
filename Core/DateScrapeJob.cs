@@ -10,17 +10,17 @@ public class DateScrapeJob : ScrapeJob
     public static readonly string[] PropertyNames = [.. Properties.Select(p => p.Name)];
     public static readonly string[] StringPropertyNames = [.. stringProperties.Select(p => p.Name)];
 
-    private string culture = "en";
+    private string culture = string.Empty;
     private CultureInfo? cultureInfo;
     private string[]? formats, formatsWithWeekDayButNoYear; // caches
 
     /// <summary>Init via setter e.g. for testing, update using <see cref="UpdateFormat(string)"/> to clear caches.</summary>
-    public string Format { get; set; } = "ddd dd MMM yyyy";
+    public string? Format { get; set; }
 
-    private string[] Formats => formats ??= Format.Split("||", StringSplitOptions.RemoveEmptyEntries);
+    private string[]? Formats => formats ??= Format?.Split("||", StringSplitOptions.RemoveEmptyEntries);
 
-    private string[] FormatsWithWeekDayButNoYear => formatsWithWeekDayButNoYear
-        ??= [.. Formats.Where(f => f.Contains("ddd") && !f.Contains('y'))];
+    private string[]? FormatsWithWeekDayButNoYear => formatsWithWeekDayButNoYear
+        ??= Formats?.Where(f => f.Contains("ddd") && !f.Contains('y')).ToArray();
 
     public string Culture
     {
@@ -32,9 +32,9 @@ public class DateScrapeJob : ScrapeJob
         }
     }
 
-    private CultureInfo CultureInfo => cultureInfo ??= new(Culture);
+    private CultureInfo CultureInfo => Culture.IsSignificant() ? cultureInfo ??= new(Culture) : CultureInfo.InvariantCulture;
 
-    public void UpdateFormat(string value)
+    public void UpdateFormat(string? value)
     {
         Format = value;
         formatsWithWeekDayButNoYear = formats = null; // clear caches
@@ -45,23 +45,33 @@ public class DateScrapeJob : ScrapeJob
         var rawValue = base.GetValue(element, errors);
         if (string.IsNullOrWhiteSpace(rawValue)) return null;
 
-        // try regular parsing
-        var parsed = TryParseWithFormats(rawValue, Formats);
-        if (parsed.HasValue) return parsed;
+        var formats = Formats;
 
-        /* retry parsing for formats with week day but no year
-         * for the next two years to avoid errors due to week day mismatches */
-        if (FormatsWithWeekDayButNoYear.Length > 0)
+        if (formats == null)
         {
-            var currentYear = DateTime.Today.Year;
+            if (DateTime.TryParse(rawValue, CultureInfo, out var result))
+                return result;
+        }
+        else
+        {
+            // try regular parsing
+            var parsed = TryParseWithFormats(rawValue, formats);
+            if (parsed.HasValue) return parsed;
 
-            for (int offset = 1; offset <= 2; offset++)
+            /* retry parsing for formats with week day but no year
+             * for the next two years to avoid errors due to week day mismatches */
+            if (FormatsWithWeekDayButNoYear!.Length > 0)
             {
-                parsed = TryParseWithFormats(rawValue, FormatsWithWeekDayButNoYear,
-                    valueTransform: v => $"{v} {currentYear + offset}",
-                    formatTransform: f => $"{f} yyyy");
+                var currentYear = DateTime.Today.Year;
 
-                if (parsed.HasValue) return parsed;
+                for (int offset = 1; offset <= 2; offset++)
+                {
+                    parsed = TryParseWithFormats(rawValue, FormatsWithWeekDayButNoYear,
+                        valueTransform: v => $"{v} {currentYear + offset}",
+                        formatTransform: f => $"{f} yyyy");
+
+                    if (parsed.HasValue) return parsed;
+                }
             }
         }
 

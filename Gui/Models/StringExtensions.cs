@@ -5,12 +5,6 @@ namespace FomoCal;
 
 internal static partial class StringExtensions
 {
-    /// <summary>Indicates whether <paramref name="text"/> contains any of the supplied
-    /// <paramref name="terms"/> using <paramref name="stringComparison"/> to compare.</summary>
-    internal static bool ContainsAny(this string text, IEnumerable<string> terms,
-        StringComparison stringComparison = StringComparison.InvariantCultureIgnoreCase)
-        => terms.Any(t => text.Contains(t, stringComparison));
-
     /// <summary>Indicates whether <paramref name="text"/> contains all of the supplied
     /// <paramref name="terms"/> using <paramref name="stringComparison"/> to compare.</summary>
     internal static bool ContainsAll(this string text, IEnumerable<string> terms,

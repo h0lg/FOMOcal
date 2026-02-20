@@ -11,6 +11,12 @@ public static partial class StringExtensions
     public static string Join(this IEnumerable<string?> strings, string separator) => string.Join(separator, strings);
     public static string LineJoin(this IEnumerable<string?> strings) => strings.Join(Environment.NewLine);
 
+    /// <summary>Indicates whether <paramref name="text"/> contains any of the supplied
+    /// <paramref name="terms"/> using <paramref name="stringComparison"/> to compare.</summary>
+    public static bool ContainsAny(this string text, IEnumerable<string> terms,
+        StringComparison stringComparison = StringComparison.InvariantCultureIgnoreCase)
+        => terms.Any(t => text.Contains(t, stringComparison));
+
     private static readonly char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
 
     internal static string MakeFileNameSafe(this string name, char replacement = '_')
@@ -59,6 +65,24 @@ public static class EnumerableExtensions
     /// <summary>Returns only the non-null elements from <paramref name="nullables"/>.</summary>
     public static IEnumerable<T> WithValue<T>(this IEnumerable<T?> nullables)
         => nullables.Where(v => v != null).Select(v => v!);
+
+    public static IEnumerable<T[]> CrossJoin<T>(this IEnumerable<IEnumerable<T>> sequences)
+    {
+        IEnumerable<T[]> result = [[]];
+
+        foreach (var sequence in sequences)
+        {
+            result =
+                from acc in result
+                from item in sequence
+                select acc.Append(item).ToArray();
+        }
+
+        return result;
+    }
+
+    public static IEnumerable<(T1, T2)> CrossJoinWith<T1, T2>(this IEnumerable<T1> first, IEnumerable<T2> second)
+        => first.SelectMany(f => second.Select(s => (f, s)));
 }
 
 public static class EnumExtensions

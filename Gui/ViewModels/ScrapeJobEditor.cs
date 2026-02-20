@@ -42,6 +42,7 @@ public partial class ScrapeJobEditor : ObservableObject
             if (ScrapeJob.Selector == value) return;
             ScrapeJob.Selector = value;
             OnPropertyChanged();
+            GuessDateFormat();
         }
     }
 
@@ -53,6 +54,7 @@ public partial class ScrapeJobEditor : ObservableObject
             if (ScrapeJob.IgnoreNestedText == value) return;
             ScrapeJob.IgnoreNestedText = value;
             OnPropertyChanged();
+            GuessDateFormat();
         }
     }
 
@@ -64,6 +66,7 @@ public partial class ScrapeJobEditor : ObservableObject
             if (ScrapeJob.Attribute == value) return;
             ScrapeJob.Attribute = value;
             OnPropertyChanged();
+            GuessDateFormat();
         }
     }
 
@@ -75,6 +78,7 @@ public partial class ScrapeJobEditor : ObservableObject
             if (ScrapeJob.Replace == value) return;
             ScrapeJob.Replace = value;
             OnPropertyChanged();
+            GuessDateFormat();
         }
     }
 
@@ -86,6 +90,7 @@ public partial class ScrapeJobEditor : ObservableObject
             if (ScrapeJob.Match == value) return;
             ScrapeJob.Match = value;
             OnPropertyChanged();
+            GuessDateFormat();
         }
     }
 
@@ -101,7 +106,7 @@ public partial class ScrapeJobEditor : ObservableObject
     }
 
     // DateScrapeJob proxies
-    public string Format
+    public string? Format
     {
         /* No need to handle model.scrapeJob being initialized lazily.
          * We currently only have one DateScrapeJob and it is required i.e. initialized. */
@@ -239,7 +244,7 @@ public partial class ScrapeJobEditor : ObservableObject
         }
     }
 
-    private IEnumerable<string> GetPreviewValues(ScrapeJob.Step? before)
+    private IEnumerable<string> GetPreviewValues(ScrapeJob.Step? before = null)
     {
         var events = getEventsForPreview();
         if (events == null || events.Length == 0) return [];
@@ -298,6 +303,26 @@ public partial class ScrapeJobEditor : ObservableObject
 
         PreviewSummary = states.Join(" ");
         if (!IsOptional) ValidateAsRequired();
+    }
+
+    private void GuessDateFormat()
+    {
+        if (DateScrapeJob == null || !Format.IsNullOrWhiteSpace() || !Culture.IsNullOrWhiteSpace())
+            return;
+
+        var guesses = DateFormat.Guess([.. GetPreviewValues()], [.. PreferredDateCultures.Remembered]);
+        if (guesses.Length == 0) return;
+
+        (string? culture, string? format) pick;
+
+        if (guesses.Length > 1)
+        {
+            pick = guesses[0];
+        }
+        else pick = guesses[0];
+
+        if (pick.culture != null) Culture = pick.culture;
+        if (pick.format != null) Format = pick.format;
     }
 
     public partial class View : Border
