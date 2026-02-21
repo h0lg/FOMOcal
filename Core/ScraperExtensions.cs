@@ -1,10 +1,10 @@
 ﻿namespace FomoCal;
 
-internal static class ScraperExtensions
+public static class ScraperExtensions
 {
     /// <summary>A pre-formatted error message including <paramref name="venue"/> details
     /// - for when <see cref="IAutomateAnEventListing.HtmlLoaded"/> returns null.</summary>
-    internal static string FormatEventLoadingTimedOut(this Venue venue)
+    public static string FormatEventLoadingTimedOut(this Venue venue)
         => $"Waiting for event container '{venue.Event.Selector}' to be available after loading '{venue.ProgramUrl}' timed out.";
 
     internal static async Task<IDomDocument> CreateDocumentAsync(this IBrowser browser, string html, Venue venue, string? url = null)
@@ -15,12 +15,12 @@ internal static class ScraperExtensions
             if (encoding.IsSignificant()) response.OverrideEncoding(encoding);
         });
 
-    internal static IEnumerable<IDomElement> SelectEvents(this IDomDocument document, Venue venue)
+    public static IEnumerable<IDomElement> SelectEvents(this IDomDocument document, Venue venue)
         => ScrapeJob.TryGetXPathSelector(venue.Event.Selector, out var xPathSelector)
             ? document.SelectNodes(xPathSelector).OfType<IDomElement>()
             : document.QuerySelectorAll(venue.Event.Selector);
 
-    internal static IEnumerable<IDomElement> FilterEvents(this IEnumerable<IDomElement> unfiltered, Venue venue)
+    public static IEnumerable<IDomElement> FilterEvents(this IEnumerable<IDomElement> unfiltered, Venue venue)
     {
         if (venue.Event.Filter.IsNullOrWhiteSpace()) return unfiltered;
 
@@ -42,7 +42,7 @@ internal static class ScraperExtensions
     internal static IResponseBuilder OverrideEncoding(this IResponseBuilder builder, string? encoding)
         => builder.Header("content-type", "text/html; charset=" + encoding);
 
-    internal static bool CanLoadMore(this IDomDocument document, Venue venue) => venue.Event.LoadsMoreOnScrollDown()
+    public static bool CanLoadMore(this IDomDocument document, Venue venue) => venue.Event.LoadsMoreOnScrollDown()
         || (venue.Event.LoadsMoreOrDifferentOnNextPage() && document.GetNextPageElement(venue) != null);
 
     private static IDomElement? GetNextPageElement(this IDomDocument document, Venue venue)
@@ -105,16 +105,16 @@ internal static class ScraperExtensions
             else eventHtmlLoading.TrySetResult(null); // lazy loading timed out
         }
 
-        void HandleError(WebNavigationResult navigationResult)
+        void HandleError(WebNavigationError error)
         {
             DetachHandlers();
 
-            if (navigationResult == WebNavigationResult.Timeout)
+            if (error == WebNavigationError.Timeout)
                 eventHtmlLoading.TrySetResult(null);
             else
             {
-                string suffix = navigationResult == WebNavigationResult.Cancel ? "ed" : "";
-                var message = $"navigation {navigationResult}{suffix}";
+                string suffix = error == WebNavigationError.Cancel ? "ed" : "";
+                var message = $"navigation {error}{suffix}";
                 eventHtmlLoading.TrySetException(new Exception(message));
             }
         }

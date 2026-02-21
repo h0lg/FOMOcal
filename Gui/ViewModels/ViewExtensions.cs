@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Markup;
+using FomoCal.Gui.Resources;
 
 namespace FomoCal.Gui.ViewModels;
 
@@ -138,7 +139,7 @@ internal static partial class ViewExtensions
         => vis.Bind(VisualElement.IsVisibleProperty, binding1, binding2, convert: predicate);
 
     /// <summary>Binds the visibility of <paramref name="vis"/> to whether
-    /// the <paramref name="textProperty"/> is <see cref="StringExtensions.IsSignificant(string?)"/>,
+    /// the <paramref name="textProperty"/> is <see cref="Converters.IsSignificant"/>,
     /// i.e. not null or white space.</summary>
     internal static T BindVisibleToSignificanceOf<T>(this T vis, string textProperty) where T : VisualElement
         => vis.Bind(VisualElement.IsVisibleProperty, textProperty, converter: Converters.IsSignificant);
@@ -276,6 +277,9 @@ internal static partial class ViewExtensions
         if (element is ScrollView scrollView) return FindTopLayout(scrollView.Content);
         return null;
     }
+
+    internal static string? GetHelp(this Venue.PagingStrategy strategy)
+        => HelpTexts.ResourceManager.GetString(nameof(Venue.PagingStrategy) + strategy.ToString());
 
     internal static IEnumerable<Event> GetEvents(this IEnumerable<EventList.EventView> views) => views.Select(v => v.Model);
 }

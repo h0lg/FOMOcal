@@ -56,9 +56,9 @@ public interface IHaveAnEvent
     Event Event { get; }
 }
 
-internal static class EventExtensions
+public static class EventExtensions
 {
-    internal static void UpdateWith<T>(this HashSet<T> existing, Venue venue, HashSet<T> scraped) where T : IHaveAnEvent
+    public static void UpdateWith<T>(this HashSet<T> existing, Venue venue, HashSet<T> scraped) where T : IHaveAnEvent
     {
         if (scraped.Count == 0) return;
 
@@ -79,27 +79,27 @@ internal static class EventExtensions
         existing.UnionWith(scraped);
     }
 
-    internal static void RenameVenue(this IEnumerable<Event> events, string oldName, string newName)
+    public static void RenameVenue(this IEnumerable<Event> events, string oldName, string newName)
     {
         foreach (var evt in events)
             if (evt.Venue == oldName)
                 evt.Venue = newName;
     }
 
-    internal static void RemoveOfVenue<T>(this HashSet<T> allEvents, string oldName) where T : IHaveAnEvent
+    public static void RemoveOfVenue<T>(this HashSet<T> allEvents, string oldName) where T : IHaveAnEvent
         => allEvents.RemoveWhere(e => e.Event.Venue == oldName);
 }
 
 public class EventRepository(JsonFileStore store, string fileName) : SetJsonFileRepository<Event>(store, fileName)
 {
-    internal async Task RenameVenueAsync(string oldName, string newName)
+    public async Task RenameVenueAsync(string oldName, string newName)
     {
         var set = await LoadAllAsync();
         set.RenameVenue(oldName, newName);
         await SaveCompleteAsync(set);
     }
 
-    internal async Task DeleteVenueAsync(string venue)
+    public async Task DeleteVenueAsync(string venue)
     {
         var set = await LoadAllAsync();
         set.RemoveOfVenue(venue);

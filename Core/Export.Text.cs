@@ -4,25 +4,10 @@ using System.Text;
 
 namespace FomoCal;
 
-internal static partial class Export
+static partial class Export
 {
-    private static readonly RememberedStrings textEventFields = new("Export.TextEventFields");
-
-    internal static IEnumerable<PropertyInfo> EventFieldsForText
+    public static async Task ExportToText(this IEnumerable<Event> events, PropertyInfo[] eventFields, bool alignedWithHeaders = true)
     {
-        get => LoadEventProperties(textEventFields, () => [nameof(Event.Date), nameof(Event.Name), nameof(Event.Venue)]);
-        set => SaveEventProperties(value, textEventFields);
-    }
-
-    internal static bool TextAlignedWithHeaders
-    {
-        get => Preferences.Get(textAlignedWithHeadersPreferencesKey, true);
-        set => Preferences.Set(textAlignedWithHeadersPreferencesKey, value);
-    }
-
-    internal static async Task ExportToText(this IEnumerable<Event> events, bool alignedWithHeaders = true)
-    {
-        PropertyInfo[] eventFields = [.. EventFieldsForText];
         var headers = eventFields.Select(f => f.Name).ToList();
 
         var rows = events.Select(evt =>

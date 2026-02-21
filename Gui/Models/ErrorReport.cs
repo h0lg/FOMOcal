@@ -7,7 +7,13 @@ namespace FomoCal;
 
 public static class ErrorReport
 {
+    private static IFileSystem? fileSystem;
     internal static readonly string OutputSpacing = Environment.NewLine + Environment.NewLine;
+
+    internal static void Setup(IFileSystem fileSystem)
+    {
+        ErrorReport.fileSystem = fileSystem;
+    }
 
     /// <summary>Uses <see cref="WriteAsync(string, string?)"/> to write the <paramref name="errorReport"/>
     /// and displays an alert on the current page offering to share or ignore it on success
@@ -28,9 +34,9 @@ public static class ErrorReport
                 const string contentType = MediaTypeNames.Text.Plain;
                 var choice = await App.CurrentPage.DisplayActionSheetAsync(header + " - a report was generated.", null, null, share, open, "Ignore it.");
 
-                if (choice == open) await FileHelper.OpenFileAsync(path, header, contentType);
+                if (choice == open) await fileSystem!.OpenFileAsync(path, header, contentType);
                 else if (choice == share)
-                    FileHelper.ShareFile(path, contentType, title: AppInfo.Name + " error report");
+                    fileSystem!.ShareFile(path, contentType, title: AppInfo.Name + " error report");
             }
         });
     }
@@ -49,7 +55,7 @@ public static class ErrorReport
         try
         {
             var path = Path.Combine(MauiProgram.StoragePath, "error reports", $"{AppInfo.Name} error {DateTime.Now:yyyy-MM-dd HH-mm-ss}.txt");
-            await FileHelper.WriteAsync(path, report, Encoding.UTF8);
+            await fileSystem!.WriteAsync(path, report, Encoding.UTF8);
             return (path, report);
         }
         catch (Exception ex)

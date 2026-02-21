@@ -1,0 +1,72 @@
+﻿using System.ComponentModel;
+using System.Reflection;
+using System.Text.RegularExpressions;
+
+namespace FomoCal;
+
+public static partial class StringExtensions
+{
+    public static bool IsNullOrWhiteSpace(this string? str) => string.IsNullOrWhiteSpace(str);
+    public static bool IsSignificant(this string? str) => !string.IsNullOrWhiteSpace(str);
+    public static string Join(this IEnumerable<string?> strings, string separator) => string.Join(separator, strings);
+    public static string LineJoin(this IEnumerable<string?> strings) => strings.Join(Environment.NewLine);
+
+    private static readonly char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
+
+    internal static string MakeFileNameSafe(this string name, char replacement = '_')
+        => string.Concat(name.Select(c => invalidFileNameChars.Contains(c) ? replacement : c));
+
+    internal static string CsvEscape(this string? value)
+        => value.IsNullOrWhiteSpace() ? "" : $"\"{value!.Replace("\"", "\"\"")}\"";
+
+    [GeneratedRegex(@"\s+")] private static partial Regex ConsecutiveWhitespace();
+
+    public static string NormalizeWhitespace(this string? input)
+    {
+        if (input.IsNullOrWhiteSpace()) return string.Empty;
+        string result = ConsecutiveWhitespace().Replace(input!, " "); // replace with single space
+        return result.Trim(); // trim leading/trailing whitespace
+    }
+
+    internal static string ApplyReplacements(this string input, Dictionary<string, string> replacements)
+    {
+        foreach (var pair in replacements) // Apply each replacement pair
+            input = Regex.Replace(input, pair.Key, pair.Value);
+
+        return input;
+    }
+
+    // Regex pattern to match "Pattern => Replacement, Pattern2 =>" pairs
+    [GeneratedRegex(@"([^=\s]+)\s*=>\s*([^,]*)")] private static partial Regex InlinedReplacements();
+
+    internal static string? MigrateInlinedReplacements(string? replacements)
+        => replacements.IsNullOrWhiteSpace() ? null // reset to null
+            : replacements!.Contains("}}") ? replacements // already migrated
+            : InlinedReplacements().Matches(replacements!) // migrate
+                .Select(match => $"{match.Groups[1].Value} }}}} {match.Groups[2].Value}").Join(" || ");
+
+    /// <summary>Explodes the in-lined <paramref name="replacements"/> in the form "Pattern }} Replacement || Pattern2 }}"
+    /// into pairs for <see cref="ApplyReplacements(string, Dictionary{string, string})"/>.</summary>
+    public static Dictionary<string, string> ExplodeInlinedReplacements(this string replacements)
+        => MigrateInlinedReplacements(replacements)!.Split("||", StringSplitOptions.RemoveEmptyEntries)
+            .Select(replacement => replacement.Split("}}"))
+            .ToDictionary(arr => arr[0].Trim(), arr => arr[1].Trim());
+
+}
+
+public static class EnumerableExtensions
+{
+    /// <summary>Returns only the non-null elements from <paramref name="nullables"/>.</summary>
+    public static IEnumerable<T> WithValue<T>(this IEnumerable<T?> nullables)
+        => nullables.Where(v => v != null).Select(v => v!);
+}
+
+public static class EnumExtensions
+{
+    public static string GetDescription<T>(this T value) where T : Enum
+    {
+        var field = typeof(T).GetField(value.ToString());
+        var attribute = field?.GetCustomAttribute<DescriptionAttribute>();
+        return attribute?.Description ?? value.ToString();
+    }
+}

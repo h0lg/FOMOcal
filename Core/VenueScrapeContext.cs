@@ -56,7 +56,7 @@ public sealed partial class VenueScrapeContext : IDisposable, IAsyncDisposable /
 
     public void Log(string message, string? level = null) => log.Add(FormatLog(message, level));
 
-    internal static string FormatLog(string message, string? level)
+    public static string FormatLog(string message, string? level)
         => $"{DateTime.UtcNow:o} {level ?? "INFO"} {message}";
 
     internal string GetScrapeLog() => log.Reverse().LineJoin();

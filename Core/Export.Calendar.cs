@@ -1,10 +1,9 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
-using FomoCal.Gui;
 
 namespace FomoCal;
 
-internal static partial class Export
+static partial class Export
 {
     [GeneratedRegex(@"(\d{1,2})(?::(\d{2}))?", RegexOptions.Compiled)] private static partial Regex TimeRegex();
 
@@ -28,7 +27,7 @@ internal static partial class Export
     }
 
     // see https://en.wikipedia.org/wiki/ICalendar
-    internal static async Task ExportToIcal(this IEnumerable<Event> events)
+    public static async Task ExportToIcal(this IEnumerable<Event> events)
     {
         var sb = new StringBuilder();
         sb.AppendLine("BEGIN:VCALENDAR");
@@ -69,8 +68,8 @@ internal static partial class Export
                 sb.AppendLine($"DESCRIPTION:{descriptionParts.Join("\\n")}");
 
             sb.AppendLine($"DTSTAMP:{evt.Scraped:yyyyMMddTHHmmssZ}");
-            sb.AppendLine($"SOURCE:{MauiProgram.RepoUrl}");
-            sb.AppendLine($"X-FOMOCAL-GENERATED-BY:{AppInfo.Name} v{MauiProgram.GetAppVersion()}");
+            sb.AppendLine($"SOURCE:{RepoUrl}");
+            sb.AppendLine($"X-FOMOCAL-GENERATED-BY:{AppName} v{AppVersion}");
             sb.AppendLine("END:VEVENT");
         }
 

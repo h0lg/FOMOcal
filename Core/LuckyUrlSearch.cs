@@ -1,15 +1,15 @@
 ﻿namespace FomoCal;
 
-internal static class LuckyUrlSearch
+public static class LuckyUrlSearch
 {
-    internal enum Engine { Google, DuckDuckGo }
+    public enum Engine { Google, DuckDuckGo }
 
-    internal static string GetLabel(this Engine engine)
+    public static string GetLabel(this Engine engine)
         => engine == Engine.Google ? "🇬 Google"
             : engine == Engine.DuckDuckGo ? "🦆 DuckDuckGo"
             : throw new ArgumentOutOfRangeException(nameof(engine));
 
-    internal static async Task<string?> TryAsync(string query, Engine engine = Engine.Google, CancellationToken ct = default)
+    public static async Task<string?> TryAsync(string query, Engine engine = Engine.Google, CancellationToken ct = default)
     {
         if (query.IsNullOrWhiteSpace()) return null;
         query += " concerts";

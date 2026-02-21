@@ -5,7 +5,7 @@ using AngleSharp.XPath;
 
 namespace FomoCal;
 
-internal partial class Browser() : IBrowser
+public partial class Browser() : IBrowser
 {
     private readonly IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
 

@@ -8,7 +8,7 @@ public class SetJsonFileRepository<T>(JsonFileStore store, string fileName) wher
 {
     public async Task<HashSet<T>> LoadAllAsync() => await store.LoadAsync<HashSet<T>>(fileName) ?? [];
     public Task SaveCompleteAsync(ISet<T> items) => store.SaveAsync(fileName, items);
-    internal void ShareFile(string label) => store.ShareFile(label, fileName);
+    public void ShareFile(string label) => store.ShareFile(label, fileName);
 }
 
 public class SingletonJsonFileRepository<T>(JsonFileStore store, string fileName) where T : class
@@ -62,13 +62,13 @@ public class JsonFileStore(string storagePath)
         finally { locker.Release(); }
     }
 
-    internal static async Task<T?> DeserializeFrom<T>(string filePath)
+    public static async Task<T?> DeserializeFrom<T>(string filePath)
     {
         string json = await File.ReadAllTextAsync(filePath);
         return JsonSerializer.Deserialize<T>(json, jsonOptions);
     }
 
-    internal static ValueTask<T?> DeserializeFromAsync<T>(Stream utf8Json)
+    public static ValueTask<T?> DeserializeFromAsync<T>(Stream utf8Json)
         => JsonSerializer.DeserializeAsync<T>(utf8Json, jsonOptions);
 
     internal void ShareFile(string fileLabel, string fileName)

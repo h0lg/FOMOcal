@@ -5,10 +5,10 @@ namespace FomoCal;
 
 public class DateScrapeJob : ScrapeJob
 {
-    internal static readonly PropertyInfo[] Properties = [.. typeof(DateScrapeJob).GetProperties()];
+    public static readonly PropertyInfo[] Properties = [.. typeof(DateScrapeJob).GetProperties()];
     private static readonly PropertyInfo[] stringProperties = [.. Properties.Where(p => p.PropertyType == typeof(string))];
-    internal static readonly string[] PropertyNames = [.. Properties.Select(p => p.Name)];
-    internal static readonly string[] StringPropertyNames = [.. stringProperties.Select(p => p.Name)];
+    public static readonly string[] PropertyNames = [.. Properties.Select(p => p.Name)];
+    public static readonly string[] StringPropertyNames = [.. stringProperties.Select(p => p.Name)];
 
     private string culture = "en";
     private CultureInfo? cultureInfo;
@@ -34,7 +34,7 @@ public class DateScrapeJob : ScrapeJob
 
     private CultureInfo CultureInfo => cultureInfo ??= new(Culture);
 
-    internal void UpdateFormat(string value)
+    public void UpdateFormat(string value)
     {
         Format = value;
         formatsWithWeekDayButNoYear = formats = null; // clear caches

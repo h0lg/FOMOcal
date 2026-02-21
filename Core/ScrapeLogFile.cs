@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using System.Text;
-using FomoCal.Gui;
 
 namespace FomoCal;
 
@@ -10,7 +9,14 @@ public interface ISaveScrapeLogFiles
     Task<string?> SaveScrapeLogAsync(Venue venue, string log);
 }
 
-internal class DefaultScrapeLogFileSaver : ISaveScrapeLogFiles
+public interface IFileSystem
+{
+    void ShareFile(string filePath, string contentType, string title);
+    Task WriteAsync(string filePath, string contents, Encoding? encoding = null);
+    Task OpenFileAsync(string path, string? title = null, string? contentType = null);
+}
+
+public class DefaultScrapeLogFileSaver : ISaveScrapeLogFiles
 {
     public Task<string?> SaveScrapeLogAsync(Venue venue, string log) => ScrapeLogFile.Save(venue, log);
 }
@@ -18,32 +24,44 @@ internal class DefaultScrapeLogFileSaver : ISaveScrapeLogFiles
 public static class ScrapeLogFile
 {
     private const string timeFormat = "yyyy-MM-dd HH-mm-ss", extension = ".txt";
-    private static readonly string folder = Path.Combine(MauiProgram.StoragePath, "scrape logs");
+    private static string? storagePath;
+    private static string? folder;
+    private static IFileSystem? fileSystem;
 
-    static ScrapeLogFile() => Directory.CreateDirectory(folder);
+    private static Action<Exception, string> reportError =
+        (_, __) => throw new NotImplementedException("set this before using " + nameof(ScrapeLogFile));
+
+    public static void Setup(string storagePath, IFileSystem fileSystem, Action<Exception, string> reportError)
+    {
+        ScrapeLogFile.fileSystem = fileSystem;
+        ScrapeLogFile.reportError = reportError;
+        ScrapeLogFile.storagePath = storagePath;
+        folder = Path.Combine(ScrapeLogFile.storagePath, "scrape logs");
+        Directory.CreateDirectory(folder);
+    }
 
     internal static async Task<string?> Save(Venue venue, string contents)
     {
         try
         {
             string filePath = GeneratePath(venue);
-            await FileHelper.WriteAsync(filePath, contents, Encoding.UTF8);
+            await fileSystem!.WriteAsync(filePath, contents, Encoding.UTF8);
             return filePath;
         }
         catch (Exception ex)
         {
-            await ErrorReport.WriteAsync(ex.ToString(), "writing scrape log");
+            reportError(ex, "writing scrape log");
             return null;
         }
     }
 
-    internal static async Task Open(ForVenue log)
+    public static async Task Open(ForVenue log)
     {
         if (TrySanitizePath(log, out var path))
-            await FileHelper.OpenFileAsync(path, "Scrape log", MediaTypeNames.Text.Plain);
+            await fileSystem!.OpenFileAsync(path, "Scrape log", MediaTypeNames.Text.Plain);
     }
 
-    internal static void Remove(ForVenue log)
+    public static void Remove(ForVenue log)
     {
         if (TrySanitizePath(log, out var path))
             File.Delete(path);
@@ -59,22 +77,22 @@ public static class ScrapeLogFile
             return false;
         }
 
-        path = Path.Combine(folder, fileName);
+        path = Path.Combine(folder!, fileName);
         return true;
     }
 
     /// <summary>Returns the existing scrape logs for the <paramref name="venue"/>,
     /// file paths (values) by time stamps (keys).</summary>
-    internal static IEnumerable<ForVenue> GetAll(Venue venue)
+    public static IEnumerable<ForVenue> GetAll(Venue venue)
     {
         string prefix = GetNamePrefix(venue);
         if (prefix.IsNullOrWhiteSpace()) return [];
-        string[] paths = Directory.GetFiles(folder, $"{prefix}*{extension}");
+        string[] paths = Directory.GetFiles(folder!, $"{prefix}*{extension}");
         if (paths.Length == 0) return [];
 
         /* number of chars preceding the time in the file path,
             including one path separator and one space in between name and time */
-        int timeStartsAt = folder.Length + prefix.Length + 2;
+        int timeStartsAt = folder!.Length + prefix.Length + 2;
 
         // use timestamp in file name as key, full path as value
         return paths.Select(path => new ForVenue(path.Substring(timeStartsAt, timeFormat.Length), path));
@@ -85,7 +103,7 @@ public static class ScrapeLogFile
         => venue.ProgramUrl.MakeFileNameSafe();
 
     private static string GeneratePath(Venue venue)
-        => Path.Combine(folder, $"{GetNamePrefix(venue)} {DateTime.Now.ToString(timeFormat)}{extension}");
+        => Path.Combine(folder!, $"{GetNamePrefix(venue)} {DateTime.Now.ToString(timeFormat)}{extension}");
 
     public record ForVenue(string TimeStamp, string Path);
 }

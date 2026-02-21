@@ -18,7 +18,7 @@ class MockAutomator(VenueScrapeContext venueScrape, MockBrowser browser) : IAuto
     }
 
     public event Action<string?>? HtmlLoaded;
-    public event Action<WebNavigationResult>? ErrorLoading;
+    public event Action<WebNavigationError>? ErrorLoading;
 
     public Task ClickElementToLoadDifferent(string selector) => SimulateHtmlLoadedAsync();
     public Task ClickElementToLoadMore(string selector) => SimulateHtmlLoadedAsync();
@@ -50,7 +50,7 @@ class MockAutomator(VenueScrapeContext venueScrape, MockBrowser browser) : IAuto
         catch (Exception ex)
         {
             venueScrape.Log(ex.ToString(), "ERROR");
-            ErrorLoading?.Invoke(WebNavigationResult.Failure);
+            ErrorLoading?.Invoke(WebNavigationError.Failure);
         }
     }
 }

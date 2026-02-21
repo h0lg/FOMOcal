@@ -11,9 +11,9 @@ public sealed class PropertyDiff(List<PropertyInfo> path, object? oldValue, obje
     public string DisplayPath => Path.Select(p => p.Name).Join(" ");
 }
 
-internal static class ObjectDiffer
+public static class ObjectDiffer
 {
-    internal static IReadOnlyList<PropertyDiff> Diff(object? oldObj, object? newObj, ILookup<Type, string> ignoredProperties)
+    public static IReadOnlyList<PropertyDiff> Diff(object? oldObj, object? newObj, ILookup<Type, string> ignoredProperties)
     {
         var diffs = new List<PropertyDiff>();
         DiffObject(oldObj, newObj, [], diffs, ignoredProperties);

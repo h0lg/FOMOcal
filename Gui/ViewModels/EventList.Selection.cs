@@ -92,10 +92,10 @@ partial class EventList
                 await events.ExportToIcal();
                 break;
             case ShareEventsPage.Format.HTML:
-                await events.ExportToHtml();
+                await events.ExportToHtml([.. ExportSettings.EventFieldsForHtml]);
                 break;
             case ShareEventsPage.Format.text:
-                await events.ExportToText(Export.TextAlignedWithHeaders);
+                await events.ExportToText([.. ExportSettings.EventFieldsForText], ExportSettings.TextAlignedWithHeaders);
                 break;
             case ShareEventsPage.Format.CSV:
                 await events.ExportToCsv();

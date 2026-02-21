@@ -25,7 +25,7 @@ public partial class AutomatedEventPageView : WebView, IAutomateAnEventListing
     public event Action<string?>? HtmlLoaded;
 
     /// <inheritdoc />
-    public event Action<WebNavigationResult>? ErrorLoading;
+    public event Action<WebNavigationError>? ErrorLoading;
 
     /// <summary>An event that notifies the subscriber about a DOM node
     /// having been picked and returning its selector.</summary>
@@ -112,7 +112,7 @@ public partial class AutomatedEventPageView : WebView, IAutomateAnEventListing
     {
         if (args.Result != WebNavigationResult.Success)
         {
-            ErrorLoading?.Invoke(args.Result); // notify awaiter
+            ErrorLoading?.Invoke((WebNavigationError)args.Result); // notify awaiter
             return;
         }
 

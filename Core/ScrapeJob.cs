@@ -6,14 +6,14 @@ namespace FomoCal;
 
 public class ScrapeJob : IHaveAComment
 {
-    internal const string XPathSelectorPrefix = "XPATH^";
+    public const string XPathSelectorPrefix = "XPATH^";
 
     private static readonly PropertyInfo[] stringProperties =
         [.. typeof(ScrapeJob).GetProperties().Where(p => p.PropertyType == typeof(string))];
 
-    internal static string FormatXpathSelector(string selector) => XPathSelectorPrefix + selector;
+    public static string FormatXpathSelector(string selector) => XPathSelectorPrefix + selector;
 
-    internal static bool TryGetXPathSelector(string selector, [MaybeNullWhen(false)] out string xPathSelector)
+    public static bool TryGetXPathSelector(string selector, [MaybeNullWhen(false)] out string xPathSelector)
     {
         selector = selector.Trim(); // to prevent accidental whitespace from breaking XPathSelectorPrefix detection
 
@@ -69,7 +69,7 @@ public class ScrapeJob : IHaveAComment
     public virtual string? GetValue(IDomElement element, List<Exception>? errors = null)
         => PreviewValue(element, null, errors);
 
-    internal string? PreviewValue(IDomElement element, Step? before, List<Exception>? errors = null)
+    public string? PreviewValue(IDomElement element, Step? before, List<Exception>? errors = null)
     {
         try
         {
@@ -116,7 +116,7 @@ public class ScrapeJob : IHaveAComment
 
     /// <summary>Returns an absolute URL for relative or root-relative paths
     /// scraped from <paramref name="element"/>, like from href or src attributes.</summary>
-    internal string? GetUrl(IDomElement element, List<Exception>? errors = null)
+    public string? GetUrl(IDomElement element, List<Exception>? errors = null)
     {
         string? maybeRelativeUri = GetValue(element, errors);
 
@@ -131,9 +131,9 @@ public class ScrapeJob : IHaveAComment
     }
 
     protected virtual PropertyInfo[] StringProperties => stringProperties;
-    internal bool IsEmpty() => !StringProperties.Any(p => ((string?)p.GetValue(this, null)).IsSignificant());
+    public bool IsEmpty() => !StringProperties.Any(p => ((string?)p.GetValue(this, null)).IsSignificant());
 
-    internal void ResetInsignificantStrings()
+    public void ResetInsignificantStrings()
     {
         foreach (var property in StringProperties)
         {

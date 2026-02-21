@@ -50,6 +50,15 @@ public static class MauiProgram
         // set up storage
         Directory.CreateDirectory(StoragePath); // Ensure directory exists
         JsonFileStore jsonFileStore = new(StoragePath); // handles raw file read/write and de/serialization
+        var fileHelper = new FileHelper();
+
+        ErrorReport.Setup(fileHelper);
+
+        Export.Setup(fileHelper, AppInfo.Name, MauiProgram.GetAppVersion(), RepoUrl, StoragePath,
+            displayActionSheet: (title, c, d, options) => App.CurrentPage.DisplayActionSheetAsync(title, c, d, options));
+
+        ScrapeLogFile.Setup(StoragePath, fileHelper,
+            reportError: async (ex, message) => await ErrorReport.WriteAsync(ex.ToString(), message));
 
         // register JSON file Repositories with file name for each type
         builder.Services.AddSingleton(_ => new SetJsonFileRepository<Venue>(jsonFileStore, "venues"));

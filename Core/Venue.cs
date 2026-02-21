@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
-using FomoCal.Gui.Resources;
 using static FomoCal.Venue;
 
 namespace FomoCal;
@@ -51,7 +50,7 @@ public class Venue
     public override int GetHashCode() => HashCode.Combine(Name, ProgramUrl);
 
     internal string Serialize() => JsonSerializer.Serialize(this);
-    internal Venue DeepCopy() => JsonSerializer.Deserialize<Venue>(Serialize())!;
+    public Venue DeepCopy() => JsonSerializer.Deserialize<Venue>(Serialize())!;
 
     public class EventScrapeJob : IHaveAComment
     {
@@ -85,7 +84,7 @@ public class Venue
 
         internal bool LoadsMoreOnScrollDown() => PagingStrategy == PagingStrategy.ScrollDownToLoadMore;
         private bool WaitsForEvents() => LazyLoaded || LoadsMoreOnScrollDown();
-        internal bool RequiresAutomation() => WaitsForEvents() || PagingStrategy.ClicksElementToLoad();
+        public bool RequiresAutomation() => WaitsForEvents() || PagingStrategy.ClicksElementToLoad();
 
         internal bool LoadsMoreOrDifferentOnNextPage()
             => NextPageSelector.IsSignificant() && PagingStrategy.RequiresNextPageSelector();
@@ -159,7 +158,7 @@ public interface IHaveAComment
 
 public static class VenueExtensions
 {
-    internal static T Migrate<T>(this T venues) where T : IEnumerable<Venue>
+    public static T Migrate<T>(this T venues) where T : IEnumerable<Venue>
     {
         PropertyInfo[] scrapJobProperties = [.. typeof(EventScrapeJob).GetProperties()
             .Where(p => p.PropertyType.IsAssignableTo(typeof(ScrapeJob)))];
@@ -181,7 +180,4 @@ public static class VenueExtensions
     public static bool LoadsDifferentEvents(this PagingStrategy strategy)
         => strategy == PagingStrategy.NavigateLinkToLoadDifferent
         || strategy == PagingStrategy.ClickElementToLoadDifferent;
-
-    internal static string? GetHelp(this PagingStrategy strategy)
-        => HelpTexts.ResourceManager.GetString(nameof(PagingStrategy) + strategy.ToString());
 }

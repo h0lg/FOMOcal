@@ -164,10 +164,10 @@ public sealed partial class Scraper(IBrowser browser, IBuildEventListingAutomato
         return excluded;
     }
 
-    internal Task<IDomDocument> CreateDocumentAsync(string html, Venue venue, string? url)
+    public Task<IDomDocument> CreateDocumentAsync(string html, Venue venue, string? url)
         => browser.CreateDocumentAsync(html, venue, url);
 
-    internal async Task<IDomDocument?> LoadMoreAsync(IAutomateAnEventListing automator, Venue venue, IDomDocument currentPage)
+    public async Task<IDomDocument?> LoadMoreAsync(IAutomateAnEventListing automator, Venue venue, IDomDocument currentPage)
     {
         var loading = await browser.LoadMoreAsync(venue, automator, currentPage);
         if (loading == null) return null;

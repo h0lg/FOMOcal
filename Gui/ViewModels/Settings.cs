@@ -9,14 +9,14 @@ public partial class Settings : ObservableObject
     [ObservableProperty] public partial AppTheme UserTheme { get; set; } = Theme.Get();
     partial void OnUserThemeChanged(AppTheme value) => Theme.Set(value);
 
-    [ObservableProperty] public partial bool ExportTextAlignedWithHeaders { get; set; } = Export.TextAlignedWithHeaders;
-    partial void OnExportTextAlignedWithHeadersChanged(bool value) => Export.TextAlignedWithHeaders = value;
+    [ObservableProperty] public partial bool ExportTextAlignedWithHeaders { get; set; } = ExportSettings.TextAlignedWithHeaders;
+    partial void OnExportTextAlignedWithHeadersChanged(bool value) => ExportSettings.TextAlignedWithHeaders = value;
 
     public EventPropertySelection ExportedTextEventFields { get; }
-        = new(Export.EventFieldsForText, save: fields => Export.EventFieldsForText = fields);
+        = new(ExportSettings.EventFieldsForText, save: fields => ExportSettings.EventFieldsForText = fields);
 
     public EventPropertySelection ExportedHtmlEventFields { get; }
-        = new(Export.EventFieldsForHtml, save: fields => Export.EventFieldsForHtml = fields);
+        = new(ExportSettings.EventFieldsForHtml, save: fields => ExportSettings.EventFieldsForHtml = fields);
 
     public partial class Page : ContentPage
     {

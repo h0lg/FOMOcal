@@ -6,19 +6,10 @@ using AngleSharp.Html.Dom;
 
 namespace FomoCal;
 
-internal static partial class Export
+static partial class Export
 {
-    private static readonly RememberedStrings htmlEventFields = new("Export.HtmlEventFields");
-
-    internal static IEnumerable<PropertyInfo> EventFieldsForHtml
+    public static async Task ExportToHtml(this IEnumerable<Event> events, PropertyInfo[] eventFields)
     {
-        get => LoadEventProperties(htmlEventFields, () => [.. Event.Fields.Select(p => p.Name)]);
-        set => SaveEventProperties(value, htmlEventFields);
-    }
-
-    internal static async Task ExportToHtml(this IEnumerable<Event> events)
-    {
-        PropertyInfo[] eventFields = [.. EventFieldsForHtml];
         using var context = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
         using var doc = await context.OpenNewAsync();
 

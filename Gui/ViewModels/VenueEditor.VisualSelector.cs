@@ -35,15 +35,15 @@ partial class VenueEditor
         RevealMore();
     }
 
-    private async Task OnErrorLoadingEventsAsync(WebNavigationResult navigationResult)
+    private async Task OnErrorLoadingEventsAsync(WebNavigationError error)
     {
         SetDocument(null);
         IsEventPageLoading = false;
-        string suffix = navigationResult == WebNavigationResult.Cancel ? "ed" : "";
-        var message = $"Navigation {navigationResult}{suffix}.";
+        string suffix = error == WebNavigationError.Cancel ? "ed" : "";
+        var message = $"Navigation {error}{suffix}.";
 
         // using ErrorLoading to give user feedback about an invalid URL instead of validating before
-        if (navigationResult == WebNavigationResult.Failure)
+        if (error == WebNavigationError.Failure)
         {
             if (!ProgramUrl.IsValidHttpUrl()) message += $" '{ProgramUrl}' is not a valid HTTP URL.";
             else if (!App.HasInternet) message += " Loading the event listing requires an internet connection.";
@@ -62,7 +62,7 @@ partial class VenueEditor
         {
             pageView = new(model.venue, log: (message, level) => model.BrowserLog.Add(VenueScrapeContext.FormatLog(message, level)));
             pageView.HtmlLoaded += async html => await model.OnHtmlLoadedAsync(html, pageView.Url);
-            pageView.ErrorLoading += async navigationResult => await model.OnErrorLoadingEventsAsync(navigationResult);
+            pageView.ErrorLoading += async error => await model.OnErrorLoadingEventsAsync(error);
             pageView.PickedSelector += selector => model.PickedSelector = selector;
 
             void GoTo(string programUrl)
