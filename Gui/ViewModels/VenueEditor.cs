@@ -23,7 +23,6 @@ public partial class VenueEditor : ObservableObject
     private IDomDocument? programDocument;
     private IDomElement[]? previewedEvents;
 
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(CanReload))] public partial bool IsEventPageLoading { get; set; }
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(SaveCommand))] public partial bool HasRequiredInfo { get; set; }
     [ObservableProperty] public partial bool ShowRequiredEventFields { get; set; }
     [ObservableProperty] public partial bool ShowOptionalEventFields { get; set; }
@@ -39,27 +38,6 @@ public partial class VenueEditor : ObservableObject
 
     [ObservableProperty] public partial bool ShowBrowserLog { get; set; }
     [ObservableProperty] public partial ObservableCollection<string> BrowserLog { get; set; } = [];
-
-    /// <summary>Bound to the editor and eventually committed to <see cref="ProgramUrl"/>.</summary>
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsEditingProgramUrlValid)), NotifyPropertyChangedFor(nameof(CanReload))]
-    public partial string EditingProgramUrl { get; set; }
-
-    public bool IsEditingProgramUrlValid => EditingProgramUrl.IsSignificant() && EditingProgramUrl.IsValidHttpUrl();
-
-    public bool CanReload => IsEditingProgramUrlValid && !IsEventPageLoading;
-
-    public string ProgramUrl
-    {
-        get => venue.ProgramUrl;
-        set
-        {
-            if (value == venue.ProgramUrl || !value.IsValidHttpUrl()) return;
-            venue.ProgramUrl = value; // triggers web view to navigate
-            SetDocument(null);
-            OnPropertyChanged();
-            RevealMore();
-        }
-    }
 
     public string VenueName
     {
@@ -273,9 +251,6 @@ public partial class VenueEditor : ObservableObject
     }
 
     [RelayCommand]
-    private static Task OpenUrl(string url) => WebViewPage.OpenUrlAsync(url);
-
-    [RelayCommand]
     private static Task OpenScrapeLog(ScrapeLogFile.ForVenue log) => ScrapeLogFile.Open(log);
 
     [RelayCommand]
@@ -391,10 +366,8 @@ public partial class VenueEditor : ObservableObject
 
         private Grid VenueFields()
         {
-            // bind to a draft model property without property change handler
-            var urlEntry = Entr(nameof(EditingProgramUrl), placeholder: "Program page URL", Keyboard.Url)
-                // commit changes on loss of focus to one that has - to avoid premature URL loading errors
-                .OnFocusChanged((_, focused) => { if (!focused) model.ProgramUrl = model.EditingProgramUrl; });
+            ProgramUrlControls(out Entry urlEntry, out Label invalidIndicator,
+                out ActivityIndicator loadingIndicator, out Button reload, out Button openUrl);
 
             var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
             var encoding = Entr(nameof(Encoding), placeholder: "encoding override").ToolTip(HelpTexts.Encoding);
@@ -404,19 +377,6 @@ public partial class VenueEditor : ObservableObject
                 .Bind(Entry.TextProperty,
                     getter: static vm => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
-
-            const string isValidUrl = nameof(IsEditingProgramUrlValid);
-
-            var invalidIndicator = Lbl("⚠").ToolTip("This is not a valid HTTP URL.").CenterVertical()
-                .BindVisible(isValidUrl, converter: Converters.Not);
-
-            var loadingIndicator = new ActivityIndicator { IsRunning = true }
-                .BindVisible(new Binding(isValidUrl), Converters.And, new Binding(nameof(IsEventPageLoading)));
-
-            var reload = Btn("⟳").TapGesture(Reload).BindVisible(nameof(CanReload));
-
-            var openUrl = Btn(Glyphs.Link, nameof(OpenUrlCommand), source: model, parameterPath: nameof(ProgramUrl))
-                .BindVisible(isValidUrl);
 
             return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 FldLbl("🕸"), urlEntry.Column(1), invalidIndicator.Column(2).ColumnSpan(2),
