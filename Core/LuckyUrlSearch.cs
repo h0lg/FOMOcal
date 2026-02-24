@@ -12,7 +12,6 @@ public static class LuckyUrlSearch
     public static async Task<string?> TryAsync(string query, Engine engine = Engine.Google, CancellationToken ct = default)
     {
         if (query.IsNullOrWhiteSpace()) return null;
-        query += " concerts";
 
         string queryUrl = engine switch
         {

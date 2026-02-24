@@ -9,10 +9,13 @@ namespace FomoCal.Gui.ViewModels;
 public partial class LuckyUrlSearchSettings : ObservableObject
 {
     private static readonly RememberedStrings engines = new("LuckyUrlSearchSettings.engines", "🤞");
+    private static readonly RememberedString suffix = new("LuckyUrlSearchSettings.suffix", "concerts");
+    internal static string Suffix => suffix.Get()!;
 
     internal static IEnumerable<LuckyUrlSearch.Engine> Engines
         => engines.Get().Select(Enum.Parse<LuckyUrlSearch.Engine>);
 
+    public string EditableSuffix { get => suffix.Get()!; set => suffix.Set(value); }
     public ObservableCollection<SelectableEngine> Selected { get; }
     public ObservableCollection<SelectableEngine> Deselected { get; }
     public bool HasSelected => Selected.Any();
@@ -78,7 +81,10 @@ public partial class LuckyUrlSearchSettings : ObservableObject
                 .BindVisible(nameof(HasSelected)),
             deselected,
             Settings.Page.ContextLabel("Tap an engine to use it.")
-                .BindVisible(nameof(HasDeselected)));
+                .BindVisible(nameof(HasDeselected)),
+            LbldView("Suffix", Entr(nameof(EditableSuffix), "concerts")).Wrapper.BindVisible(nameof(HasSelected)),
+            Settings.Page.ContextLabel("This is automatically appended to the search terms after venue name and city - to find the event listing addresses of venues rather than their home pages.")
+                .BindVisible(nameof(HasSelected)));
 
         expander.BindingContext = model;
         return expander;

@@ -50,10 +50,11 @@ partial class VenueEditor
             string? luckyUrl = null;
             LuckyUrlSearch.Engine? luckyEngine = null;
             LuckyUrlSearch.Engine[] engines = [.. LuckyUrlSearchSettings.Engines];
+            string query = EditingProgramUrl + " " + LuckyUrlSearchSettings.Suffix;
 
             foreach (var engine in engines)
             {
-                luckyUrl = await LuckyUrlSearch.TryAsync(EditingProgramUrl, engine);
+                luckyUrl = await LuckyUrlSearch.TryAsync(query, engine);
 
                 if (luckyUrl != null)
                 {
