@@ -34,6 +34,7 @@ public partial class Settings : ObservableObject
 
             var layout = VStack(5,
                 Headline("🎨 Theme"), ThemeSwitches().CenterHorizontal(),
+                LuckyUrlSearchSettings.Expander(new()),
                 PreferredDateCultures.Expander(new()),
 
                 Expndr(Headline(Glyphs.Html + "HTML export"),

@@ -47,9 +47,22 @@ partial class VenueEditor
 
         if (App.HasInternet)
         {
-            var luckyEngine = LuckyUrlSearch.Engine.Google;
-            var luckyUrl = await LuckyUrlSearch.TryAsync(EditingProgramUrl, luckyEngine);
-            var chosenUrl = await PickUrlAsync(EditingProgramUrl, luckyUrl, luckyEngine);
+            string? luckyUrl = null;
+            LuckyUrlSearch.Engine? luckyEngine = null;
+            LuckyUrlSearch.Engine[] engines = [.. LuckyUrlSearchSettings.Engines];
+
+            foreach (var engine in engines)
+            {
+                luckyUrl = await LuckyUrlSearch.TryAsync(EditingProgramUrl, engine);
+
+                if (luckyUrl != null)
+                {
+                    luckyEngine = engine;
+                    break;
+                }
+            }
+
+            var chosenUrl = await PickUrlAsync(EditingProgramUrl, luckyUrl, luckyEngine, engines);
             if (chosenUrl != null) EditingProgramUrl = ProgramUrl = chosenUrl!;
             else ProgramUrl = EditingProgramUrl; // commit even if nothing was found or chosen to enable saving drafts
         }
@@ -59,10 +72,13 @@ partial class VenueEditor
     private static string LabelSearch(LuckyUrlSearch.Engine engine, string originalQuery)
         => $"🔎 Search \"{originalQuery}\" with {engine.GetLabel()}";
 
-    private async Task<string?> PickUrlAsync(string originalQuery, string? suggestedUrl, LuckyUrlSearch.Engine luckyEngine)
+    private async Task<string?> PickUrlAsync(string originalQuery,
+        string? suggestedUrl, LuckyUrlSearch.Engine? luckyEngine,
+        LuckyUrlSearch.Engine[] triedLuckyEngines)
     {
         const string previewSuggested = "👁 Preview suggested URL",
-            cancel = "🚫 Neither, let me rety";
+            cancel = "🚫 Neither, let me rety",
+            openSettings = $"{Glyphs.Settings} Configure {Glyphs.Lucky}lucky search";
 
         string useSuggested = $"{Glyphs.Target}Use suggested URL",
             google = LabelSearch(LuckyUrlSearch.Engine.Google, originalQuery),
@@ -73,17 +89,30 @@ partial class VenueEditor
 
         if (suggestedUrl.IsSignificant())
         {
-            title = $"{luckyEngine} suggests {suggestedUrl}";
+            title = $"{luckyEngine!.Value.GetLabel()} suggests {suggestedUrl}";
             options.Add(useSuggested);
             options.Add(previewSuggested);
         }
-        else title = $"That's not a web address and {luckyEngine} didn't suggest anything.";
+        else
+        {
+            title = triedLuckyEngines.Length == 0
+                ? $"That's not a web address and you have no {Glyphs.Lucky}lucky search engines selected."
+                : $"That's not a web address and your selected {Glyphs.Lucky}lucky search engines didn't suggest anything.";
+
+            options.Add(openSettings);
+        }
 
         options.Add(duckDuckGo);
         options.Add(google);
         var choice = await App.CurrentPage.DisplayActionSheetAsync(title, cancel, null, [.. options]);
         if (choice == cancel || choice == null) return null;
         if (choice == useSuggested) return suggestedUrl;
+
+        if (choice == openSettings)
+        {
+            await Settings.Page.GoHere(navigation);
+            return null;
+        }
 
         string previewUrl = choice == previewSuggested ? suggestedUrl!
             : choice == google ? "https://www.google.com/search?q=" + Uri.EscapeDataString(originalQuery)

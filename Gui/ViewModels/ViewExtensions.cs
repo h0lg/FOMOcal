@@ -31,7 +31,8 @@ internal static class Glyphs
         Edit = "✏",
         Error = "⚠",
         Target = "🎯 ",
-        Delete = "🗑";
+        Delete = "🗑",
+        Lucky = "🍀 ";
 }
 
 internal static class Styles
