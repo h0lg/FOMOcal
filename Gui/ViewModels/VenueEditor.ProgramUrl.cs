@@ -134,11 +134,12 @@ partial class VenueEditor
 
     partial class Page
     {
-        private void ProgramUrlControls(out Entry urlEntry, out Label invalidIndicator,
+        private void ProgramUrlControls(out Editor urlEditor, out Label invalidIndicator,
             out ActivityIndicator loadingIndicator, out Button reload, out Button openUrl)
         {
             // bind to a draft model property without property change handler
-            urlEntry = Entr(nameof(EditingProgramUrl), placeholder: "event listing URL - or venue name and town", Keyboard.Url)
+            urlEditor = Edtr(nameof(EditingProgramUrl),
+                placeholder: $"enter event listing web address - or {Glyphs.Lucky} lucky search it by venue name and city", Keyboard.Url)
                 // commit changes on loss of focus to one that has - to avoid premature URL loading errors
                 .OnFocusChanged(async (_, focused) => { if (!focused) await model.CommitEditingProgramUrlAsync(); });
 
