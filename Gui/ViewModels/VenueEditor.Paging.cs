@@ -52,8 +52,8 @@ partial class VenueEditor
                 else await SyncPagingStrategyHelp(focused: false);
             };
 
-            var nextPageSelector = SelectorEntry(
-                Entr(nameof(NextEventPageSelector)).Placeholder("next page")
+            var nextPageSelector = SelectorInput(
+                Edtr(nameof(NextEventPageSelector)).Placeholder("next page")
                     .InlineTooltipOnFocus(HelpTexts.NextEventPageSelector, help,
                         cancelFocusChanged: (vis, focused) => !focused && model.visualSelectorHost == vis),
                 pickRelativeTo: () => (selector: "body", pickDescendant: true))

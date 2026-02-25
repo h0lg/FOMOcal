@@ -160,7 +160,7 @@ partial class VenueEditor
         {
             var selectedQuery = display.Text?.Substring(display.CursorPosition, display.SelectionLength);
             string normalized = selectedQuery.NormalizeWhitespace();
-            Entry host = model.visualSelectorHost!;
+            InputView host = model.visualSelectorHost!;
             var existing = host.Text ?? "";
             var hasXpath = FomoCal.ScrapeJob.TryGetXPathSelector(existing, out var existingXpath);
 
@@ -181,7 +181,7 @@ partial class VenueEditor
             pageView!.Reload();
         }
 
-        private async Task ShowVisualSelectorForAsync(Entry entry, string selector, bool descendant)
+        private async Task ShowVisualSelectorForAsync(InputView input, string selector, bool descendant)
         {
             // reset UI state to allow picking an element
             model.ShowSelectorOptions = false;
@@ -199,11 +199,11 @@ partial class VenueEditor
                 model.selectorOptions.PropertyChanged += (o, e) => pageView!.SetPickedSelectorDetail(model.selectorOptions);
             }
 
-            model.visualSelectorHost = entry;
+            model.visualSelectorHost = input;
 
             if (DeviceInfo.Idiom == DeviceIdiom.Desktop || DeviceInfo.Idiom == DeviceIdiom.Tablet)
-                entry.Focus(); // to keep its help open on devices with big screens
-            else entry.Unfocus(); // on-screen keyboard sliding in from below is useless in visual picker and takes up space
+                input.Focus(); // to keep its help open on devices with big screens
+            else input.Unfocus(); // on-screen keyboard sliding in from below is useless in visual picker and takes up space
 
             visualSelector.IsVisible = true;
             await pageView!.PickRelativeTo(selector, descendant);
@@ -219,10 +219,10 @@ partial class VenueEditor
             {
                 await visualSelector.AnimateHeightRequest(0);
                 visualSelector.IsVisible = false;
-                Entry entry = model.visualSelectorHost; // keep a reference to it before resetting
+                InputView input = model.visualSelectorHost; // keep a reference to it before resetting
                 model.visualSelectorHost = null; // reset before re-focusing entry because its handler may check model.visualSelectorHost
                 form.HeightRequest = -1; // reset form height
-                entry.Focus(); // re-focus the entry to keep its help and preview or errors open
+                input.Focus(); // re-focus the entry to keep its help and preview or errors open
             });
         }
 

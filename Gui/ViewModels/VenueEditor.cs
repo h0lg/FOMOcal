@@ -20,7 +20,7 @@ public partial class VenueEditor : ObservableObject
     private readonly Venue venue;
     private readonly ScrapeJobEditor eventName, eventDate;
 
-    private Entry? visualSelectorHost;
+    private InputView? visualSelectorHost;
     private IDomDocument? programDocument;
 
     [ObservableProperty] public partial bool HasRequiredInfo { get; set; }
@@ -298,30 +298,30 @@ public partial class VenueEditor : ObservableObject
                     RelativeSelectorEntry, () => model.visualSelectorHost), scrapeJob == null);
         }
 
-        private HorizontalStackLayout SelectorEntry(Entry entry, Func<(string selector, bool pickDescendant)> pickRelativeTo)
+        private Grid SelectorInput(InputView input, Func<(string selector, bool pickDescendant)> pickRelativeTo)
         {
-            Border layout = new()
+            Border button = new()
             {
                 StyleClass = [Styles.Border.EndingEntryButton],
                 Content = Lbl("🥢").StyleClass(Styles.Label.EndingEntryButton)
             };
 
-            layout.ToolTip("🥢 pluck from the page").TapGesture(async () =>
+            button.ToolTip("🥢 pluck from the page").TapGesture(async () =>
             {
                 if (App.HasInternet)
                 {
                     (string selector, bool pickDescendant) = pickRelativeTo.Invoke();
-                    await ShowVisualSelectorForAsync(entry, selector, pickDescendant);
+                    await ShowVisualSelectorForAsync(input, selector, pickDescendant);
                 }
                 else await App.CurrentPage.DisplayAlertAsync("Connect to the internet and retry",
                     "Loading the event listing requires internet access.", "OK");
             });
 
-            return HStack(0, entry, layout);
+            return Grd(cols: [Star, Auto], rows: [Auto], 0, input, button.Column(1));
         }
 
-        private HorizontalStackLayout RelativeSelectorEntry(Entry entry, Func<string?>? maybeGetDescendantOfClosest)
-            => SelectorEntry(entry, pickRelativeTo: () =>
+        private Grid RelativeSelectorEntry(InputView input, Func<string?>? maybeGetDescendantOfClosest)
+            => SelectorInput(input, pickRelativeTo: () =>
             {
                 /*  if maybeGetDescendantOfClosest is set, we're selecting the descendant
                  *  and prefer selecting from the Closest expression over the EventSelector */

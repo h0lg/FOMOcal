@@ -270,6 +270,16 @@ internal static partial class ViewExtensions
         return tcs.Task; // Await the completion of the animation
     }
 
+    /// <summary>Makes the multi-line <paramref name="input"/> shrink to display its contents
+    /// while fit in the same <see cref="FlexLayout"/> row if possible
+    /// - but grow if necessary to use the remaining space.</summary>
+    internal static T FlexFitContents<T>(this T input) where T : BindableObject
+    {
+        FlexLayout.SetGrow(input, 1);
+        FlexLayout.SetShrink(input, 1);
+        return input; // to support chaining
+    }
+
     internal static VisualElement? FindTopLayout(this Element element)
     {
         if (element is Layout layout) return layout;

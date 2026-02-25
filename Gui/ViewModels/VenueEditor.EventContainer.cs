@@ -104,9 +104,9 @@ partial class VenueEditor
                 .StyleClass(Styles.Label.VenueRowDetail)
                 .BindIsVisibleToHasValueOf<Label, DateTime>(nameof(LastRefreshed));
 
-            var selectorText = Entr(nameof(EventSelector), placeholder: "event container selector");
+            var selectorText = Edtr(nameof(EventSelector), placeholder: "event container selector");
 
-            var containerSelector = SelectorEntry(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
+            var containerSelector = SelectorInput(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
             (Switch Switch, Grid Wrapper) lazyLoaded = Swtch(nameof(LazyLoaded));
 
             var eventFilter = Entr(nameof(EventFilter), placeholder: "text or XPath");

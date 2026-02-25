@@ -347,12 +347,12 @@ public partial class ScrapeJobEditor : ObservableObject
     {
         private readonly (Label label, Border layout) help;
         private readonly ScrapeJobEditor model;
-        private readonly Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry;
-        private readonly Func<Entry?> getVisualSelectorHost;
+        private readonly Func<InputView, Func<string?>?, Grid> createVisualSelectorEntry;
+        private readonly Func<InputView?> getVisualSelectorHost;
 
         public View(ScrapeJobEditor model,
-            Func<Entry, Func<string?>?, HorizontalStackLayout> createVisualSelectorEntry,
-            Func<Entry?> getVisualSelectorHost)
+            Func<InputView, Func<string?>?, Grid> createVisualSelectorEntry,
+            Func<InputView?> getVisualSelectorHost)
         {
             this.model = model;
             this.createVisualSelectorEntry = createVisualSelectorEntry;
@@ -370,11 +370,11 @@ public partial class ScrapeJobEditor : ObservableObject
             List<IView> children = [
                 HStack(5, Lbl(model.label).Bold(), displayInputs.Wrapper.BindVisible(nameof(IsEmpty))),
 
-                SelectorEntry("closest", nameof(Closest),
+                SelectorInput("closest", nameof(Closest),
                     null, // for picking common ancestor of clicked element and event container
                     HelpTexts.ScrapeJobClosest),
 
-                SelectorEntry("selector", nameof(Selector),
+                SelectorInput("selector", nameof(Selector),
                     () => model.Closest, // for picking descendant, preferably from Closest if set
                     HelpTexts.ScrapeJobSelector),
 
@@ -416,13 +416,13 @@ public partial class ScrapeJobEditor : ObservableObject
             model.UpdatePreview(); // once initially
         }
 
-        private Grid SelectorEntry(string label, string property, Func<string?>? maybeGetDescendantOfClosest, string tooltip)
+        private Grid SelectorInput(string label, string property, Func<string?>? maybeGetDescendantOfClosest, string tooltip)
         {
-            var input = createVisualSelectorEntry(HintedInput(Entr(property), tooltip,
+            var input = createVisualSelectorEntry(HintedInput(Edtr(property), tooltip,
                 cancelFocusChanged: (vis, focused) => !focused && getVisualSelectorHost() == vis),
                 maybeGetDescendantOfClosest);
 
-            return LbldView(label, input).Wrapper.DisplayWithSignificant(property);
+            return LbldView(label, input).Wrapper.FlexFitContents().DisplayWithSignificant(property);
         }
 
         private Grid TextEntry(string label, string property, string tooltip,
@@ -435,13 +435,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 : HStack(0, input, Regex101.DeepLink(regex101DeepLink.Value, input, model.GetPreviewValues));
 
             (Grid wrapper, Label _) = LbldView(label, editor);
-
-            if (multiLine)
-            {
-                FlexLayout.SetGrow(wrapper, 1); // grow multiLine Editor to use the remaining space
-                FlexLayout.SetShrink(wrapper, 1); // but shrink it to fit in the same row if possible
-            }
-
+            if (multiLine) wrapper.FlexFitContents();
             return wrapper.DisplayWithSignificant(property);
         }
 
