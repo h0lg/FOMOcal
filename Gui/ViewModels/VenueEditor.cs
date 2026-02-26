@@ -255,8 +255,8 @@ public partial class VenueEditor : ObservableObject
             var encoding = Entr(nameof(Encoding), placeholder: "encoding override").ToolTip(HelpTexts.Encoding);
             var comment = Edtr(nameof(Comment), placeholder: "explain this config or something about it").ToolTip(HelpTexts.Comment);
 
-            var location = new Entry { Placeholder = "Location, contacts or other helpful info" }
-                .Bind(Entry.TextProperty,
+            var location = new Editor { Placeholder = "Location, contacts or other helpful info" }
+                .Bind(Editor.TextProperty,
                     getter: static vm => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
