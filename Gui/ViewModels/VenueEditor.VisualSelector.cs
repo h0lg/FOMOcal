@@ -45,7 +45,7 @@ partial class VenueEditor
         // using ErrorLoading to give user feedback about an invalid URL instead of validating before
         if (error == WebNavigationError.Failure)
         {
-            if (!ProgramUrl.IsValidHttpUrl()) message += $" '{ProgramUrl}' is not a valid HTTP URL.";
+            if (!ProgramUrl.IsSignificantValidUrl()) message += $" '{ProgramUrl}' is not a valid HTTP URL.";
             else if (!App.HasInternet) message += " Loading the event listing requires an internet connection.";
         }
 
@@ -67,8 +67,8 @@ partial class VenueEditor
 
             void GoTo(string programUrl)
             {
-                // avoid navigation error caused by setting Source to empty string when adding a venue
-                if (programUrl.IsNullOrWhiteSpace()) return;
+                model.HasInternet = App.HasInternet;
+                if (!model.HasInternet || !programUrl.IsSignificantValidUrl()) return; // avoid navigation error
                 pageView.Url = programUrl;
                 model.IsEventPageLoading = true;
             }
@@ -83,7 +83,7 @@ partial class VenueEditor
                 else if (e.PropertyName == nameof(LazyLoaded)
                     || e.PropertyName == nameof(Encoding)
                     || (e.PropertyName == nameof(EventSelector) && model.LazyLoaded))
-                    Reload();
+                    await ReloadAsync();
             };
 
             const string displayedSelector = nameof(DisplayedSelector),
@@ -175,8 +175,18 @@ partial class VenueEditor
                 : existing + " " + normalized; // append to existing CSS
         }
 
-        private void Reload()
+        private async Task ReloadAsync()
         {
+            model.HasInternet = App.HasInternet;
+
+            if (!model.HasInternet)
+            {
+                await App.CurrentPage.DisplayAlertAsync("Connect to the internet and retry",
+                    "Loading the event listing requires internet access.", "OK");
+
+                return;
+            }
+
             model.IsEventPageLoading = true;
             pageView!.Reload();
         }

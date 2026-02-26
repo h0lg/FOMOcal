@@ -9,11 +9,18 @@ partial class VenueEditor
     [ObservableProperty, NotifyPropertyChangedFor(nameof(CanReload))] public partial bool IsEventPageLoading { get; set; }
 
     /// <summary>Bound to the editor and eventually committed to <see cref="ProgramUrl"/>.</summary>
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsEditingProgramUrlValid)), NotifyPropertyChangedFor(nameof(CanReload))]
+    [ObservableProperty,
+        NotifyPropertyChangedFor(nameof(IsEditingProgramUrlValid)),
+        NotifyPropertyChangedFor(nameof(CanLoadValidUrl)),
+        NotifyPropertyChangedFor(nameof(CanReload))]
     public partial string EditingProgramUrl { get; set; }
 
-    public bool IsEditingProgramUrlValid => EditingProgramUrl.IsSignificant() && EditingProgramUrl.IsValidHttpUrl();
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(CanLoadValidUrl))]
+    public partial bool HasInternet { private get; set; } = App.HasInternet;
+
+    public bool IsEditingProgramUrlValid => EditingProgramUrl.IsSignificantValidUrl();
     public bool CanReload => IsEditingProgramUrlValid && !IsEventPageLoading;
+    public bool CanLoadValidUrl => HasInternet && IsEditingProgramUrlValid;
 
     public string ProgramUrl
     {
@@ -21,9 +28,9 @@ partial class VenueEditor
         private set
         {
             if (value == venue.ProgramUrl) return;
-            venue.ProgramUrl = value; // triggers web view to navigate
+            venue.ProgramUrl = value;
             SetDocument(null);
-            OnPropertyChanged();
+            OnPropertyChanged(); // triggers web view to navigate
             RevealMore();
         }
     }
@@ -135,7 +142,8 @@ partial class VenueEditor
     partial class Page
     {
         private void ProgramUrlControls(out Editor urlEditor, out Label invalidIndicator,
-            out ActivityIndicator loadingIndicator, out Button reload, out Button openUrl)
+            out ActivityIndicator loadingIndicator, out Button reload, out Button openUrl,
+            out Label noInternetIndicator)
         {
             // bind to a draft model property without property change handler
             urlEditor = Edtr(nameof(EditingProgramUrl),
@@ -151,8 +159,14 @@ partial class VenueEditor
             loadingIndicator = new ActivityIndicator { IsRunning = true }
                 .BindVisible(new Binding(isValidUrl), Converters.And, new Binding(nameof(IsEventPageLoading)));
 
-            reload = Btn("⟳").TapGesture(Reload).BindVisible(nameof(CanReload));
-            openUrl = Btn(Glyphs.Link).TapGesture(async () => await model.RepickUrlAsync()).BindVisible(isValidUrl);
+            reload = Btn("⟳").TapGesture(async () => await ReloadAsync()).BindVisible(nameof(CanReload));
+            const string canLoad = nameof(CanLoadValidUrl);
+
+            openUrl = Btn(Glyphs.Link).BindVisible(canLoad)
+                .TapGesture(async () => await model.RepickUrlAsync());
+
+            noInternetIndicator = ErrorIcon("No internet access.")
+                .BindVisible(new Binding(isValidUrl), Converters.And, new Binding(canLoad, converter: Converters.Not));
         }
     }
 }
