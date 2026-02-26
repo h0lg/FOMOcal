@@ -26,12 +26,17 @@ internal static class Widgets
         return (label, layout);
     }
 
-    internal static (Grid Wrapper, Label Label) LbldView(string label, View view, string? tooltip = null)
+    internal static (Grid Wrapper, Label Label) LbldView(string label, params View[] views)
     {
-        Label lbl = Lbl(label).TextCenterVertical();
-        var wrapper = Grd(cols: [Auto, Star], rows: [Auto], spacing: 5, lbl, view.Column(1));
-        if (tooltip.IsSignificant()) wrapper.ToolTip(tooltip);
-        return (wrapper, lbl);
+        Label lbl = Lbl(label).TextCenterVertical().Margins(right: 5);
+        GridLength[] cols = [Auto, Star, .. Enumerable.Repeat(Auto, views.Length - 1)];
+        var grid = Grd(cols: cols, rows: [Auto], spacing: 0, lbl);
+        var column = 1;
+
+        foreach (View view in views)
+            grid.Add(view, column: column++);
+
+        return (grid, lbl);
     }
 
     internal static Border Expndr(Label header, params View[] toggledViews)

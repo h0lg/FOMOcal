@@ -381,10 +381,10 @@ public partial class ScrapeJobEditor : ObservableObject
                 LbldView("ignore nested text", ignoreNestedText.Wrapper).Wrapper.DisplayWithChecked(nameof(IgnoreNestedText)),
                 TextEntry("attribute", nameof(Attribute), HelpTexts.ScrapeJobAttribute),
 
-                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, placeholder: "a }} b",
-                    regex101DeepLink: ScrapeJob.Step.Replacements),
+                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, multiLine: true,
+                    placeholder: "a }} b", regex101DeepLink: ScrapeJob.Step.Replacements),
 
-                TextEntry("match", nameof(Match), HelpTexts.ScrapeJobMatch,
+                TextEntry("match", nameof(Match), HelpTexts.ScrapeJobMatch, multiLine: true,
                     regex101DeepLink: ScrapeJob.Step.Match)
             ];
 
@@ -431,10 +431,10 @@ public partial class ScrapeJobEditor : ObservableObject
             InputView input = multiLine ? Edtr(property) : Entr(property);
             HintedInput(input, tooltip).Placeholder(placeholder);
 
-            Microsoft.Maui.Controls.View editor = regex101DeepLink == null ? input
-                : HStack(0, input, Regex101.DeepLink(regex101DeepLink.Value, input, model.GetPreviewValues));
+            Microsoft.Maui.Controls.View[] views = regex101DeepLink == null ? [input]
+                : [input, Regex101.DeepLink(regex101DeepLink.Value, input, model.GetPreviewValues)];
 
-            (Grid wrapper, Label _) = LbldView(label, editor);
+            Grid wrapper = LbldView(label, views).Wrapper;
             if (multiLine) wrapper.FlexFitContents();
             return wrapper.DisplayWithSignificant(property);
         }
