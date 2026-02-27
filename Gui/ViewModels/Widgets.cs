@@ -19,10 +19,17 @@ internal static class Widgets
 
     internal static Label Lbl(string text) => new() { Text = text };
 
-    internal static (Label label, Border layout) HelpLabel()
+    internal static (Label label, Border layout) HelpLabel(bool isPlaceholder = true)
     {
         Label label = new();
-        Border layout = new() { StyleClass = ["help"], Content = label, IsVisible = false };
+        Border layout = new() { StyleClass = ["help"], Content = label };
+
+        if (isPlaceholder) // hide
+        {
+            layout.IsVisible = false;
+            layout.Scale = layout.Opacity = 0; // to support opening animation
+        }
+
         return (label, layout);
     }
 

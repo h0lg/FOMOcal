@@ -27,6 +27,7 @@ public partial class VenueEditor : ObservableObject
     [ObservableProperty] public partial bool IsVenueNameTaken { get; set; }
     [ObservableProperty] public partial bool ShowRequiredEventFields { get; set; }
     [ObservableProperty] public partial bool ShowOptionalEventFields { get; set; }
+    [ObservableProperty] public partial bool ShowEncoding { get; set; }
     [ObservableProperty] public partial double Progress { get; set; } = 0;
 
     public string VenueName
@@ -223,20 +224,24 @@ public partial class VenueEditor : ObservableObject
             var eventContainer = EventContainer().BindVisible(nameof(HasRequiredInfo));
 
             // Step 3: Event Details (Name, Date)
+            const string showRequired = nameof(ShowRequiredEventFields);
+
             var requiredEventFields = VStack(0,
                 new ScrapeJobEditor.View(model.eventName, RelativeSelectorEntry, () => model.visualSelectorHost),
                 new ScrapeJobEditor.View(model.eventDate, RelativeSelectorEntry, () => model.visualSelectorHost))
-                .BindVisible(nameof(ShowRequiredEventFields));
+                .BindVisible(showRequired);
 
             // Step 4: Additional Event Details
-            var optionalEventFields = OptionalEventFields().BindVisible(nameof(ShowOptionalEventFields));
+            const string showOptional = nameof(ShowOptionalEventFields);
+            var optionalEventFields = OptionalEventFields().BindVisible(showOptional);
 
             form = new ScrollView
             {
                 Content = VStack(20, venueFields, eventContainer,
                     requiredEventFields, optionalEventFields,
-                    ScrapeLogs(model).BindVisible(nameof(ShowOptionalEventFields)),
-                    ScriptLog(model).BindVisible(nameof(ShowOptionalEventFields)))
+                    EncodingOverride().BindVisible(showRequired),
+                    ScrapeLogs(model).BindVisible(showOptional),
+                    ScriptLog(model).BindVisible(showOptional))
                     .Padding(20)
             };
 
@@ -254,7 +259,6 @@ public partial class VenueEditor : ObservableObject
             var nameTakenIndicator = ErrorLbl("That venue name is taken already. Choose a different one.")
                 .BindVisible(nameof(IsVenueNameTaken));
 
-            var encoding = Entr(nameof(Encoding), placeholder: "encoding override").ToolTip(HelpTexts.Encoding);
             var comment = Edtr(nameof(Comment), placeholder: "explain this config or something about it").ToolTip(HelpTexts.Comment);
 
             var location = new Editor { Placeholder = "Location, contacts or other helpful info" }
@@ -262,16 +266,25 @@ public partial class VenueEditor : ObservableObject
                     getter: static vm => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
-            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
+            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 FldLbl("🕸"), urlSearch.Column(1), urlEditor.Column(1), loadingIndicator.Column(2), reload.Column(2), openUrl.Column(3),
                 searchHelp.Row(1).ColumnSpan(4), noInternetIndicator.Row(1).ColumnSpan(4),
                 FldLbl("🏷").Row(2), nameEntry.Row(2).Column(1).ColumnSpan(3),
                 nameTakenIndicator.Row(3).ColumnSpan(4),
                 FldLbl("📍").Row(4), location.Row(4).Column(1).ColumnSpan(3),
-                FldLbl("🔣").Row(5), encoding.Row(5).Column(1).ColumnSpan(3),
-                FldLbl(Glyphs.Comment).Row(6), comment.Row(6).Column(1).ColumnSpan(3));
+                FldLbl(Glyphs.Comment).Row(5), comment.Row(5).Column(1).ColumnSpan(3));
 
             static Label FldLbl(string Text) => Lbl(Text).CenterVertical();
+        }
+
+        private static FlexLayout EncodingOverride()
+        {
+            const string show = nameof(ShowEncoding);
+            var encoding = Entr(nameof(Encoding), placeholder: "encoding override").BindVisible(show);
+            var (help, helper) = HelpLabel(isPlaceholder: false);
+            help.Text = HelpTexts.Encoding;
+            helper.BindVisible(show);
+            return HWrap(5, Lbl("🔣 Encoding").Bold(), Swtch(show).Wrapper, encoding, helper).View;
         }
 
         private static Label ErrorLbl(string text) => Lbl(Glyphs.Error + " " + text).TextCenter();

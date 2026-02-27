@@ -310,10 +310,6 @@
                 <RoundRectangle CornerRadius="10" />
             </Setter.Value>
         </Setter>
-
-        <!-- to support opening animation -->
-        <Setter Property="Scale" Value="0" />
-        <Setter Property="Opacity" Value="0" />
     </Style>
 
     <Style TargetType="Label" Class="Headline">
