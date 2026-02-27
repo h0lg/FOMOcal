@@ -34,6 +34,7 @@ public partial class VenueEditor : ObservableObject
         get => venue.Name;
         set
         {
+            value = value.Trim();
             if (value == venue.Name) return;
             venue.Name = value;
             OnPropertyChanged();
