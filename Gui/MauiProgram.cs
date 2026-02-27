@@ -38,6 +38,32 @@ public static class MauiProgram
                         handler.PlatformView.ShowSoftInputOnFocus = false; // hides keyboard
                     }
                 });
+
+                Microsoft.Maui.Handlers.CheckBoxHandler.Mapper.AppendToMapping("AndroidFocusFix", (handler, view) =>
+                {
+                    // allows taking and holding Focus, required for InlineTooltipOnFocus
+                    handler.PlatformView.FocusableInTouchMode = true;
+
+                    // setting FocusableInTouchMode = true causes first tap to be consumed by taking focus
+                    handler.PlatformView.FocusChange += (o, e) =>
+                    {
+                        // toggle IsChecked when taking focus to compensate
+                        if (e.HasFocus) view.IsChecked = !view.IsChecked;
+                    };
+                });
+
+                Microsoft.Maui.Handlers.SwitchHandler.Mapper.AppendToMapping("AndroidFocusFix", (handler, view) =>
+                {
+                    // allows taking and holding Focus, required for InlineTooltipOnFocus
+                    handler.PlatformView.FocusableInTouchMode = true;
+
+                    // setting FocusableInTouchMode = true causes first tap to be consumed by taking focus
+                    handler.PlatformView.FocusChange += (o, e) =>
+                    {
+                        // toggle IsOn when taking focus to compensate
+                        if (e.HasFocus) view.IsOn = !view.IsOn;
+                    };
+                });
 #endif
             })
             .ConfigureFonts(fonts =>

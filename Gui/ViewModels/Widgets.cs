@@ -110,7 +110,10 @@ internal static class Widgets
         // "forward" tap on label to checkbox, which is hard to hit on a touch screen
         label.TapGesture(() =>
         {
-            checkBox.IsChecked = !checkBox.IsChecked; // toggle
+            // focusing takes care of toggling on Android, see CheckBoxHandler AndroidFocusFix
+            if (checkBox.IsFocused || DeviceInfo.Platform != DevicePlatform.Android)
+                checkBox.IsChecked = !checkBox.IsChecked; // toggle
+
             checkBox.Focus(); // to inline tooltip
         });
 
