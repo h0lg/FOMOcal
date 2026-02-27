@@ -245,7 +245,7 @@ public partial class VenueEditor : ObservableObject
 
         private Grid VenueFields()
         {
-            ProgramUrlControls(out Editor urlEditor, out Label invalidIndicator,
+            ProgramUrlControls(out SearchBar urlSearch, out Editor urlEditor, out Label searchHelp,
                 out ActivityIndicator loadingIndicator, out Button reload,
                 out Button openUrl, out Label noInternetIndicator);
 
@@ -263,8 +263,8 @@ public partial class VenueEditor : ObservableObject
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
             return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
-                FldLbl("🕸"), urlEditor.Column(1), loadingIndicator.Column(2), reload.Column(2), openUrl.Column(3),
-                invalidIndicator.Row(1).ColumnSpan(4), noInternetIndicator.Row(1).ColumnSpan(4),
+                FldLbl("🕸"), urlSearch.Column(1), urlEditor.Column(1), loadingIndicator.Column(2), reload.Column(2), openUrl.Column(3),
+                searchHelp.Row(1).ColumnSpan(4), noInternetIndicator.Row(1).ColumnSpan(4),
                 FldLbl("🏷").Row(2), nameEntry.Row(2).Column(1).ColumnSpan(3),
                 nameTakenIndicator.Row(3).ColumnSpan(4),
                 FldLbl("📍").Row(4), location.Row(4).Column(1).ColumnSpan(3),

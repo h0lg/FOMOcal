@@ -23,6 +23,7 @@ internal static class Glyphs
         Link = "🔗",
         Lucky = "🍀 ",
         PresalePrice = "💳 ",
+        Refresh = "⟳",
         Scrape = "⛏",
         Select = "☑ ",
         Settings = "🛠",

@@ -11,16 +11,16 @@ partial class VenueEditor
     /// <summary>Bound to the editor and eventually committed to <see cref="ProgramUrl"/>.</summary>
     [ObservableProperty,
         NotifyPropertyChangedFor(nameof(IsEditingProgramUrlValid)),
-        NotifyPropertyChangedFor(nameof(CanLoadValidUrl)),
+        NotifyPropertyChangedFor(nameof(CanSearchUrl)),
         NotifyPropertyChangedFor(nameof(CanReload))]
     public partial string EditingProgramUrl { get; set; }
 
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(CanLoadValidUrl))]
-    public partial bool HasInternet { private get; set; } = App.HasInternet;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(CanSearchUrl))]
+    public partial bool HasInternet { get; set; } = App.HasInternet;
 
     public bool IsEditingProgramUrlValid => EditingProgramUrl.IsSignificantValidUrl();
     public bool CanReload => IsEditingProgramUrlValid && !IsEventPageLoading;
-    public bool CanLoadValidUrl => HasInternet && IsEditingProgramUrlValid;
+    public bool CanSearchUrl => HasInternet && !IsEditingProgramUrlValid;
 
     public string ProgramUrl
     {
@@ -141,14 +141,29 @@ partial class VenueEditor
 
     partial class Page
     {
-        private void ProgramUrlControls(out Editor urlEditor, out Label invalidIndicator,
+        private void ProgramUrlControls(out SearchBar urlSearch, out Editor urlEditor, out Label searchHelp,
             out ActivityIndicator loadingIndicator, out Button reload, out Button openUrl,
             out Label noInternetIndicator)
         {
-            // bind to a draft model property without property change handler
-            urlEditor = Edtr(nameof(EditingProgramUrl),
-                placeholder: $"enter event listing web address - or {Glyphs.Lucky} lucky search it by venue name and city", Keyboard.Url)
-                // commit changes on loss of focus to one that has - to avoid premature URL loading errors
+            const string url = nameof(EditingProgramUrl),
+                isValid = nameof(IsEditingProgramUrlValid),
+                canSearch = nameof(CanSearchUrl),
+                hasInternet = nameof(HasInternet);
+
+            urlSearch = new SearchBar { Placeholder = "venue name and city" }
+                // bind to a "draft" model property without property change handler to avoid premature URL loading errors
+                .Bind(SearchBar.TextProperty, url)
+                .BindVisible(canSearch);
+
+            // commit changes on search event to trigger trying to load it
+            urlSearch.SearchButtonPressed += async (o, e) => await model.CommitEditingProgramUrlAsync();
+
+            searchHelp = Lbl($"{Glyphs.Lucky} Lucky search the event listing web address - or enter it directly if you know it.")
+                .Wrap().TextCenter().BindVisible(canSearch);
+
+            urlEditor = Edtr(url, placeholder: "the event listing web address, e.g. coolvenue.com/events",
+                keybord: Keyboard.Url).BindVisible(canSearch, converter: Converters.Not)
+                // commit changes on loss of focus
                 .OnFocusChanged(async (_, focused) =>
                 {
                     if (!focused)
@@ -161,22 +176,16 @@ partial class VenueEditor
                     }
                 });
 
-            const string isValidUrl = nameof(IsEditingProgramUrlValid);
+            loadingIndicator = new ActivityIndicator { IsRunning = true }.CenterVertical()
+                .BindVisible(new Binding(isValid), Converters.And, new Binding(nameof(IsEventPageLoading)));
 
-            invalidIndicator = ErrorLbl("This is not a valid HTTP/S URL.")
-                .BindVisible(isValidUrl, converter: Converters.Not);
+            reload = Btn(Glyphs.Refresh).CenterVertical().TapGesture(async () => await ReloadAsync()).BindVisible(nameof(CanReload));
 
-            loadingIndicator = new ActivityIndicator { IsRunning = true }
-                .BindVisible(new Binding(isValidUrl), Converters.And, new Binding(nameof(IsEventPageLoading)));
-
-            reload = Btn("⟳").TapGesture(async () => await ReloadAsync()).BindVisible(nameof(CanReload));
-            const string canLoad = nameof(CanLoadValidUrl);
-
-            openUrl = Btn(Glyphs.Link).BindVisible(canLoad)
+            openUrl = Btn(Glyphs.Link).CenterVertical().BindVisible(new Binding(isValid), Converters.And, new Binding(hasInternet))
                 .TapGesture(async () => await model.RepickUrlAsync());
 
-            noInternetIndicator = ErrorLbl("No internet access.")
-                .BindVisible(new Binding(isValidUrl), Converters.And, new Binding(canLoad, converter: Converters.Not));
+            noInternetIndicator = ErrorLbl($"No internet access. Connect and {Glyphs.Refresh} refresh.").CenterVertical()
+                .BindVisible(new Binding(isValid), Converters.And, new Binding(hasInternet, converter: Converters.Not));
         }
     }
 }
