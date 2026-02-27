@@ -249,7 +249,7 @@ public partial class VenueEditor : ObservableObject
 
             var nameEntry = Entr(nameof(VenueName), placeholder: "Venue name");
 
-            var nameTakenIndicator = ErrorIcon("That venue name is taken already. Choose a different one.")
+            var nameTakenIndicator = ErrorLbl("That venue name is taken already. Choose a different one.")
                 .BindVisible(nameof(IsVenueNameTaken));
 
             var encoding = Entr(nameof(Encoding), placeholder: "encoding override").ToolTip(HelpTexts.Encoding);
@@ -260,20 +260,19 @@ public partial class VenueEditor : ObservableObject
                     getter: static vm => vm.venue.Location,
                     setter: static (VenueEditor vm, string? value) => vm.venue.Location = value);
 
-            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
-                FldLbl("🕸"), urlEditor.Column(1), invalidIndicator.Column(2).ColumnSpan(2),
-                    loadingIndicator.Column(2), reload.Column(2),
-                    openUrl.Column(3), noInternetIndicator.Column(3),
-                FldLbl("🏷").Row(1), nameEntry.Row(1).Column(1).ColumnSpan(2),
-                    nameTakenIndicator.Row(1).Column(3),
-                FldLbl("📍").Row(2), location.Row(2).Column(1).ColumnSpan(3),
-                FldLbl("🔣").Row(3), encoding.Row(3).Column(1).ColumnSpan(3),
-                FldLbl(Glyphs.Comment).Row(4), comment.Row(4).Column(1).ColumnSpan(3));
+            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
+                FldLbl("🕸"), urlEditor.Column(1), loadingIndicator.Column(2), reload.Column(2), openUrl.Column(3),
+                invalidIndicator.Row(1).ColumnSpan(4), noInternetIndicator.Row(1).ColumnSpan(4),
+                FldLbl("🏷").Row(2), nameEntry.Row(2).Column(1).ColumnSpan(3),
+                nameTakenIndicator.Row(3).ColumnSpan(4),
+                FldLbl("📍").Row(4), location.Row(4).Column(1).ColumnSpan(3),
+                FldLbl("🔣").Row(5), encoding.Row(5).Column(1).ColumnSpan(3),
+                FldLbl(Glyphs.Comment).Row(6), comment.Row(6).Column(1).ColumnSpan(3));
 
             static Label FldLbl(string Text) => Lbl(Text).CenterVertical();
         }
 
-        private static Label ErrorIcon(string tooltip) => Lbl(Glyphs.Error).TextCenter().ToolTip(tooltip);
+        private static Label ErrorLbl(string text) => Lbl(Glyphs.Error + " " + text).TextCenter();
 
         private VerticalStackLayout OptionalEventFields()
         {

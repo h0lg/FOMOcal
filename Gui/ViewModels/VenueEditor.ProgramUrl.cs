@@ -153,7 +153,7 @@ partial class VenueEditor
 
             const string isValidUrl = nameof(IsEditingProgramUrlValid);
 
-            invalidIndicator = ErrorIcon("This is not a valid HTTP URL.")
+            invalidIndicator = ErrorLbl("This is not a valid HTTP/S URL.")
                 .BindVisible(isValidUrl, converter: Converters.Not);
 
             loadingIndicator = new ActivityIndicator { IsRunning = true }
@@ -165,7 +165,7 @@ partial class VenueEditor
             openUrl = Btn(Glyphs.Link).BindVisible(canLoad)
                 .TapGesture(async () => await model.RepickUrlAsync());
 
-            noInternetIndicator = ErrorIcon("No internet access.")
+            noInternetIndicator = ErrorLbl("No internet access.")
                 .BindVisible(new Binding(isValidUrl), Converters.And, new Binding(canLoad, converter: Converters.Not));
         }
     }
