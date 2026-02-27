@@ -185,15 +185,17 @@ For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml
 ^^{0}//div[contains(@class, 'event')]</value>
   </data>
   <data name="EnablePicking" xml:space="preserve">
-    <value>Toggle picking mode.
-You may want to disable this to interact with the page as you would in a normal browser, e.g. to close popups and overlays
-- or play with those eye-opening 🍪 cookie reminders sponsored by the EU if you're lucky enough to be browsing from there.</value>
+    <value>Toggle picking mode - tap on page elements to select them.
+
+^^You may want to disable this to interact with the page as you would in a normal browser, e.g. to close popups and overlays - like those playful 🍪 cookie consent banners many sites greet you with to offer their advertising and tracking diet options.</value>
   </data>
   <data name="AppendSelectedQuery" xml:space="preserve">
     <value>Appends to the existing query if it matches the syntax, otherwise replaces it.</value>
   </data>
   <data name="PickedSelectorDisplay" xml:space="preserve">
-    <value>You need some part of the selector in the last line - it selects the element you picked. Select the part you want and use ➕ append.</value>
+    <value>The selector for the element you picked. Select which parts to use for selecting and copy/paste them over or use ➕ append.
+
+^^If your selector detail includes the ancestor path, the part after the last &gt; or / selects your picked element and is the most important.</value>
   </data>
   <data name="ScrapeJobSelector" xml:space="preserve">
     <value>A selector to the element containing the text of the event detail.</value>

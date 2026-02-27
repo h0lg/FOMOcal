@@ -90,13 +90,20 @@ partial class VenueEditor
                 showSelectorOptions = nameof(ShowSelectorOptions);
 
             var help = HelpLabel();
+            var enablePicking = Swtch(nameof(EnablePicking));
+            enablePicking.Switch.InlineTooltipOnFocus(HelpTexts.EnablePicking, help);
+
+            Label enablePickingLabel = Lbl("Tap a page element to pick it.")
+                .BindVisible(showSelectorOptions, converter: Converters.Not)
+                .TapGesture(() =>
+                {
+                    model.TogglePicking();
+                    enablePicking.Switch.Focus(); // to in-line tooltip
+                });
 
             var controlsAndInstructions = HWrap(5,
-                Swtch(nameof(EnablePicking)).Wrapper
-                    .BindVisible(showSelectorOptions, converter: Converters.Not)
-                    .InlineTooltipOnFocus(HelpTexts.EnablePicking, help),
-                Lbl("Tap a page element to pick it.").TapGesture(model.TogglePicking)
-                    .BindVisible(showSelectorOptions, converter: Converters.Not),
+                enablePicking.Wrapper.BindVisible(showSelectorOptions, converter: Converters.Not),
+                enablePickingLabel,
                 Btn("⿴ Pick its container").TapGesture(PickParent)
                     .BindVisible(new Binding(displayedSelector, converter: Converters.IsSignificant),
                         Converters.And, new Binding(showSelectorOptions, converter: Converters.Not)),
@@ -131,7 +138,7 @@ partial class VenueEditor
             {
                 Content = Grd(cols: [Star], rows: [Auto, Auto, Auto], spacing: 0,
                 controlsAndInstructions.View,
-                help.layout.BindVisible(showSelectorOptions).Row(1), selectorDisplay.Row(2))
+                help.layout.Row(1), selectorDisplay.Row(2))
             };
 
             SetupAutoSizing();

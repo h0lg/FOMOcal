@@ -147,9 +147,9 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Toggle picking mode.
-        ///You may want to disable this to interact with the page as you would in a normal browser, e.g. to close popups and overlays
-        ///- or play with those eye-opening 🍪 cookie reminders sponsored by the EU if you&apos;re lucky enough to be browsing from there..
+        ///   Looks up a localized string similar to Toggle picking mode - tap on page elements to select them.
+        ///
+        ///^^You may want to disable this to interact with the page as you would in a normal browser, e.g. to close popups and overlays - like those playful 🍪 cookie consent banners many sites greet you with to offer their advertising and tracking diet options..
         /// </summary>
         internal static string EnablePicking {
             get {
@@ -340,7 +340,9 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You need some part of the selector in the last line - it selects the element you picked. Select the part you want and use ➕ append..
+        ///   Looks up a localized string similar to The selector for the element you picked. Select which parts to use for selecting and copy/paste them over or use ➕ append.
+        ///
+        ///^^If your selector detail includes the ancestor path, the part after the last &gt; or / selects your picked element and is the most important..
         /// </summary>
         internal static string PickedSelectorDisplay {
             get {
