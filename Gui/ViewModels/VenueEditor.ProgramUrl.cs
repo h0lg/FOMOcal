@@ -149,7 +149,17 @@ partial class VenueEditor
             urlEditor = Edtr(nameof(EditingProgramUrl),
                 placeholder: $"enter event listing web address - or {Glyphs.Lucky} lucky search it by venue name and city", Keyboard.Url)
                 // commit changes on loss of focus to one that has - to avoid premature URL loading errors
-                .OnFocusChanged(async (_, focused) => { if (!focused) await model.CommitEditingProgramUrlAsync(); });
+                .OnFocusChanged(async (_, focused) =>
+                {
+                    if (!focused)
+                    {
+                        await Task.Delay(50); // for OnDisappearing to SetActionTaken via SignalCancelation if that's the reason 
+
+                        // prevent committing after navigating back
+                        if (!model.HasTakenAction())
+                            await model.CommitEditingProgramUrlAsync();
+                    }
+                });
 
             const string isValidUrl = nameof(IsEditingProgramUrlValid);
 

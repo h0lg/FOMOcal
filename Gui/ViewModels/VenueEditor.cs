@@ -173,10 +173,11 @@ public partial class VenueEditor : ObservableObject
     }
 
     private void SignalCancelation() => SetActionTaken(null);
+    private bool HasTakenAction() => awaiter.Task.IsCompleted;
 
     private void SetActionTaken(Actions? action)
     {
-        if (!awaiter.Task.IsCompleted) awaiter.SetResult(action);
+        if (!HasTakenAction()) awaiter.SetResult(action);
     }
 
     internal enum Actions { Saved, Deleted }
