@@ -169,18 +169,20 @@ public partial class VenueImport : ObservableObject
                     VerticalOptions = LayoutOptions.Center
                 }.Bind(ItemsView.ItemsSourceProperty, nameof(DiffEditor.LastScrapedValues));
 
-                var layout = Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,
+                var commentLbl = BndLbl(nameof(DiffEditor.OtherValue), "{0} to " + Glyphs.Comment);
+
+                var putOtherValueInComment = LbldChck(commentLbl, nameof(DiffEditor.PutOtherValueInComment)).Wrapper
+                    .BindVisible(nameof(DiffEditor.CanPutOtherValueInComment));
+
+                var layout = Grd(cols: [Auto, Star, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,
                     BndLbl(nameof(DiffEditor.Path)).CenterVertical().ColumnSpan(2),
-                    BndLbl(nameof(DiffEditor.OtherValue), "{0} to " + Glyphs.Comment).CenterVertical()
-                        .BindVisible(nameof(DiffEditor.CanPutOtherValueInComment)).Column(2),
-                    Check(nameof(DiffEditor.PutOtherValueInComment)).CenterVertical()
-                        .BindVisible(nameof(DiffEditor.CanPutOtherValueInComment)).Column(3),
+                    putOtherValueInComment.Column(2),
                     ValueLabel("import").Row(1),
-                    Radio(nameof(DiffEditor.NewValue), true).Row(1).Column(1).ColumnSpan(3),
+                    Radio(nameof(DiffEditor.NewValue), true).Row(1).Column(1).ColumnSpan(2),
                     ValueLabel("yours").Row(2),
-                    Radio(nameof(DiffEditor.OldValue), false).Row(2).Column(1).ColumnSpan(3),
+                    Radio(nameof(DiffEditor.OldValue), false).Row(2).Column(1).ColumnSpan(2),
                     ValueLabel($"last {Glyphs.Scrape}").Row(3),
-                    lastScraped.Row(3).Column(1).ColumnSpan(3));
+                    lastScraped.Row(3).Column(1).ColumnSpan(2));
 
                 layout.BindRadioButtonGroupSelectedValue(nameof(DiffEditor.UseNewValue),
                     // bind group name from unique string property to avoid sharing the same group across diffs

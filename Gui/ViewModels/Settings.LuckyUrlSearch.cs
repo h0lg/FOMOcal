@@ -82,7 +82,7 @@ public partial class LuckyUrlSearchSettings : ObservableObject
             deselected,
             Settings.Page.ContextLabel("Tap an engine to use it.")
                 .BindVisible(nameof(HasDeselected)),
-            LbldView("Suffix", Entr(nameof(EditableSuffix), "concerts")).Wrapper.BindVisible(nameof(HasSelected)),
+            LbldView("Suffix", Entr(nameof(EditableSuffix), "concerts")).BindVisible(nameof(HasSelected)),
             Settings.Page.ContextLabel("This is automatically appended to the search terms after venue name and city - to find the event listing addresses of venues rather than their home pages.")
                 .BindVisible(nameof(HasSelected)));
 

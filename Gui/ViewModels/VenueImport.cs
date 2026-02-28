@@ -166,7 +166,7 @@ public partial class VenueImport : ObservableObject
 
             actions.BindRadioButtonGroupSelectedValue(nameof(SelectedAction));
 
-            var sameForRemainingConflicts = LbldView("do the same for remaining conflicts", Check(nameof(ApplySameActionToRemainingConflicts)))
+            var sameForRemainingConflicts = LbldChck("do the same for remaining conflicts", nameof(ApplySameActionToRemainingConflicts))
                 .Wrapper.BindVisible(nameof(SelectedAction), converter: Converters.Predicate<Actions>(action => action != Actions.Merge));
 
             DataTemplate validationErrorTemplate = new(() => new Border()

@@ -55,10 +55,11 @@ public partial class VenueImport : ObservableObject
     {
         private static (HorizontalStackLayout renamed, HorizontalStackLayout renameTo, Label renameInfo) RenamingControls()
         {
-            CheckBox doRename = Check(nameof(DoRename))
-                .BindVisible(nameof(RenameRequired), converter: Converters.Predicate<RequiredRename>(rr => rr == RequiredRename.None));
+            var doRename = LbldChck("rename", nameof(DoRename)).Wrapper
+                .BindVisible(nameof(RenameRequired),
+                    converter: Converters.Predicate<RequiredRename>(rr => rr == RequiredRename.None));
 
-            var renamed = HStack(5, doRename, Lbl("rename"),
+            var renamed = HStack(5, doRename,
                 new RadioButton { Content = "yours", Value = false }.BindVisible(nameof(DoRename)),
                 new RadioButton { Content = "import", Value = true }.BindVisible(nameof(DoRename)))
                 .BindRadioButtonGroupSelectedValue(nameof(RenameImport))

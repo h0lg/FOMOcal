@@ -103,16 +103,8 @@ partial class VenueEditor
 
             Grid SelectorOption(string label, string isCheckedPropertyPath, string helpText)
             {
-                CheckBox checkBox = Check(isCheckedPropertyPath, source: model.selectorOptions).InlineTooltipOnFocus(helpText, help);
-                (Grid wrapper, Label lbl) = LbldView(label, checkBox);
-
-                // "forward" tap on label to checkbox, which is hard to hit on a touch screen
-                lbl.TapGesture(() =>
-                {
-                    checkBox.IsChecked = !checkBox.IsChecked; // toggle
-                    checkBox.Focus(); // to inline tooltip
-                });
-
+                var (wrapper, lbl, checkBox) = LbldChck(label, isCheckedPropertyPath, source: model.selectorOptions);
+                checkBox.InlineTooltipOnFocus(helpText, help);
                 return wrapper;
             }
         }

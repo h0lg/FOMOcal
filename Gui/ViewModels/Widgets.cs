@@ -26,17 +26,19 @@ internal static class Widgets
         return (label, layout);
     }
 
-    internal static (Grid Wrapper, Label Label) LbldView(string label, params View[] views)
+    internal static Grid LbldView(string label, params View[] views) => LbldView(Lbl(label), views);
+
+    internal static Grid LbldView(Label label, params View[] views)
     {
-        Label lbl = Lbl(label).TextCenterVertical().Margins(right: 5);
+        label.TextCenterVertical().Margins(right: 5);
         GridLength[] cols = [Auto, Star, .. Enumerable.Repeat(Auto, views.Length - 1)];
-        var grid = Grd(cols: cols, rows: [Auto], spacing: 0, lbl);
+        var grid = Grd(cols: cols, rows: [Auto], spacing: 0, label);
         var column = 1;
 
         foreach (View view in views)
             grid.Add(view, column: column++);
 
-        return (grid, lbl);
+        return grid;
     }
 
     internal static Border Expndr(Label header, params View[] toggledViews)
@@ -88,8 +90,32 @@ internal static class Widgets
         => new Editor { IsReadOnly = true, AutoSize = EditorAutoSizeOption.TextChanges }
             .Bind(Editor.TextProperty, textPropertyPath, BindingMode.OneWay);
 
-    internal static CheckBox Check(string isCheckedPropertyPath, object? source = null)
-        => new CheckBox().Margins(right: -20).Bind(CheckBox.IsCheckedProperty, isCheckedPropertyPath, source: source);
+    private static CheckBox Check(string isCheckedPropertyPath, object? source = null)
+        => new CheckBox().Bind(CheckBox.IsCheckedProperty, isCheckedPropertyPath, source: source);
+
+    internal static (Grid Wrapper, Label Label, CheckBox CheckBox) LbldChck(string label, string isCheckedPropertyPath, object? source = null)
+    {
+        Label lbl = Lbl(label);
+        (Grid wrapper, CheckBox checkBox) = LbldChck(lbl, isCheckedPropertyPath, source);
+        return (wrapper, lbl, checkBox);
+    }
+
+    internal static (Grid Wrapper, CheckBox CheckBox) LbldChck(Label label, string isCheckedPropertyPath, object? source = null)
+    {
+        CheckBox checkBox = Check(isCheckedPropertyPath, source);
+
+        Grid wrapper = Grd(cols: [Auto, Auto], rows: [Auto], spacing: 0, checkBox,
+            label.TextCenterVertical().Column(1));
+
+        // "forward" tap on label to checkbox, which is hard to hit on a touch screen
+        label.TapGesture(() =>
+        {
+            checkBox.IsChecked = !checkBox.IsChecked; // toggle
+            checkBox.Focus(); // to inline tooltip
+        });
+
+        return (wrapper, checkBox);
+    }
 
     internal static (Switch Switch, Grid Wrapper) Swtch(string isToggledPropertyPath, BindingMode mode = BindingMode.Default)
     {

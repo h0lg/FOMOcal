@@ -378,7 +378,7 @@ public partial class ScrapeJobEditor : ObservableObject
                     () => model.Closest, // for picking descendant, preferably from Closest if set
                     HelpTexts.ScrapeJobSelector),
 
-                LbldView("ignore nested text", ignoreNestedText.Wrapper).Wrapper.DisplayWithChecked(nameof(IgnoreNestedText)),
+                LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),
                 TextEntry("attribute", nameof(Attribute), HelpTexts.ScrapeJobAttribute),
 
                 TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, multiLine: true,
@@ -422,7 +422,7 @@ public partial class ScrapeJobEditor : ObservableObject
                 cancelFocusChanged: (vis, focused) => !focused && getVisualSelectorHost() == vis),
                 maybeGetDescendantOfClosest);
 
-            return LbldView(label, input).Wrapper.FlexFitContents().DisplayWithSignificant(property);
+            return LbldView(label, input).FlexFitContents().DisplayWithSignificant(property);
         }
 
         private Grid TextEntry(string label, string property, string tooltip,
@@ -434,7 +434,7 @@ public partial class ScrapeJobEditor : ObservableObject
             Microsoft.Maui.Controls.View[] views = regex101DeepLink == null ? [input]
                 : [input, Regex101.DeepLink(regex101DeepLink.Value, input, model.GetPreviewValues)];
 
-            Grid wrapper = LbldView(label, views).Wrapper;
+            Grid wrapper = LbldView(label, views);
             if (multiLine) wrapper.FlexFitContents();
             return wrapper.DisplayWithSignificant(property);
         }
