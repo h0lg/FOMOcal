@@ -37,7 +37,7 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
                 if (original.Name != edited.Name)
                     Renamed?.Invoke(original.Name, edited.Name); // notify subscribers
 
-                await LoadAsync(); // to refresh UI
+                RefreshList(); // to refresh UI
                 break;
 
             case VenueEditor.Actions.Deleted:
