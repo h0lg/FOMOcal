@@ -189,13 +189,8 @@ For advanced scenarios you may want to try [XPath](https://www.w3schools.com/xml
 
 ^^You may want to disable this to interact with the page as you would in a normal browser, e.g. to close popups and overlays - like those playful 🍪 cookie consent banners many sites greet you with to offer their advertising and tracking diet options.</value>
   </data>
-  <data name="AppendSelectedQuery" xml:space="preserve">
-    <value>Appends to the existing query if it matches the syntax, otherwise replaces it.</value>
-  </data>
   <data name="PickedSelectorDisplay" xml:space="preserve">
-    <value>The selector for the element you picked. Select which parts to use for selecting and copy/paste them over or use ➕ append.
-
-^^If your selector detail includes the ancestor path, the part after the last &gt; or / selects your picked element and is the most important.</value>
+    <value>The full selector for the element you picked. ⇥Select⇤ the parts to use in your selector and ➕ append or 📋 copy &amp; paste them over.</value>
   </data>
   <data name="ScrapeJobSelector" xml:space="preserve">
     <value>A selector to the element containing the text of the event detail.</value>
@@ -246,7 +241,7 @@ This may be a hint they are or are not good selectors, depending on the page.
   <data name="ElementPosition" xml:space="preserve">
     <value>The (1-based) position of the picked element relative to its siblings (of the same tag/element name) in their parent. This is quite a fragile selector detail - only use this if you have no other alternatives.</value>
   </data>
-  <data name="ToggleSelectorDetail" xml:space="preserve">
+  <data name="SelectorDetailInfo" xml:space="preserve">
     <value>Toggle selector details for your picked element. More detail means more specificity - but beware that every moving part also increases the fragility of your selector. You'll want to find the sweet spot.</value>
   </data>
   <data name="Encoding" xml:space="preserve">

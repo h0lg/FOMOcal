@@ -73,15 +73,6 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Appends to the existing query if it matches the syntax, otherwise replaces it..
-        /// </summary>
-        internal static string AppendSelectedQuery {
-            get {
-                return ResourceManager.GetString("AppendSelectedQuery", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Classes that have{0} visual styles attached.
         ///This may be a hint they are or are not good selectors, depending on the page.
         ///
@@ -340,9 +331,7 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The selector for the element you picked. Select which parts to use for selecting and copy/paste them over or use ➕ append.
-        ///
-        ///^^If your selector detail includes the ancestor path, the part after the last &gt; or / selects your picked element and is the most important..
+        ///   Looks up a localized string similar to The full selector for the element you picked. ⇥Select⇤ the parts to use in your selector and ➕ append or 📋 copy &amp; paste them over..
         /// </summary>
         internal static string PickedSelectorDisplay {
             get {
@@ -442,6 +431,15 @@ namespace FomoCal.Gui.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Toggle selector details for your picked element. More detail means more specificity - but beware that every moving part also increases the fragility of your selector. You&apos;ll want to find the sweet spot..
+        /// </summary>
+        internal static string SelectorDetailInfo {
+            get {
+                return ResourceManager.GetString("SelectorDetailInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to What&apos;s the difference? In most cases you&apos;ll want to use [CSS](https://www.w3schools.com/cssref/css_selectors.php) for its shorter and simpler selector syntax.
         ///
         ///# XPath
@@ -469,15 +467,6 @@ namespace FomoCal.Gui.Resources {
         internal static string TestPagingStrategy {
             get {
                 return ResourceManager.GetString("TestPagingStrategy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Toggle selector details for your picked element. More detail means more specificity - but beware that every moving part also increases the fragility of your selector. You&apos;ll want to find the sweet spot..
-        /// </summary>
-        internal static string ToggleSelectorDetail {
-            get {
-                return ResourceManager.GetString("ToggleSelectorDetail", resourceCulture);
             }
         }
         

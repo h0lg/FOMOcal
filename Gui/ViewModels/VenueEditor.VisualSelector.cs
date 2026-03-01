@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FomoCal.Gui.Resources;
-using Microsoft.Maui.Layouts;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using static FomoCal.Gui.ViewModels.Widgets;
 
@@ -52,10 +51,10 @@ partial class VenueEditor
 
     partial class Page
     {
-        private readonly AbsoluteLayout visualSelector;
+        private readonly Grid visualSelector;
         private AutomatedEventPageView? pageView;
 
-        private AbsoluteLayout CreateVisualSelector()
+        private Grid CreateVisualSelector()
         {
             pageView = new(model.venue, log: (message, level) => model.BrowserLog.Add(VenueScrapeContext.FormatLog(message, level)));
             pageView.HtmlLoaded += async html => await model.OnHtmlLoadedAsync(html, pageView.Url);
@@ -92,7 +91,7 @@ partial class VenueEditor
             var enablePicking = Swtch(nameof(EnablePicking));
             enablePicking.Switch.InlineTooltipOnFocus(HelpTexts.EnablePicking, help);
 
-            Label enablePickingLabel = Lbl("Tap a page element to pick it.")
+            Label enablePickingLabel = Lbl("Tap to pick.")
                 .BindVisible(showSelectorOptions, converter: Converters.Not)
                 .TapGesture(() =>
                 {
@@ -103,30 +102,38 @@ partial class VenueEditor
             var controlsAndInstructions = HWrap(5,
                 enablePicking.Wrapper.BindVisible(showSelectorOptions, converter: Converters.Not),
                 enablePickingLabel,
-                Btn("⿴ Pick its container").TapGesture(PickParent)
-                    .BindVisible(new Binding(displayedSelector, converter: Converters.IsSignificant),
-                        Converters.And, new Binding(showSelectorOptions, converter: Converters.Not)),
-                Lbl("if you need.")
+                Btn("⿴ Pick parent").TapGesture(PickParent)
                     .BindVisible(new Binding(displayedSelector, converter: Converters.IsSignificant),
                         Converters.And, new Binding(showSelectorOptions, converter: Converters.Not)),
                 new Button().BindVisibleToSignificanceOf(displayedSelector).TapGesture(model.TogglePickedSelector)
                     .Bind(Button.TextProperty, showSelectorOptions,
-                        convert: static (bool showSelector) => showSelector ? "⏮ Back to ⛶ picking an element" : "🍒 Choose a selector next ⏭"));
+                        convert: static (bool showSelector) => showSelector ? "⏮ Re-pick ⛶ the element" : "🍒 Choose selector ⏭"));
 
-            Editor selectorDisplay = SelectableMultiLineLabel(displayedSelector)
-                .InlineTooltipOnFocus(HelpTexts.PickedSelectorDisplay, help);
+            Editor selectorDisplay = SelectableMultiLineLabel(displayedSelector).FontSize(16);
 
-            View[] appendSelection = [
-                Lbl("⇥Select⇤ parts from the"),
-                Lbl("full selector below and"),
-                Btn(Glyphs.Add + " append").TapGesture(() => AppendSelectedQuery(selectorDisplay))
-                    .InlineTooltipOnFocus(HelpTexts.AppendSelectedQuery, help),
-                Lbl("them to the ones to use."),
-                Btn("🍜 selector detail").BindVisible(showSelectorOptions).TapGesture(model.ToggleSelectorDetail)
-                    .InlineTooltipOnFocus(HelpTexts.ToggleSelectorDetail, help)];
+            var ancestorPathInfo = Lbl("The part after the last > or / represents the picked element and is most important.")
+                .StyleClass(Styles.Label.Demoted).TextCenter().IsVisible(false);
 
-            foreach (var view in appendSelection)
-                controlsAndInstructions.AddChild(view.BindVisible(showSelectorOptions));
+            Label appendLbl = Lbl("Appends the ⇥selection⇤ to the existing selector if it matches the syntax - and otherwise replaces it.")
+                .StyleClass(Styles.Label.Demoted).TextCenterVertical().End().IsVisible(false);
+
+            var append = Btn(Glyphs.Add + " append").IsVisible(false)
+                .TapGesture(() => AppendSelectedQuery(selectorDisplay));
+
+            selectorDisplay.InlineTooltipOnFocus(HelpTexts.PickedSelectorDisplay, help,
+                onFocusChanged: async (_, hasFocus) =>
+                {
+                    await Task.Delay(300); // so that tap gesture can fire
+                    appendLbl.IsVisible = append.IsVisible = hasFocus;
+                    ancestorPathInfo.IsVisible = hasFocus && model.selectorOptions.IncludeAncestorPath;
+                });
+
+            controlsAndInstructions.AddChild(Btn("🍜 selector detail")
+                .BindVisible(showSelectorOptions).TapGesture(model.ToggleSelectorDetail));
+
+            controlsAndInstructions.AddChild(Lbl(HelpTexts.SelectorDetailInfo)
+                .StyleClass(Styles.Label.Demoted).BindVisible(new Binding(showSelectorOptions),
+                    Converters.And, new Binding(nameof(ShowSelectorDetail))));
 
             foreach (var view in GetSelectorOptions(help))
                 controlsAndInstructions.AddChild(
@@ -135,29 +142,27 @@ partial class VenueEditor
 
             pickedSelectorScroller = new()
             {
-                Content = Grd(cols: [Star], rows: [Auto, Auto, Auto], spacing: 0,
-                controlsAndInstructions.View,
-                help.layout.Row(1), selectorDisplay.Row(2))
+                Content = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
+                    controlsAndInstructions.View.ColumnSpan(2),
+                    help.layout.Margin(horizontal: 5, 0).Row(1).ColumnSpan(2),
+                    ancestorPathInfo.Margin(horizontal: 5, 0).Row(2).ColumnSpan(2),
+                    selectorDisplay.Row(3).ColumnSpan(2),
+                    appendLbl.Margin(horizontal: 5, 0).Row(4),
+                    append.Margins(right: 5).Row(5).Column(1))
+                    .Paddings(bottom: 10)
             };
 
             SetupAutoSizing();
 
-            return new()
-            {
-                IsVisible = false,
-                StyleClass = ["VisualSelector"],
-                HeightRequest = 0, // to initialize it collapsed and fix first opening animation
-                Children = {
-                    Grd(cols: [Star], rows: [Auto, Star], spacing: 0,
-                        pickedSelectorScroller,
-                        pageView
-                            .ToolTip("You may find it useful to zoom  the page using [Ctrl] + MouseWheel or try the 'Inspect' tool from the right-click context menu.")
-                            .BindVisible(showSelectorOptions, converter: Converters.Not).Row(3))
-                        .LayoutBounds(0, 0, 1, 1).LayoutFlags(AbsoluteLayoutFlags.SizeProportional), // full size
-                    Btn("⬇️").TapGesture(HideVisualSelector)
-                        .LayoutBounds(0.99, 0, -1, -1).LayoutFlags(AbsoluteLayoutFlags.PositionProportional) // position on the right, auto-sized
-                }
-            };
+            return Grd(cols: [Star], rows: [5, Star], spacing: 0,
+                Grd(cols: [Star], rows: [Auto, Star], spacing: 0,
+                    pickedSelectorScroller.Paddings(5),
+                    pageView
+                        .ToolTip("You may find it useful to zoom  the page using [Ctrl] + MouseWheel or try the 'Inspect' tool from the right-click context menu.")
+                        .BindVisible(showSelectorOptions, converter: Converters.Not)
+                        .Row(1)).StyleClass("VisualSelectorContent").Row(1),
+                Btn("⬇️").TapGesture(HideVisualSelector).End().Height(45).TranslationY(20))
+                    .StyleClass("VisualSelector");
         }
 
         private async void PickParent() => await pageView!.PickParent();

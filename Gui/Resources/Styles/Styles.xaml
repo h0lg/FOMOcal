@@ -644,8 +644,15 @@
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
     </Style>
 
-    <Style TargetType="AbsoluteLayout" Class="VisualSelector">
+    <Style TargetType="Grid" Class="VisualSelector">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" />
+
+        <!-- initialize it collapsed and prepared for opening HeightRequest animation -->
+        <Setter Property="IsVisible" Value="False" />
+        <Setter Property="HeightRequest" Value="0" />
     </Style>
 
+    <Style TargetType="Grid" Class="VisualSelectorContent">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
+    </Style>
 </ResourceDictionary>
