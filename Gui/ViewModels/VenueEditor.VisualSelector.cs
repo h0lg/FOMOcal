@@ -128,27 +128,20 @@ partial class VenueEditor
                     ancestorPathInfo.IsVisible = hasFocus && model.selectorOptions.IncludeAncestorPath;
                 });
 
-            controlsAndInstructions.AddChild(Btn("🍜 selector detail")
-                .BindVisible(showSelectorOptions).TapGesture(model.ToggleSelectorDetail));
-
-            controlsAndInstructions.AddChild(Lbl(HelpTexts.SelectorDetailInfo)
-                .StyleClass(Styles.Label.Demoted).BindVisible(new Binding(showSelectorOptions),
-                    Converters.And, new Binding(nameof(ShowSelectorDetail))));
-
-            foreach (var view in GetSelectorOptions(help))
-                controlsAndInstructions.AddChild(
-                    view.BindVisible(new Binding(showSelectorOptions),
-                        Converters.And, new Binding(nameof(ShowSelectorDetail))));
+            Label selectorDetailHeadline = Lbl("🍜 selector syntax & detail").StyleClass(Styles.Label.SubHeadline);
+            var selectorDetailInfo = Lbl(HelpTexts.SelectorDetailInfo).StyleClass(Styles.Label.Demoted);
+            View[] selectorDetail = [selectorDetailInfo, .. GetSelectorOptions(help)];
+            var selectorOptions = Expndr(selectorDetailHeadline, selectorDetail).BindVisible(showSelectorOptions);
 
             pickedSelectorScroller = new()
             {
-                Content = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
+                Content = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
                     controlsAndInstructions.View.ColumnSpan(2),
-                    help.layout.Margin(horizontal: 5, 0).Row(1).ColumnSpan(2),
-                    ancestorPathInfo.Margin(horizontal: 5, 0).Row(2).ColumnSpan(2),
-                    selectorDisplay.Row(3).ColumnSpan(2),
-                    appendLbl.Margin(horizontal: 5, 0).Row(4),
-                    append.Margins(right: 5).Row(5).Column(1))
+                    selectorOptions.Row(1).ColumnSpan(2),
+                    help.layout.Row(2).ColumnSpan(2),
+                    ancestorPathInfo.Row(3).ColumnSpan(2),
+                    selectorDisplay.Row(4).ColumnSpan(2),
+                    appendLbl.Row(5), append.Row(5).Column(1))
                     .Paddings(bottom: 10)
             };
 
@@ -206,7 +199,6 @@ partial class VenueEditor
         {
             // reset UI state to allow picking an element
             model.ShowSelectorOptions = false;
-            model.ShowSelectorDetail = false;
             model.EnablePicking = true;
 
             var loadingOnce = model.LazyLoadSelectorOptionsOnce();

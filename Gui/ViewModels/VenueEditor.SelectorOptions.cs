@@ -15,10 +15,6 @@ partial class VenueEditor
 
     private readonly SelectorOptions selectorOptions = new() { SemanticClasses = true, LayoutClasses = true }; // initialize with defaults
 
-    [ObservableProperty] public partial bool ShowSelectorDetail { get; set; }
-
-    private void ToggleSelectorDetail() => ShowSelectorDetail = !ShowSelectorDetail;
-
     private Task<bool>? LazyLoadSelectorOptionsOnce()
         => selectorOptionsRepo.IsValueCreated ? null : LazyLoadSelectorOptionsAsync();
 
@@ -80,7 +76,7 @@ partial class VenueEditor
 
     partial class Page
     {
-        View[] GetSelectorOptions((Label label, Border layout) help)
+        private View[] GetSelectorOptions((Label label, Border layout) help)
         {
             var xPathSyntax = new Switch() // enables switching between CSS and XPath syntax to save space
                 .Bind(Switch.IsToggledProperty, nameof(SelectorOptions.XPathSyntax), source: model.selectorOptions)
@@ -89,17 +85,17 @@ partial class VenueEditor
             var syntax = HStack(5, Lbl("Syntax").Bold(), Lbl("CSS"), SwtchWrp(xPathSyntax), Lbl("XPath"));
 
             return [syntax,
-                Lbl("detail").Bold(),
-                SelectorOption("ancestor path", nameof(SelectorOptions.IncludeAncestorPath), HelpTexts.IncludePickedSelectorPath),
-                SelectorOption("tag name", nameof(SelectorOptions.TagName), HelpTexts.TagName),
-                SelectorOption("id", nameof(SelectorOptions.Ids), HelpTexts.ElementId),
-                Lbl("classes").Bold(),
-                SelectorOption("with style", nameof(SelectorOptions.LayoutClasses), string.Format(HelpTexts.ClassesWith_Style, "")),
-                SelectorOption("without", nameof(SelectorOptions.SemanticClasses), string.Format(HelpTexts.ClassesWith_Style, " no")),
-                Lbl("other attributes").Bold(),
-                SelectorOption("names", nameof(SelectorOptions.OtherAttributes), HelpTexts.OtherAttributes),
-                SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues), HelpTexts.OtherAttributeValues),
-                SelectorOption("position", nameof(SelectorOptions.Position), HelpTexts.ElementPosition)];
+                HWrap(5, Lbl("detail").Bold(),
+                    SelectorOption("ancestor path", nameof(SelectorOptions.IncludeAncestorPath), HelpTexts.IncludePickedSelectorPath),
+                    SelectorOption("tag name", nameof(SelectorOptions.TagName), HelpTexts.TagName),
+                    SelectorOption("id", nameof(SelectorOptions.Ids), HelpTexts.ElementId),
+                    SelectorOption("position", nameof(SelectorOptions.Position), HelpTexts.ElementPosition)).View,
+                    HStack(10, Lbl("classes").Bold(),
+                        SelectorOption("with style", nameof(SelectorOptions.LayoutClasses), string.Format(HelpTexts.ClassesWith_Style, "")),
+                        SelectorOption("without", nameof(SelectorOptions.SemanticClasses), string.Format(HelpTexts.ClassesWith_Style, " no"))),
+                    HStack(10, Lbl("other attributes").Bold(),
+                        SelectorOption("names", nameof(SelectorOptions.OtherAttributes), HelpTexts.OtherAttributes),
+                        SelectorOption("values", nameof(SelectorOptions.OtherAttributeValues), HelpTexts.OtherAttributeValues))];
 
             Grid SelectorOption(string label, string isCheckedPropertyPath, string helpText)
             {
