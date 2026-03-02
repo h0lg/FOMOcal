@@ -9,6 +9,7 @@ public static partial class StringExtensions
     public static bool IsNullOrWhiteSpace(this string? str) => string.IsNullOrWhiteSpace(str);
     public static bool IsSignificant(this string? str) => !string.IsNullOrWhiteSpace(str);
     public static string Join(this IEnumerable<string?> strings, string separator) => string.Join(separator, strings);
+    public static string GetLast(this string input, int number) => input.Length > number ? input[^number..] : input;
     public static string LineJoin(this IEnumerable<string?> strings) => strings.Join(Environment.NewLine);
 
     /// <summary>Indicates whether <paramref name="text"/> contains any of the supplied

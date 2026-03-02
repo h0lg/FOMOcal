@@ -14,14 +14,11 @@ partial class VenueEditor
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayedSelector))] public partial bool ShowSelectorOptions { get; set; }
 
     public string? DisplayedSelector
-    {
-        get
-        {
-            if (PickedSelector.IsNullOrWhiteSpace()) return null;
-            if (selectorOptions.IncludeAncestorPath) return ShowSelectorOptions ? PickedSelector : PickedSelector.NormalizeWhitespace();
-            return AutomatedEventPageView.GetLeafSelector(PickedSelector!, selectorOptions.XPathSyntax);
-        }
-    }
+        => PickedSelector.IsNullOrWhiteSpace() ? null
+            : selectorOptions.IncludeAncestorPath
+                ? ShowSelectorOptions ? PickedSelector
+                    : PickedSelector.NormalizeWhitespace().GetLast(50)
+                : AutomatedEventPageView.GetLeafSelector(PickedSelector!, selectorOptions.XPathSyntax);
 
     private void TogglePicking() => EnablePicking = !EnablePicking;
     private void TogglePickedSelector() => ShowSelectorOptions = !ShowSelectorOptions;
