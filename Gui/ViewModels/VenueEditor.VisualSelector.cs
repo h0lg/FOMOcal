@@ -80,6 +80,8 @@ partial class VenueEditor
                 if (e.PropertyName == nameof(ProgramUrl)) GoTo(model.ProgramUrl);
                 else if (e.PropertyName == nameof(EnablePicking))
                     await pageView.EnablePicking(model.EnablePicking);
+                else if (e.PropertyName == nameof(ShowSelectorOptions))
+                    UpdateHeight();
                 else if (e.PropertyName == nameof(LazyLoaded)
                     || e.PropertyName == nameof(Encoding)
                     || (e.PropertyName == nameof(EventSelector) && model.LazyLoaded))
@@ -278,9 +280,13 @@ partial class VenueEditor
                     pickedSelectorScroller.HeightRequest = maxHeight;
                     height = maxHeight;
                 }
-                else pickedSelectorScroller.HeightRequest = -1;
+                else pickedSelectorScroller.HeightRequest = -1; // allow scroller to re-shrink
             }
-            else height = maxHeight;
+            else
+            {
+                height = maxHeight;
+                pickedSelectorScroller!.HeightRequest = -1; // allow scroller to re-shrink
+            }
 
             await visualSelector.AnimateHeightRequest(height);
 
