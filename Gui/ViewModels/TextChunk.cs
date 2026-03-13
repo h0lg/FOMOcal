@@ -146,7 +146,7 @@ public class TextChunkConverter(Style linkStyle, Style highlitStyle, Style? norm
             else
             {
                 span.Style = linkStyle;
-                span.TapGesture(() => Launcher.OpenAsync(new Uri(chunk.LinkUrl)));
+                span.TapGesture(() => WebViewPage.OpenUrlAsync(chunk.LinkUrl));
             }
 
             fs.Spans.Add(span);

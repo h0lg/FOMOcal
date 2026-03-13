@@ -241,7 +241,7 @@ internal static partial class ViewExtensions
                 else
                 {
                     chunk.Style = linkStyle;
-                    chunk.TapGesture(() => Launcher.OpenAsync(new Uri(url)));
+                    chunk.TapGesture(() => WebViewPage.OpenUrlAsync(url));
                 }
 
                 target.Spans.Add(chunk);

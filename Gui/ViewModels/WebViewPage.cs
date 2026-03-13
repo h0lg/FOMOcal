@@ -6,8 +6,13 @@ namespace FomoCal.Gui.ViewModels;
 public partial class WebViewPage : ContentPage
 {
     internal static Task OpenUrlAsync(string url)
-        => Shell.Current == null ? Launcher.OpenAsync(url)
+    {
+        if (!url.IsValidHttpUrl())
+            throw new ArgumentException(url + " is not a valid HTTP/S URL and won't be opened for your safety.", nameof(url));
+
+        return Shell.Current == null ? Launcher.OpenAsync(url)
             : Shell.Current.GoToAsync($"{nameof(WebViewPage)}?{nameof(Url)}={Uri.EscapeDataString(url)}");
+    }
 
     string url = "";
     public string Url
