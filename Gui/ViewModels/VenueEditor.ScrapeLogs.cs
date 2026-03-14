@@ -31,15 +31,16 @@ partial class VenueEditor
     private void DeleteScrapeLog(ScrapeLogFile.ForVenue log)
     {
         ScrapeLogFile.Remove(log);
-        ScrapeLogs!.Remove(log);
+        ScrapeLogs.Remove(log);
     }
 
     partial class Page
     {
-        private static FlexLayout ScrapeLogs(VenueEditor model)
+        private static Border ScrapeLogs(VenueEditor model)
         {
-            var save = Swtch(nameof(SaveScrapeLogs));
-            save.Switch.ToolTip(HelpTexts.SaveScrapLogs);
+            var save = Swtch(nameof(SaveScrapeLogs)).Wrapper;
+            var help = HelpLbl(HelpTexts.SaveScrapLogs, nameof(SaveScrapeLogs));
+            var hasLogs = Converters.Predicate<ObservableCollection<ScrapeLogFile.ForVenue>>(logs => logs?.Count > 0);
 
             DataTemplate itemTemplate = new(() =>
             {
@@ -56,18 +57,23 @@ partial class VenueEditor
             var logs = new CollectionView
             {
                 ItemsSource = model.ScrapeLogs,
-                ItemsLayout = LinearItemsLayout.Horizontal,
+                ItemsLayout = DeviceInfo.Idiom == DeviceIdiom.Phone ? LinearItemsLayout.Vertical : LinearItemsLayout.Horizontal,
                 ItemTemplate = itemTemplate
-            }
-                .ToolTip("Tap any log to open it.");
+            };
 
-            return HWrap(5, Lbl("📜 Scrape logs").Bold(), Lbl("save"), save.Wrapper, logs).View;
+            var logsHelp = Lbl("Tap any log to open it.").StyleClass(Styles.Label.Demoted).CenterHorizontal()
+                .BindVisible(nameof(VenueEditor.ScrapeLogs), converter: hasLogs);
+
+            return RoundedSection(
+                VStack(5,
+                    HWrap(5, Lbl("📜 Scrape logs").Bold(), Lbl("save"), save).View,
+                    help, logs, logsHelp));
         }
 
-        private static FlexLayout ScriptLog(VenueEditor model)
+        private static Border ScriptLog(VenueEditor model)
         {
-            var toggle = Swtch(nameof(ShowBrowserLog));
-            toggle.Switch.ToolTip("View the browser log during the configuration process, e.g. to debug it.");
+            var toggle = Swtch(nameof(ShowBrowserLog)).Wrapper;
+            var help = HelpLbl("View the browser log during the configuration process, e.g. to debug it.", nameof(ShowBrowserLog));
 
             var log = new CollectionView
             {
@@ -76,7 +82,7 @@ partial class VenueEditor
             }
                 .BindVisible(nameof(ShowBrowserLog));
 
-            return HWrap(5, Lbl("📨 Browser log").Bold(), toggle.Wrapper, log).View;
+            return RoundedSection(HWrap(5, Lbl("📨 Browser log").Bold(), toggle, help, log).View);
         }
     }
 }

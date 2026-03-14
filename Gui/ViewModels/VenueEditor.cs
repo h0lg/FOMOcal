@@ -278,14 +278,20 @@ public partial class VenueEditor : ObservableObject
             static Label FldLbl(string Text) => Lbl(Text).CenterVertical();
         }
 
-        private static FlexLayout EncodingOverride()
+        private static Border EncodingOverride()
         {
             const string show = nameof(ShowEncoding);
             var encoding = Entr(nameof(Encoding), placeholder: "encoding override").BindVisible(show);
+            var help = HelpLbl(HelpTexts.Encoding, show);
+            return RoundedSection(HWrap(5, Lbl("🔣 Encoding").Bold(), Swtch(show).Wrapper, encoding, help).View);
+        }
+
+        private static Border HelpLbl(string text, string visiblePropertyPath)
+        {
             var (help, helper) = HelpLabel(isPlaceholder: false);
-            help.Text = HelpTexts.Encoding;
-            helper.BindVisible(show);
-            return HWrap(5, Lbl("🔣 Encoding").Bold(), Swtch(show).Wrapper, encoding, helper).View;
+            help.Text = text;
+            helper.BindVisible(visiblePropertyPath);
+            return helper;
         }
 
         private static Label ErrorLbl(string text) => Lbl(Glyphs.Error + " " + text).TextCenter();
