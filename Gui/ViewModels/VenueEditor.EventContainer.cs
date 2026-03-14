@@ -145,16 +145,15 @@ partial class VenueEditor
             take.Entry.InlineTooltipOnFocus("the maximum number of selected events to show in the preview", help,
                 onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
 
-            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto, Auto], spacing: 5,
+            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),
                 scrapeConfigInfo.CenterVertical().Column(1),
                 lastEventCount.Column(2),
                 lastRefreshed.Column(3),
                 help.layout.Row(1).ColumnSpan(4),
                 controls.View.Row(2).ColumnSpan(4),
-                PagingControls(help).Row(3).ColumnSpan(4),
-                previewControls.View.Row(4).ColumnSpan(4),
-                previewOrErrors.Row(5).ColumnSpan(4));
+                previewControls.View.Row(3).ColumnSpan(4),
+                previewOrErrors.Row(4).ColumnSpan(4));
 
             async Task TogglePreviewRelatedFocus(bool focused)
             {

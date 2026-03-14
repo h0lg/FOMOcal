@@ -31,25 +31,27 @@ partial class VenueEditor
 
     partial class Page
     {
-        private FlexLayout PagingControls((Label label, Border layout) help)
+        private Border PagingControls()
         {
+            var help = HelpLabel();
+
             Picker pagingStrategy = new()
             {
                 ItemsSource = model!.PagingStrategies.ConvertAll(e => e.GetDescription()),
                 SelectedIndex = model.PagingStrategies.IndexOf(model.venue.Event.PagingStrategy)
             };
 
-            pagingStrategy.OnFocusChanged(async (_, focused) => await SyncPagingStrategyHelp(focused));
+            pagingStrategy.OnFocusChanged(async (_, focused) =>
+            {
+                // ignore loss of focus (which happens right after selection on Android) to keep it open
+                if (focused || DeviceInfo.Idiom == DeviceIdiom.Desktop) await SyncPagingStrategyHelp(focused);
+            });
 
             pagingStrategy.SelectedIndexChanged += async (s, e) =>
             {
-                if (pagingStrategy.SelectedIndex >= 0)
-                {
-                    model.venue.Event.PagingStrategy = model.PagingStrategies[pagingStrategy.SelectedIndex];
-                    model.LoadMoreCommand.NotifyCanExecuteChanged();
-                    await SyncPagingStrategyHelp(focused: true);
-                }
-                else await SyncPagingStrategyHelp(focused: false);
+                model.venue.Event.PagingStrategy = model.PagingStrategies[pagingStrategy.SelectedIndex];
+                model.LoadMoreCommand.NotifyCanExecuteChanged();
+                await SyncPagingStrategyHelp(focused: true);
             };
 
             var nextPageSelector = SelectorInput(
@@ -61,7 +63,7 @@ partial class VenueEditor
                     Converters.Predicate<int>(i => model.PagingStrategies[i].RequiresNextPageSelector()));
 
             var test = Btn("▶", nameof(LoadMoreCommand), parameterSource: pageView).ToolTip(HelpTexts.TestPagingStrategy);
-            return HWrap(5, Lbl("Loading").Bold(), pagingStrategy, nextPageSelector, test).View;
+            return RoundedSection(HWrap(5, help.layout, Lbl("Loading").Bold(), pagingStrategy, nextPageSelector, test).View);
 
             Task SyncPagingStrategyHelp(bool focused) =>
                 help.InlineHelpTextAsync(model.venue.Event.PagingStrategy.GetHelp()!, pagingStrategy, focused);
