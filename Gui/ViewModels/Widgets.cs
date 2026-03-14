@@ -74,12 +74,14 @@ internal static class Widgets
             await scroller.AnimateHeightRequest(isOpen ? scroller.Content.Height : 0); // isOpen was already toggled
         }).FillHorizontal(); // so tapping anywhere in the header row works
 
-        return new()
-        {
-            StyleClass = [Styles.Border.RoundedSection],
-            Content = VStack(5, header, scroller)
-        };
+        return RoundedSection(VStack(5, header, scroller));
     }
+
+    internal static Border RoundedSection(View content) => new()
+    {
+        StyleClass = [Styles.Border.RoundedSection],
+        Content = content
+    };
 
     internal static Label BndLbl(string path = ".", string? stringFormat = null, object? source = null, IValueConverter? converter = null)
         => new Label().Bind(Label.TextProperty, path, converter: converter, stringFormat: stringFormat, source: source);

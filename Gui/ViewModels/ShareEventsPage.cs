@@ -24,13 +24,9 @@ public partial class ShareEventsPage : PickerPage<ShareEventsPage.Format?>
                 + configurableInSettings),
             new(Format.CSV, "▦ csv", "...as a table for spreadsheet apps in comma-separated value CSV format.")];
 
-        DataTemplate optionTemplate = new(() => new Border
-        {
-            StyleClass = [Styles.Border.RoundedSection],
-            Content = VStack(5,
-                BndLbl(nameof(ExportOption.Title)).StyleClass(Styles.Label.Headline),
-                BndLbl(nameof(ExportOption.Description)).StyleClass(Styles.Label.Demoted).TextCenterHorizontal())
-        });
+        DataTemplate optionTemplate = new(() => RoundedSection(VStack(5,
+            BndLbl(nameof(ExportOption.Title)).StyleClass(Styles.Label.Headline),
+            BndLbl(nameof(ExportOption.Description)).StyleClass(Styles.Label.Demoted).TextCenterHorizontal())));
 
         BindingContext = options;
 

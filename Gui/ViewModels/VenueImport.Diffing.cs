@@ -127,7 +127,7 @@ public partial class VenueImport : ObservableObject
                     Lbl("yours").StyleClass(Styles.Label.Demoted).Row(2),
                     BndLbl(nameof(PropertyDiff.OldValue)).Row(2).Column(1));
 
-                return new Border { StyleClass = [Styles.Border.RoundedSection], Content = layout };
+                return RoundedSection(layout);
             });
 
             return new CollectionView
@@ -188,7 +188,7 @@ public partial class VenueImport : ObservableObject
                     // bind group name from unique string property to avoid sharing the same group across diffs
                     pathToGroupName: nameof(DiffEditor.Path));
 
-                return new Border { StyleClass = [Styles.Border.RoundedSection], Content = layout };
+                return RoundedSection(layout);
             });
 
             var diffs = new CollectionView
