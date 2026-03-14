@@ -87,7 +87,7 @@ partial class VenueEditor
 
     partial class Page
     {
-        private Grid EventContainer()
+        private Border EventContainer()
         {
             var help = HelpLabel();
             Label scrapeConfigInfo = Lbl("ⓘ");
@@ -112,13 +112,13 @@ partial class VenueEditor
             var eventFilter = Entr(nameof(EventFilter), placeholder: "text or XPath");
 
             var previewOrErrors = ValuePreview.List(
-                itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(PreviewRelatedHasFocus), source: model!);
+                itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(PreviewRelatedHasFocus), source: model);
 
             var controls = HWrap(5,
                 Lbl("Event container").Bold(),
                 BndLbl(nameof(SelectedEventCount), "{0} selected by"), containerSelector,
                 BndLbl(nameof(FilteredEventCount), "{0} filtered by"), eventFilter,
-                Lbl("lazy"), lazyLoaded.Wrapper);
+                LbldView("lazy", lazyLoaded.Wrapper));
 
             var skip = NumericStepper.Create(nameof(SkipEvents), "skipping");
             var take = NumericStepper.Create(nameof(TakeEvents), startLabel: "and taking", max: 10);
@@ -145,7 +145,7 @@ partial class VenueEditor
             take.Entry.InlineTooltipOnFocus("the maximum number of selected events to show in the preview", help,
                 onFocusChanged: async (_, focused) => await TogglePreviewRelatedFocus(focused));
 
-            return Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
+            return RoundedSection(Grd(cols: [Auto, Star, Auto, Auto], rows: [Auto, Auto, Auto, Auto, Auto], spacing: 5,
                 Lbl("How to dig a gig").StyleClass(Styles.Label.SubHeadline),
                 scrapeConfigInfo.CenterVertical().Column(1),
                 lastEventCount.Column(2),
@@ -153,7 +153,7 @@ partial class VenueEditor
                 help.layout.Row(1).ColumnSpan(4),
                 controls.View.Row(2).ColumnSpan(4),
                 previewControls.View.Row(3).ColumnSpan(4),
-                previewOrErrors.Row(4).ColumnSpan(4));
+                previewOrErrors.Row(4).ColumnSpan(4)));
 
             async Task TogglePreviewRelatedFocus(bool focused)
             {
