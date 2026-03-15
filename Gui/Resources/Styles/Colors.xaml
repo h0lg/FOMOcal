@@ -4,37 +4,51 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
-
-    <Color x:Key="Primary">#ee8</Color>
-    <Color x:Key="PrimaryText">#404</Color>
-    <Color x:Key="PrimaryDark">#404</Color>
-    <Color x:Key="PrimaryDarkText">#cac</Color>
-    <Color x:Key="Secondary">#DFD8F7</Color>
+    <!-- Other light pallettes
+        https://coolors.co/palette/0081a7-00afb9-fdfcdc-fed9b7-f07167
+        https://coolors.co/palette/ff6b35-f7c59f-efefd0-004e89-1a659e
+        https://coolors.co/8ecae6-219ebc-023047-ffb703-fb8500
+        https://colorkit.co/palette/151c4a-f29a35-ffb000-ffd880-0069b0/
+        https://colorpaletted.com/color-palette-editor/FBBEF3-AED6F8-FDFDED-F7F0D1-D9F2F8
+        dark
+        https://coolors.co/000814-001d3d-003566-ffc300-ffd60a
+    -->
+    <Color x:Key="Primary">#0081a7</Color>
+    <Color x:Key="PrimaryText">#fdfcdc</Color>
+    <Color x:Key="PrimaryDark">#CD9138</Color>
+    <Color x:Key="PrimaryDarkText">#5E2B84</Color>
+    <Color x:Key="Secondary">#00afb9</Color>
+    <Color x:Key="SecondaryDark">#956825</Color>
     <Color x:Key="SecondaryDarkText">#9880e5</Color>
-    <Color x:Key="Tertiary">#2B0B98</Color>
+    <Color x:Key="Tertiary">#00296b</Color>
     <Color x:Key="TertiaryDark">#2B0B98</Color>
 
-    <Color x:Key="DarkBackground">#17171a</Color>
+    <Color x:Key="DarkBackground">#290025</Color>
     <Color x:Key="LightOnDarkBackground">#C3C3C3</Color>
-    <Color x:Key="LightBackground">#F2F2F2</Color>
-    <Color x:Key="DarkOnLightBackground">#0D0D0D</Color>
+    <Color x:Key="LightBackground">#fed9b7</Color>
+    <Color x:Key="DarkOnLightBackground">#00509d</Color>
 
-    <Color x:Key="LightSecondaryBackground">#E0E0E0</Color>
-    <Color x:Key="DarkSecondaryBackground">#222228</Color>
+    <Color x:Key="LightChromeBackground">#f07167</Color>
+    <Color x:Key="DarkChromeBackground">#4f0147</Color>
+    <Color x:Key="LightSecondaryBackground">#fdfcdc</Color>
+    <Color x:Key="LightSecondaryBackground50">#88fdfcdc</Color>
+    <Color x:Key="DarkSecondaryBackground">#4f0147</Color>
+    <Color x:Key="DarkSecondaryBackground50">#88411163</Color>
 
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
     <Color x:Key="Magenta">#D600AA</Color>
     <Color x:Key="MidnightBlue">#190649</Color>
     <Color x:Key="OffBlack">#1f1f1f</Color>
-    <Color x:Key="HelpBg">#ccf</Color>
-    <Color x:Key="HelpBgDark">#33c</Color>
-    <Color x:Key="Help">#228</Color>
-    <Color x:Key="HelpDark">#ddf</Color>
-    <Color x:Key="Success">#2a2</Color>
-    <Color x:Key="SuccessDark">#2a2</Color>
-    <Color x:Key="Error">#a22</Color>
-    <Color x:Key="ErrorDark">#a22</Color>
+
+    <Color x:Key="HelpBg">#ccdbfd</Color>
+    <Color x:Key="HelpBgDark">#55ffffff</Color>
+    <Color x:Key="Help">#003049</Color>
+    <Color x:Key="HelpDark">#003049</Color>
+    <Color x:Key="Success">#2a9d8f</Color>
+    <Color x:Key="SuccessDark">#2a9d8f</Color>
+    <Color x:Key="Error">#c1121f</Color>
+    <Color x:Key="ErrorDark">#c1121f</Color>
 
     <Color x:Key="Gray100">#E1E1E1</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>
@@ -60,8 +74,18 @@
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
 
-    <Color x:Key="HighlitTextLight">#992</Color>
-    <Color x:Key="HighlitTextDark">#772</Color>
-    <Color x:Key="LinkTextLight">#77F</Color>
-    <Color x:Key="LinkTextDark">#aaf</Color>
+    <Color x:Key="HighlitTextLight">#c1121f</Color>
+    <Color x:Key="HighlitTextDark">#CD9138</Color>
+    <Color x:Key="LinkTextLight">#003049</Color>
+    <Color x:Key="LinkTextDark">#CD9138</Color>
+
+    <LinearGradientBrush x:Key="BackgroundBrush" StartPoint="0.5,0" EndPoint="0.5,1.0">
+        <GradientStop Color="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
+        <GradientStop Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" Offset="0.3" />
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="BackgroundBrush2" Center="0.5,1.0">
+        <GradientStop Color="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" Offset="0.1" />
+        <GradientStop Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" Offset="1.0" />
+    </RadialGradientBrush>
 </ResourceDictionary>

@@ -135,16 +135,16 @@ partial class EventList
         private static Border SelectionMenu() => new()
         {
             StyleClass = [nameof(SelectionMenu)],
-            Content = HWrap(5,
-                BndLbl(nameof(EventCounters)).Paddings(right: 2),
+            Content = HStack(0,
+                BndLbl(nameof(EventCounters)).Margins(right: 2).TextCenterVertical(),
                 Swtch(nameof(ViewSelectedOnly)).Wrapper.BindVisible(nameof(HasSelection))
                     .ToolTip("toggle between viewing all and only selected events"),
                 HStack(5, BndLbl(nameof(SelectedEventCounters)),
                     Btn(Glyphs.Export + " Share", nameof(ShareSelectedEventsCommand)).ToolTip("share selected events"))
                     .BindVisible(nameof(HasSelection)),
                 Lbl(" - tap an event to select it")
-                    .StyleClass(Styles.Label.Demoted).Margins(left: 5, right: 5)
-                    .BindVisible(nameof(HasSelection), converter: Converters.Not)).View
+                    .StyleClass(Styles.Label.Demoted).TextCenterVertical().Height(50)
+                    .BindVisible(nameof(HasSelection), converter: Converters.Not))
         };
 
         private static void ToggleSelected(EventView item, EventList model)

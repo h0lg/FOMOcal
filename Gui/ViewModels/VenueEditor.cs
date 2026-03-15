@@ -202,7 +202,7 @@ public partial class VenueEditor : ObservableObject
                 .ToolTip("your progress towards the minimum required configuration to make this venue scrapable");
 
             var title = VStack(null,
-                Lbl(Title).StyleClass(Styles.Label.Headline),
+                Lbl(Title).StyleClass(Styles.Label.TitleView),
                 progress).FillHorizontal();
 
             if (Shell.Current == null) NavigationPage.SetTitleView(this, title);

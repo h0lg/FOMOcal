@@ -236,7 +236,7 @@ public partial class EventList : ObservableObject
 
                 var border = new Border
                 {
-                    StyleClass = ["list-event"],
+                    StyleClass = [Styles.Border.ListItem, Styles.VisualElement.SelectableListItem],
                     Content = eventLayout
                 }
                 .Bind(OpacityProperty, nameof(EventView.IsPast),
@@ -274,7 +274,6 @@ public partial class EventList : ObservableObject
 
                     return new SwipeView()
                     {
-                        StyleClass = ["list-event"],
                         LeftItems = [new SwipeItemView() { Content = leftMenu }],
                         Content = border,
                         RightItems = [new SwipeItem() { Text = Glyphs.Delete + " Delete" }.BindCommand(nameof(DeleteEventCommand), source: model)]
@@ -301,9 +300,10 @@ public partial class EventList : ObservableObject
             };
 
             var header = Grd(cols: [Auto, Star, Auto], rows: [Auto], spacing: 5,
-                Lbl("Gigs").StyleClass(Styles.Label.Headline).CenterVertical().IsVisible(isDesktop),
+                Lbl("Gigs").StyleClass(Styles.Label.Headline).CenterVertical().Margins(left: 5).IsVisible(isDesktop),
                 searchBar.Column(1),
-                MenuTrigger(async () => await model.ShowMenu()).Column(2));
+                MenuTrigger(async () => await model.ShowMenu()).Margins(right: 5).Column(2))
+                .StyleClass(Styles.VisualElement.ChromeBg);
 
             Content = Grd(cols: [Star], rows: [Auto, Auto, Star, Auto], spacing: 0,
                 header, recentSearches.Row(1), list.Row(2).RowSpan(2), SelectionMenu().Row(3));

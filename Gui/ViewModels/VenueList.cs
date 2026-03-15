@@ -64,8 +64,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
 
                     var border = new Border
                     {
-                        Padding = 10,
-                        StrokeThickness = 0,
+                        StyleClass = [Styles.Border.ListItem, Styles.VisualElement.ListItemBg],
                         Content = Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto], spacing: 5,
                             name.ColumnSpan(2),
                             location.Row(1),
@@ -91,16 +90,16 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                 }));
 
             var addVenue = Btn(Glyphs.Add, nameof(AddVenueCommand)).ToolTip("add a venue")
-                .StyleClass(Styles.Button.Tertiary).Margin(5);
+                .StyleClass(Styles.Button.Secondary).Margin(5);
 
             var refreshAll = Btn(Glyphs.Scrape + " dig all gigs",
                 nameof(VenueCollection.RefreshAllVenuesCommand), source: model.Venues)
-                .ToolTip("refresh events from all venues").Margin(3);
+                .ToolTip("refresh events from all venues").Margin(5);
 
             bool isDesktop = Shell.Current == null;
             var menuTrigger = MenuTrigger(async () => await model.ShowMenu(), floatingAction: !isDesktop);
 
-            var refreshAllProgress = new ProgressBar()
+            var refreshAllProgress = new ProgressBar().Margin(horizontal: 5, 0)
                 .Bind(ProgressBar.ProgressProperty, nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues)
                 .ToolTip("the progress of refreshing the events of all venues ")
                 // hide when none is refreshing
@@ -114,15 +113,16 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
 
                 Content = Grd(cols: [Star, Auto], rows: [44, Star, Auto, Auto], spacing: 0,
                     title, menuTrigger.Column(2).End(),
-                    list.Row(1).ColumnSpan(2),
-                    addVenue.Row(2).Start(), refreshAll.Row(2).Column(1),
-                    refreshAllProgress.Row(3).ColumnSpan(2));
+                    list.StyleClass(Styles.VisualElement.NormalBg).Row(1).ColumnSpan(2).RowSpan(3),
+                    refreshAllProgress.Row(2).ColumnSpan(2),
+                    addVenue.Row(3).Start(), refreshAll.Row(3).Column(1))
+                    .StyleClass(Styles.VisualElement.ChromeBg);
             }
             else // shell layout displaying lists separately
                 Content = Grd(cols: [Auto, Star, Auto], rows: [Star, Auto, Auto], spacing: 0,
-                    list.ColumnSpan(3),
-                    addVenue.Row(1).Start(), refreshAll.Row(1).Column(1).CenterHorizontal(), menuTrigger.Row(1).Column(2),
-                    refreshAllProgress.Row(2).ColumnSpan(3));
+                    list.ColumnSpan(3).RowSpan(3),
+                    refreshAllProgress.Row(1).ColumnSpan(3),
+                    addVenue.Row(2).Start(), refreshAll.Row(2).Column(1).CenterHorizontal(), menuTrigger.Margin(5).Row(2).Column(2));
         }
 
         private static void SwingPickaxeDuring(Button btn, ICommand cmd)

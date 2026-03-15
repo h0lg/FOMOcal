@@ -40,7 +40,7 @@ internal static class Styles
 {
     internal static class Label
     {
-        internal static string Headline = GetName(), SubHeadline = GetName(),
+        internal static string TitleView = GetName(), Headline = GetName(), SubHeadline = GetName(),
             Demoted = GetName(), EndingEntryButton = GetName(), VenueRowDetail = GetName();
     }
 
@@ -63,7 +63,7 @@ internal static class Styles
     internal static class Border
     {
         internal static string RoundedSection = GetName(), Error = GetName(),
-            EndingEntryButton = GetName(), ScrapedValue = GetName();
+            EndingEntryButton = GetName(), ScrapedValue = GetName(), ListItem = GetName();
     }
 
     internal static class Button
@@ -75,6 +75,12 @@ internal static class Styles
     internal static class RadioButton
     {
         internal static string SingleSelectToggleButton = GetName();
+    }
+
+    internal static class VisualElement
+    {
+        internal static string BackGround = GetName(), ChromeBg = GetName(), NormalBg = GetName(),
+            ListItemBg = GetName(), SelectableListItem = GetName();
     }
 
     private static string GetName([CallerMemberName] string key = "") => key;
