@@ -25,15 +25,7 @@ public class JsonFileStore(string storagePath)
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
         WriteIndented = true,
-        Converters = {
-            // migrates the old NavigateLinkToLoadMore to the new NavigateLinkToLoadDifferent
-            new EnumAliasConverter<Venue.PagingStrategy>(new Dictionary<string, Venue.PagingStrategy>
-            {
-                ["NavigateLinkToLoadMore"] = Venue.PagingStrategy.NavigateLinkToLoadDifferent
-            }),
-
-            new JsonStringEnumConverter()
-        }
+        Converters = { new JsonStringEnumConverter() }
     };
 
     internal static string Serialize<T>(T value) => JsonSerializer.Serialize(value, jsonOptions);
@@ -73,33 +65,4 @@ public class JsonFileStore(string storagePath)
 
     internal void ShareFile(string fileLabel, string fileName)
         => Export.ShareFile(fileLabel, GetFilePath(fileName), MediaTypeNames.Application.Json);
-}
-
-/// <summary>Maps a string alias to an <see cref="Enum"/> value while reading.
-/// Useful to migrate old string Enum values written with the <see cref="JsonStringEnumConverter"/>.</summary>
-/// <typeparam name="T">An <see cref="Enum"/> type.</typeparam>
-internal sealed class EnumAliasConverter<T> : JsonConverter<T> where T : struct, Enum
-{
-    private readonly Dictionary<string, T> aliases;
-
-    internal EnumAliasConverter(IEnumerable<KeyValuePair<string, T>> aliases)
-        => this.aliases = new Dictionary<string, T>(aliases, StringComparer.OrdinalIgnoreCase);
-
-    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        if (reader.TokenType == JsonTokenType.String)
-        {
-            var str = reader.GetString()!;
-            if (aliases.TryGetValue(str, out var mapped)) return mapped;
-            if (Enum.TryParse<T>(str, ignoreCase: true, out var parsed)) return parsed;
-        }
-
-        if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out var i))
-            return (T)(object)i;
-
-        throw new JsonException($"Cannot convert token '{reader.GetString()}' to enum {typeof(T)}.");
-    }
-
-    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
-        => writer.WriteStringValue(value.ToString());
 }

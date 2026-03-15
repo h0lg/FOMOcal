@@ -43,22 +43,12 @@ public static partial class StringExtensions
         return input;
     }
 
-    // Regex pattern to match "Pattern => Replacement, Pattern2 =>" pairs
-    [GeneratedRegex(@"([^=\s]+)\s*=>\s*([^,]*)")] private static partial Regex InlinedReplacements();
-
-    internal static string? MigrateInlinedReplacements(string? replacements)
-        => replacements.IsNullOrWhiteSpace() ? null // reset to null
-            : replacements!.Contains("}}") ? replacements // already migrated
-            : InlinedReplacements().Matches(replacements!) // migrate
-                .Select(match => $"{match.Groups[1].Value} }}}} {match.Groups[2].Value}").Join(" || ");
-
     /// <summary>Explodes the in-lined <paramref name="replacements"/> in the form "Pattern }} Replacement || Pattern2 }}"
     /// into pairs for <see cref="ApplyReplacements(string, Dictionary{string, string})"/>.</summary>
     public static Dictionary<string, string> ExplodeInlinedReplacements(this string replacements)
-        => MigrateInlinedReplacements(replacements)!.Split("||", StringSplitOptions.RemoveEmptyEntries)
+        => replacements!.Split("||", StringSplitOptions.RemoveEmptyEntries)
             .Select(replacement => replacement.Split("}}"))
             .ToDictionary(arr => arr[0].Trim(), arr => arr[1].Trim());
-
 }
 
 public static class EnumerableExtensions

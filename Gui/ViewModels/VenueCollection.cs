@@ -143,5 +143,5 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
             Observable.Add(venue);
     }
 
-    private Task SaveVenues() => repo.SaveCompleteAsync(Observable.Migrate().ToHashSet());
+    private Task SaveVenues() => repo.SaveCompleteAsync(Observable.ToHashSet());
 }

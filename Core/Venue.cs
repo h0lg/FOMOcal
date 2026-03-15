@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Text.Json;
 using static FomoCal.Venue;
 
@@ -56,9 +55,6 @@ public class Venue
     {
         public required string Selector { get; set; }
         public bool LazyLoaded { get; set; }
-
-        // migrates the old WaitForJsRendering to the new LazyLoaded
-        public bool WaitForJsRendering { set => LazyLoaded = value; }
 
         public string? Filter { get; set; }
         public PagingStrategy PagingStrategy { get; set; }
@@ -158,18 +154,6 @@ public interface IHaveAComment
 
 public static class VenueExtensions
 {
-    public static T Migrate<T>(this T venues) where T : IEnumerable<Venue>
-    {
-        PropertyInfo[] scrapJobProperties = [.. typeof(EventScrapeJob).GetProperties()
-            .Where(p => p.PropertyType.IsAssignableTo(typeof(ScrapeJob)))];
-
-        foreach (var venue in venues)
-            foreach (var job in scrapJobProperties.Select(p => p.GetValue(venue.Event)).WithValue().Cast<ScrapeJob>())
-                job.Replace = StringExtensions.MigrateInlinedReplacements(job.Replace);
-
-        return venues;
-    }
-
     public static bool RequiresNextPageSelector(this PagingStrategy strategy)
         => strategy == PagingStrategy.NavigateLinkToLoadDifferent || strategy.ClicksElementToLoad();
 
