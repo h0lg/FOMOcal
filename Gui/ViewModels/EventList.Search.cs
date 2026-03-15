@@ -73,9 +73,8 @@ partial class EventList
     {
         private static (SearchBar searchBar, ScrollView recentSearches) BuildSearch(EventList model)
         {
-            var searchBar = new SearchBar() { Placeholder = "filter by comma,separated,terms" }
-                .Bind(SearchBar.TextProperty, nameof(SearchText))
-                .ToolTip("[Enter] or tap the 🔎 icon to remember the current search for the future");
+            var searchBar = new SearchBar() { Placeholder = "filter by comma, separated, terms" }
+                .Bind(SearchBar.TextProperty, nameof(SearchText));
 
             searchBar.SearchButtonPressed += (s, e) => model.SaveSearch();
 
@@ -85,14 +84,20 @@ partial class EventList
                 SelectionMode = SelectionMode.Single,
                 ItemTemplate = new DataTemplate(() =>
                     Grd(cols: [Star, Auto], rows: [Auto], spacing: 5,
-                        BndLbl().Center(), Btn(Glyphs.Delete, nameof(DeleteSearchCommand), source: model).Column(1)))
+                        BndLbl().TextEnd().TextCenterVertical(),
+                        Btn(Glyphs.Delete, nameof(DeleteSearchCommand), source: model).Column(1)))
             };
 
-            var closeRecentSearches = Btn("⬆️ Close recent searches");
+            var closeRecentSearches = Btn("⬆️ Close");
 
             var scroller = new ScrollView()
             {
-                Content = VStack(5, recentSearches, closeRecentSearches),
+                Content = Grd(cols: [Auto, Star, Auto], rows: [Auto, Auto], spacing: 5,
+                    recentSearches.ColumnSpan(3),
+                    Lbl("Recent searches").Bold().TextCenterVertical().Row(1),
+                    Lbl("[Enter] or tap the 🔎 icon to remember the current search for the future")
+                        .StyleClass(Styles.Label.Demoted).TextCenterVertical().Row(1).Column(1),
+                    closeRecentSearches.Row(1).Column(2)),
                 IsVisible = false
             };
 
