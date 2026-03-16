@@ -38,6 +38,11 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
             BindingContext = model;
 
             var list = new CollectionView()
+            {
+                // adds some space so that floating action buttons don't overlay the last item
+                Footer = Lbl("The\nEnd").TextColor(Colors.Transparent).StyleClass(Styles.Label.Headline)
+            }
+                .RowSpan(2) // span into next row so that buttons following it become floating action buttons
                 .Bind(ItemsView.ItemsSourceProperty, nameof(VenueCollection.Observable), source: model.Venues)
                 .ItemTemplate(new DataTemplate(() =>
                 {
@@ -82,11 +87,11 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                     };
                 }));
 
-            var addVenue = Btn(Glyphs.Add, nameof(AddVenueCommand)).ToolTip("add a venue");
+            var addVenue = Btn(Glyphs.Add, nameof(AddVenueCommand)).ToolTip("add a venue").Margin(3);
 
             var refreshAll = Btn(Glyphs.Scrape + " dig all gigs",
                 nameof(VenueCollection.RefreshAllVenuesCommand), source: model.Venues)
-                .ToolTip("refresh events from all venues");
+                .ToolTip("refresh events from all venues").Margin(3);
 
             var menuTrigger = MenuTrigger(async () => await model.ShowMenu());
 
@@ -105,14 +110,14 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                 Content = Grd(cols: [Star, Auto], rows: [Auto, Star, Auto, Auto], spacing: 0,
                     title, menuTrigger.Column(2).End(),
                     list.Row(1).ColumnSpan(2),
-                    refreshAllProgress.Row(2).ColumnSpan(2),
-                    addVenue.Row(3).Start(), refreshAll.Row(3).Column(1));
+                    addVenue.Row(2).Start(), refreshAll.Row(2).Column(1),
+                    refreshAllProgress.Row(3).ColumnSpan(2));
             }
             else // shell layout displaying lists separately
                 Content = Grd(cols: [Auto, Star, Auto], rows: [Star, Auto, Auto], spacing: 0,
                     list.ColumnSpan(3),
-                    refreshAllProgress.Row(1).ColumnSpan(3),
-                    addVenue.Row(2).Start(), refreshAll.Row(2).Column(1).CenterHorizontal(), menuTrigger.Row(2).Column(2));
+                    addVenue.Row(1).Start(), refreshAll.Row(1).Column(1).CenterHorizontal(), menuTrigger.Row(1).Column(2),
+                    refreshAllProgress.Row(2).ColumnSpan(3));
         }
 
         private static void SwingPickaxeDuring(Button btn, ICommand cmd)
