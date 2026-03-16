@@ -305,8 +305,8 @@ public partial class EventList : ObservableObject
                 searchBar.Column(1),
                 MenuTrigger(async () => await model.ShowMenu()).Column(2));
 
-            Content = Grd(cols: [Star], rows: [Auto, Auto, Star, Auto], spacing: 5,
-                header, recentSearches.Row(1), list.Row(2), SelectionMenu().Row(3));
+            Content = Grd(cols: [Star], rows: [Auto, Auto, Star, Auto], spacing: 0,
+                header, recentSearches.Row(1), list.Row(2).RowSpan(2), SelectionMenu().Row(3));
         }
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)

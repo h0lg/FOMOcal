@@ -31,6 +31,18 @@
         </Setter>
     </Style>
 
+    <Style TargetType="Border" Class="SelectionMenu" ApplyToDerivedTypes="True">
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
+
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="10,10,0,0" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="Border" Class="Error">
         <Setter Property="Padding" Value="2" />
         <Setter Property="StrokeThickness" Value="0" />

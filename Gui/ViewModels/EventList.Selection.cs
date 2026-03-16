@@ -159,21 +159,19 @@ partial class EventList
 
     partial class View
     {
-        private static FlexLayout SelectionMenu()
+        private static Border SelectionMenu() => new()
         {
-            FlexLayout layout = HWrap(5,
-                BndLbl(nameof(EventCounters)),
+            StyleClass = [nameof(SelectionMenu)],
+            Content = HWrap(5,
+                BndLbl(nameof(EventCounters)).Paddings(right: 2),
                 Swtch(nameof(ViewSelectedOnly)).Wrapper.BindVisible(nameof(HasSelection))
                     .ToolTip("toggle between viewing all and only selected events"),
                 HStack(5, BndLbl(nameof(SelectedEventCounters)),
                     Btn(Glyphs.Export + " Share", nameof(ShareSelectedEventsCommand)).ToolTip("share selected events"))
                     .BindVisible(nameof(HasSelection)),
                 Lbl(" - tap an event to select it")
-                    .StyleClass(Styles.Label.Demoted).Margins(left: 5)
-                    .BindVisible(nameof(HasSelection), converter: Converters.Not)).View;
-
-            layout.JustifyContent = Microsoft.Maui.Layouts.FlexJustify.Center;
-            return layout;
-        }
+                    .StyleClass(Styles.Label.Demoted).Margins(left: 5, right: 5)
+                    .BindVisible(nameof(HasSelection), converter: Converters.Not)).View
+        };
     }
 }
