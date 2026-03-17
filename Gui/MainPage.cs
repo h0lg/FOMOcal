@@ -15,7 +15,7 @@ public partial class MainPage : ContentPage
         venues.Renamed += eventList.RenameVenue;
         venues.Deleted += eventList.DeleteForVenue;
 
-        Content = Grd(cols: [Auto, Star], rows: [Star], spacing: 5,
+        Content = Grd(cols: [Auto, Star], rows: [Star], spacing: 0,
             new VenueList.View(venueList).Width(250),
             new EventList.View(eventList).Column(1));
 

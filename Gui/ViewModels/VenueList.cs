@@ -107,7 +107,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                 // title display and settings access are take care of by tabs in the Shell
                 var title = Lbl(Glyphs.Venue + "Venues").StyleClass(Styles.Label.Headline).CenterVertical();
 
-                Content = Grd(cols: [Star, Auto], rows: [Auto, Star, Auto, Auto], spacing: 0,
+                Content = Grd(cols: [Star, Auto], rows: [44, Star, Auto, Auto], spacing: 0,
                     title, menuTrigger.Column(2).End(),
                     list.Row(1).ColumnSpan(2),
                     addVenue.Row(2).Start(), refreshAll.Row(2).Column(1),
