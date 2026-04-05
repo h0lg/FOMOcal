@@ -18,115 +18,15 @@
         <Setter Property="StrokeThickness" Value="1"/>
     </Style>
 
-    <Style TargetType="Border" Class="RoundedSection" ApplyToDerivedTypes="True">
-        <Setter Property="Padding" Value="5" />
-        <Setter Property="StrokeThickness" Value="5" />
-        <Setter Property="Stroke" Value="Transparent" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}" />
-
-        <Setter Property="StrokeShape">
-            <Setter.Value>
-                <RoundRectangle CornerRadius="5" />
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="Border" Class="SelectionMenu" ApplyToDerivedTypes="True">
-        <Setter Property="StrokeThickness" Value="0" />
-        <Setter Property="HorizontalOptions" Value="Center" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
-
-        <Setter Property="StrokeShape">
-            <Setter.Value>
-                <RoundRectangle CornerRadius="10,10,0,0" />
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="Border" Class="Error">
-        <Setter Property="Padding" Value="2" />
-        <Setter Property="StrokeThickness" Value="0" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
-
-        <Setter Property="StrokeShape">
-            <Setter.Value>
-                <RoundRectangle CornerRadius="3" />
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="Border" Class="ScrapedValue">
-        <Setter Property="Padding" Value="2" />
-        <Setter Property="StrokeThickness" Value="0" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource Tertiary}}" />
-
-        <Setter Property="StrokeShape">
-            <Setter.Value>
-                <RoundRectangle CornerRadius="3" />
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- style the selected item of the EventList CollectionView, see
-        https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/selection?view=net-maui-9.0#change-selected-item-color -->
-    <Style TargetType="Border" Class="list-event">
-        <Setter Property="Padding" Value="10" />
-        <Setter Property="StrokeThickness" Value="0" />
-
-        <Setter Property="VisualStateManager.VisualStateGroups">
-            <VisualStateGroupList>
-                <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal">
-                        <VisualState.Setters>
-                            <!-- fixes visual state on Android,
-                                see https://github.com/dotnet/maui/issues/20062#issuecomment-1983143930
-                                try removing after https://github.com/dotnet/maui/pull/31591 is merged -->
-                            <Setter Property="BackgroundColor" Value="Transparent" />
-                        </VisualState.Setters>
-                    </VisualState>
-                    <VisualState x:Name="Selected">
-                        <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
-                        </VisualState.Setters>
-                    </VisualState>
-                </VisualStateGroup>
-            </VisualStateGroupList>
-        </Setter>
-    </Style>
-
-    <!-- style the selected item of the EventList CollectionView, see
-        https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/selection?view=net-maui-9.0#change-selected-item-color -->
-    <Style TargetType="SwipeView" Class="list-event">
-        <Setter Property="VisualStateManager.VisualStateGroups">
-            <VisualStateGroupList>
-                <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal">
-                        <VisualState.Setters>
-                            <!-- fixes visual state on Android,
-                                see https://github.com/dotnet/maui/issues/20062#issuecomment-1983143930
-                                try removing after https://github.com/dotnet/maui/pull/31591 is merged -->
-                            <Setter Property="BackgroundColor" Value="Transparent" />
-                        </VisualState.Setters>
-                    </VisualState>
-                    <VisualState x:Name="Selected">
-                        <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
-                        </VisualState.Setters>
-                    </VisualState>
-                </VisualStateGroup>
-            </VisualStateGroupList>
-        </Setter>
-    </Style>
-
     <Style TargetType="BoxView">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
     </Style>
 
-    <Style TargetType="Button">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryDarkText}}" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+    <Style TargetType="Button" x:Key="DefaultButton">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource White}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="18"/>
         <Setter Property="BorderWidth" Value="0"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="14,10"/>
@@ -145,19 +45,6 @@
                     <VisualState x:Name="PointerOver" />
                 </VisualStateGroup>
             </VisualStateGroupList>
-        </Setter>
-    </Style>
-
-    <Style TargetType="Button" Class="stepper-btn">
-        <Setter Property="CornerRadius" Value="0" />
-        <Setter Property="FontSize" Value="32" />
-
-        <Setter Property="Margin">
-            <Setter.Value>
-                <OnPlatform x:TypeArguments="Thickness" Default="-5,-11,-5,-10">
-                    <On Platform="Android" Value="-5,-13,-5,-13" />
-                </OnPlatform>
-            </Setter.Value>
         </Setter>
     </Style>
 
@@ -222,11 +109,11 @@
         </Setter>
     </Style>
 
-    <Style TargetType="Entry">
+    <Style TargetType="Entry" x:Key="DefaultEntry">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
-        <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=14}" />
+        <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=24}" />
         <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
         <Setter Property="MinimumHeightRequest" Value="44"/>
         <Setter Property="MinimumWidthRequest" Value="44"/>
@@ -286,112 +173,26 @@
         </Setter>
     </Style>
 
-    <Style TargetType="Span">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
-    </Style>
-
-    <Style TargetType="Span" x:Key="Span.Link">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LinkTextLight}, Dark={StaticResource LinkTextDark}}" />
-        <Setter Property="TextDecorations" Value="Underline" />
-    </Style>
-
-    <Style TargetType="Span" x:Key="Span.Highlit">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource HighlitTextLight}, Dark={StaticResource HighlitTextDark}}" />
-        <Setter Property="FontAttributes" Value="Bold" />
-    </Style>
-
-    <Style TargetType="Span" x:Key="Span.Help">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Help}, Dark={StaticResource HelpDark}}" />
-    </Style>
-
-    <Style TargetType="Span" x:Key="Span.HelpLink" BasedOn="{StaticResource Span.Link}">
-    </Style>
-
-    <Style TargetType="Span" x:Key="Span.HelpHeader" BasedOn="{StaticResource Span.Help}">
-        <Setter Property="FontSize" Value="16" />
-    </Style>
-
-    <Style TargetType="Span" x:Key="Span.HelpFooter" BasedOn="{StaticResource Span.Help}">
-        <Setter Property="FontSize" Value="12" />
-    </Style>
-
-    <Style TargetType="Border" Class="help">
-        <Setter Property="Padding" Value="5" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource HelpBg}, Dark={StaticResource HelpBgDark}}" />
-
-        <Setter Property="StrokeShape">
-            <Setter.Value>
-                <RoundRectangle CornerRadius="10" />
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="Label" Class="Headline">
+    <Style TargetType="Label" x:Key="Headline">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
-        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontSize" Value="32" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="HorizontalTextAlignment" Value="Center" />
     </Style>
 
-    <Style TargetType="Label" Class="SubHeadline">
+    <Style TargetType="Label" x:Key="SubHeadline">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
-        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontSize" Value="24" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="HorizontalTextAlignment" Value="Center" />
     </Style>
 
-    <Style TargetType="Label" x:Key="demotedLabel">
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
-    </Style>
-
-    <Style TargetType="Label" Class="Demoted" BasedOn="{StaticResource demotedLabel}" />
-
-    <Style TargetType="Label" Class="VenueRowDetail" BasedOn="{StaticResource demotedLabel}">
-        <Setter Property="LineBreakMode" Value="WordWrap" />
-    </Style>
-
-    <Style TargetType="Border" Class="EndingEntryButton">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-        <Setter Property="Margin" Value="-4,0,0,0" />
-        <Setter Property="StrokeThickness" Value="0" />
-
-        <Setter Property="Padding">
-            <Setter.Value>
-                <OnPlatform x:TypeArguments="Thickness" Default="5,7,5,10">
-                    <On Platform="Android" Value="5,3,5,4" />
-                </OnPlatform>
-            </Setter.Value>
-        </Setter>
-
-        <Setter Property="StrokeShape">
-            <Setter.Value>
-                <RoundRectangle CornerRadius="0,5,0,5" />
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="Label" Class="EndingEntryButton">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
-        <Setter Property="FontSize" Value="20" />
-    </Style>
-
-    <Style TargetType="Editor" x:Key="Editor.Error">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
-        <Setter Property="TextColor" Value="White" />
-    </Style>
-
-    <Style TargetType="Editor" x:Key="Editor.Success">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource SuccessDark}}" />
-        <Setter Property="TextColor" Value="White" />
-    </Style>
-
-    <Style TargetType="Picker">
+    <Style TargetType="Picker" x:Key="DefaultPicker">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
         <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
-        <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=14}" />
+        <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=24}" />
         <Setter Property="MinimumHeightRequest" Value="44"/>
         <Setter Property="MinimumWidthRequest" Value="44"/>
         <Setter Property="VisualStateManager.VisualStateGroups">
@@ -409,8 +210,8 @@
         </Setter>
     </Style>
 
-    <Style TargetType="ProgressBar">
-        <Setter Property="ProgressColor" Value="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource SuccessDark}}" />
+    <Style TargetType="ProgressBar" x:Key="DefaultProgressBar">
+        <Setter Property="ProgressColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">
@@ -444,33 +245,6 @@
                 </VisualStateGroup>
             </VisualStateGroupList>
         </Setter>
-    </Style>
-
-    <!--see https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/radiobutton?view=net-maui-9.0#redefine-radiobutton-appearance-->
-    <ControlTemplate x:Key="SingleSelectToggleButtonTemplate">
-        <Border Padding="10,0" StrokeThickness="0" StrokeShape="RoundRectangle 10">
-            <VisualStateManager.VisualStateGroups>
-                <VisualStateGroupList>
-                    <VisualStateGroup x:Name="CheckedStates">
-                        <VisualState x:Name="Checked">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Unchecked">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="Transparent"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateGroupList>
-            </VisualStateManager.VisualStateGroups>
-            <ContentPresenter VerticalOptions="Center" />
-        </Border>
-    </ControlTemplate>
-
-    <Style TargetType="RadioButton" Class="SingleSelectToggleButton">
-        <Setter Property="ControlTemplate" Value="{StaticResource SingleSelectToggleButtonTemplate}" />
     </Style>
 
     <Style TargetType="RefreshView">
@@ -632,16 +406,16 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
     </Style>
 
-    <Style TargetType="Shell" ApplyToDerivedTypes="True">
+    <Style TargetType="Shell" ApplyToDerivedTypes="True" x:Key="DefaultShell">
         <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
         <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource SecondaryDarkText}}" />
         <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource SecondaryDarkText}}" />
         <Setter Property="Shell.DisabledColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
         <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray200}}" />
         <Setter Property="Shell.NavBarHasShadow" Value="False" />
-        <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}" />
+        <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
         <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
-        <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource PrimaryDark}, Dark={StaticResource Primary}}" />
+        <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
         <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
     </Style>
 
@@ -656,17 +430,5 @@
         <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource Magenta}, Dark={StaticResource White}}" />
         <Setter Property="UnselectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
-    </Style>
-
-    <Style TargetType="Grid" Class="VisualSelector">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" />
-
-        <!-- initialize it collapsed and prepared for opening HeightRequest animation -->
-        <Setter Property="IsVisible" Value="False" />
-        <Setter Property="HeightRequest" Value="0" />
-    </Style>
-
-    <Style TargetType="Grid" Class="VisualSelectorContent">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
     </Style>
 </ResourceDictionary>
