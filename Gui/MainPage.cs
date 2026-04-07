@@ -19,13 +19,12 @@ public partial class MainPage : ContentPage
             new VenueList.View(venueList).Width(250),
             new EventList.View(eventList).Column(1));
 
-        var loaded = false;
+        NavigatedTo += LoadOnce;
 
-        NavigatedTo += async (o, e) =>
+        async void LoadOnce(object? sender, NavigatedToEventArgs e)
         {
-            if (loaded) return;
-            loaded = true;
+            NavigatedTo -= LoadOnce;
             await Task.WhenAll(venues.LoadAsync(), eventList.LoadEvents());
-        };
+        }
     }
 }

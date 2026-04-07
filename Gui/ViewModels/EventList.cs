@@ -329,8 +329,8 @@ public partial class EventList : ObservableObject
             EventList eventList = new(eventRepo, venues, Navigation);
             Content = new View(eventList);
 
-            // refresh events when navigated to
-            NavigatedTo += async (o, e) => await eventList.LoadEvents();
+            // refresh events when navigated to, in case they were refreshed
+            NavigatedTo += async (_, __) => await eventList.LoadEvents();
         }
     }
 }

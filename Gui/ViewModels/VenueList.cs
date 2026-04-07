@@ -175,14 +175,14 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
             venues.Renamed += async (oldName, newName) => await eventRepo.RenameVenueAsync(oldName, newName);
             venues.Deleted += async (venueName) => await eventRepo.DeleteVenueAsync(venueName);
             Content = new View(venueList);
-            var loaded = false;
 
-            NavigatedTo += async (o, e) =>
+            NavigatedTo += LoadOnce;
+
+            async void LoadOnce(object? sender, NavigatedToEventArgs e)
             {
-                if (loaded) return;
-                loaded = true;
+                NavigatedTo -= LoadOnce;
                 await venues.LoadAsync();
-            };
+            }
         }
     }
 }
