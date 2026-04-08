@@ -8,10 +8,6 @@ namespace FomoCal.Gui.ViewModels;
 partial class EventList
 {
     private readonly HashSet<EventView> selected = []; // remembers selection across search filter changes
-    private bool suspendSelectionChange; // prevents updates to selected when SelectedEvents changes OnSelectionChanged
-    private Action? FixDisplayedSelectedState;
-
-    [ObservableProperty] public partial IList<object> SelectedEvents { get; set; } = [];
 
     [ObservableProperty,
         NotifyPropertyChangedFor(nameof(EventCounters)),
@@ -31,12 +27,26 @@ partial class EventList
     public int SelectedEventCount => selected.Count;
     public bool HasSelection => SelectedEventCount > 0;
 
-    /// <summary>Raises <see cref="System.ComponentModel.INotifyPropertyChanged.PropertyChanged"/>.
-    /// for read-only properties downstream of <see cref="SelectedEvents"/> - and for that property itself if
-    /// <paramref name="forSelectedEvents"/> is true to notify the CollectionView.</summary>
-    private void NotifySelectionChanged(bool forSelectedEvents = true)
+    private bool ToggleSelected(EventView item)
     {
-        if (forSelectedEvents) OnPropertyChanged(nameof(SelectedEvents));
+        bool wasSelected = selected.Contains(item);
+        item.IsSelected = !wasSelected;
+
+        if (wasSelected)
+        {
+            selected.Remove(item);
+            SwitchBackToViewingAllIfSelectionIsEmpty();
+        }
+        else selected.Add(item);
+
+        NotifySelectionChanged();
+        return !wasSelected; // return current, flipped selection state
+    }
+
+    /// <summary>Raises <see cref="System.ComponentModel.INotifyPropertyChanged.PropertyChanged"/>.
+    /// for read-only properties downstream of <see cref="selected"/>.</summary>
+    private void NotifySelectionChanged()
+    {
         OnPropertyChanged(nameof(SelectedEventCount));
         OnPropertyChanged(nameof(HasSelection));
         OnPropertyChanged(nameof(SelectedEventCounters));
@@ -54,27 +64,31 @@ partial class EventList
             allEvents!.Remove(evt);
 
         selected.Clear();
-        SelectedEvents.Clear();
         ViewSelectedOnly = false;
-        NotifySelectionChanged();
-        await OnEventsUpdated();
+        await OnEventsUpdated(); // calls NotifySelectionChanged
     }
 
     private void SelectFilteredEvents()
     {
         foreach (var evt in FilteredEvents)
+        {
+            evt.IsSelected = true;
             selected.Add(evt);
+        }
 
-        ReapplySelection(); // because selected changed
+        NotifySelectionChanged(); // because selected changed
     }
 
     private void DeselectFilteredEvents()
     {
         foreach (var evt in FilteredEvents)
+        {
+            evt.IsSelected = false;
             selected.Remove(evt);
+        }
 
         SwitchBackToViewingAllIfSelectionIsEmpty();
-        ReapplySelection(); // because selected changed
+        NotifySelectionChanged(); // because selected changed
     }
 
     [RelayCommand]
@@ -105,51 +119,10 @@ partial class EventList
         }
     }
 
-    /// <summary>Syncs the visible <see cref="SelectedEvents"/> with <see cref="selected"/> after the latter changed.
-    /// Restores the remembered selection after <see cref="FilteredEvents"/> changed,
-    /// clearing selection of visible elements.</summary>
-    private void ReapplySelection()
-    {
-        SelectedEvents.Clear();
-
-        foreach (var evt in selected)
-            if (FilteredEvents.Contains(evt))
-                SelectedEvents.Add(evt);
-
-        NotifySelectionChanged();
-        FixDisplayedSelectedState?.Invoke();
-    }
-
-    /// <summary>Syncs the remembered <see cref="selected"/> events with <see cref="SelectedEvents"/>
-    /// after selection changed in the CollectionView - unless <see cref="suspendSelectionChange"/> is true
-    /// or the number of selected items has not changed
-    /// (e.g. after calling <see cref="NotifySelectionChanged(bool)"/> with true).</summary>
-    private void OnSelectionChanged(SelectionChangedEventArgs e)
-    {
-        if (suspendSelectionChange
-            || e.PreviousSelection.Count == e.CurrentSelection.Count) return;
-
-        if (e.PreviousSelection.Count < e.CurrentSelection.Count)
-            foreach (var evt in e.CurrentSelection.OfType<EventView>())
-                selected.Add(evt);
-        else
-        {
-            foreach (var evt in e.PreviousSelection.OfType<EventView>())
-                if (!e.CurrentSelection.Contains(evt))
-                    selected.Remove(evt);
-
-            SwitchBackToViewingAllIfSelectionIsEmpty();
-        }
-
-        /* SelectedEvents are up to date with e.CurrentSelection here, no need to call ReapplySelection.
-         * Don't trigger change for SelectedEvents because we react to the CollectionView here - it doesn't need a call back. */
-        NotifySelectionChanged(forSelectedEvents: false);
-    }
-
     partial void OnViewSelectedOnlyChanged(bool value)
     {
         ApplyFilter(); // to switch list source
-        ReapplySelection(); // because FilteredEvents changed
+        NotifySelectionChanged(); // because FilteredEvents changed
     }
 
     private void SwitchBackToViewingAllIfSelectionIsEmpty()
@@ -173,5 +146,32 @@ partial class EventList
                     .StyleClass(Styles.Label.Demoted).Margins(left: 5, right: 5)
                     .BindVisible(nameof(HasSelection), converter: Converters.Not)).View
         };
+
+        private static void ToggleSelected(EventView item, EventList model)
+        {
+            if (item == null) return;
+            model.ToggleSelected(item);
+        }
+    }
+}
+
+public static class Selection
+{
+    public static readonly BindableProperty IsSelectedProperty = BindableProperty.CreateAttached(
+        "IsSelected", typeof(bool), typeof(Selection), false, propertyChanged: OnIsSelectedChanged);
+
+    public static bool GetIsSelected(BindableObject view) =>
+        (bool)view.GetValue(IsSelectedProperty);
+
+    public static void SetIsSelected(BindableObject view, bool value) =>
+        view.SetValue(IsSelectedProperty, value);
+
+    private static void OnIsSelectedChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (bindable is VisualElement ve)
+        {
+            var isSelected = (bool)newValue;
+            VisualStateManager.GoToState(ve, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
+        }
     }
 }

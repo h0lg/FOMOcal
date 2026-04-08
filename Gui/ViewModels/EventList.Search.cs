@@ -37,7 +37,6 @@ partial class EventList
         }
         else searchTerms = [];
 
-        suspendSelectionChange = true; // while FilteredEvents are modified, which reset the selection
         FilteredEvents.Clear();
 
         foreach (var evt in filtered.OrderBy(e => e.Date))
@@ -46,7 +45,6 @@ partial class EventList
             FilteredEvents.Add(evt);
         }
 
-        suspendSelectionChange = false;
         OnPropertyChanged(ViewSelectedOnly ? nameof(SelectedEventCounters) : nameof(EventCounters));
     }
 

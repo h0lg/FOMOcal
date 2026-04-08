@@ -11,6 +11,7 @@ partial class EventList
 
         public Event Model { get; }
         public bool IsPast { get; }
+        [ObservableProperty] public partial bool IsSelected { get; set; }
 
         // searched and highlit text properties
         public IReadOnlyList<TextChunk>? Name { get => name; }

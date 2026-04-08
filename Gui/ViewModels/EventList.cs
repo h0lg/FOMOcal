@@ -30,7 +30,7 @@ public partial class EventList : ObservableObject
                 || e.PropertyName == nameof(SearchText))
             {
                 ApplyFilter(); // because source collection or search text changed
-                ReapplySelection(); // because FilteredEvents changed
+                NotifySelectionChanged(); // because FilteredEvents changed
             }
         };
     }
@@ -102,7 +102,7 @@ public partial class EventList : ObservableObject
     {
         OnPropertyChanged(nameof(EventCounters)); // uses allEvents count
         ApplyFilter(); // re-apply filter after events updated to refresh CollectionView
-        ReapplySelection(); // because FilteredEvents changed
+        NotifySelectionChanged(); // because FilteredEvents changed
         return eventRepo.SaveCompleteAsync(events ?? GetEvents());
     }
 
@@ -234,6 +234,10 @@ public partial class EventList : ObservableObject
                 .Bind(OpacityProperty, nameof(EventView.IsPast),
                     convert: static (bool isPast) => isPast ? 0.5 : 1.0);
 
+                border
+                    .Bind(Selection.IsSelectedProperty, nameof(EventView.IsSelected))
+                    .TapGesture(() => ToggleSelected((EventView)border.BindingContext, model));
+
                 if (isDesktop)
                 {
                     MenuFlyout menu = [
@@ -258,15 +262,6 @@ public partial class EventList : ObservableObject
                         }
                     };
 
-                    // initialize visual state correctly for reused views
-                    border.BindingContextChanged += (o, e) =>
-                    {
-                        var evnt = (EventView)border.BindingContext;
-                        var isSelected = model.selected.Contains(evnt);
-                        var state = isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal;
-                        VisualStateManager.GoToState(border, state);
-                    };
-
                     return new SwipeView()
                     {
                         StyleClass = ["list-event"],
@@ -280,34 +275,8 @@ public partial class EventList : ObservableObject
             var list = new CollectionView
             {
                 ItemsSource = model.FilteredEvents,
-                SelectionMode = SelectionMode.Multiple,
                 ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset, // Prevents flickering
                 ItemTemplate = eventTemplate
-            }
-                .Bind(SelectableItemsView.SelectedItemsProperty, nameof(SelectedEvents));
-
-            // Setting SelectedEvents as SelectedItemsProperty above doesn't raise PropertyChanged for it on selection.
-            list.SelectionChanged += (_, e) =>
-            {
-                model.OnSelectionChanged(e);
-
-                if (!isDesktop) // propagate visual state to state-sensitive styled item border
-                {
-                    foreach (var item in e.CurrentSelection.Except(e.PreviousSelection))
-                        PropagateState(list, item, VisualStateManager.CommonStates.Selected);
-
-                    foreach (var item in e.PreviousSelection.Except(e.CurrentSelection))
-                        PropagateState(list, item, VisualStateManager.CommonStates.Normal);
-                }
-            };
-
-            /*  work-around that fixes the de/selected visual state of events
-             *  after switching from selected only back to displaying all events,
-             *  found in https://github.com/dotnet/maui/issues/21252 */
-            model.FixDisplayedSelectedState = () =>
-            {
-                list.ItemTemplate = null;
-                list.ItemTemplate = eventTemplate;
             };
 
             SizeChanged += (o, e) =>
@@ -328,23 +297,6 @@ public partial class EventList : ObservableObject
 
             Content = Grd(cols: [Star], rows: [Auto, Auto, Star, Auto], spacing: 0,
                 header, recentSearches.Row(1), list.Row(2).RowSpan(2), SelectionMenu().Row(3));
-        }
-
-        private static void PropagateState(CollectionView root, object item, string state)
-        {
-            var view = (SwipeView)FindViewForItem(root, item)!;
-            if (view != null) VisualStateManager.GoToState(view.Content, state);
-        }
-
-        private static IVisualTreeElement? FindViewForItem(IVisualTreeElement root, object item)
-        {
-            foreach (var view in root.GetVisualChildren())
-            {
-                if (view is BindableObject bindable && ReferenceEquals(bindable.BindingContext, item))
-                    return view;
-            }
-
-            return null;
         }
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)
