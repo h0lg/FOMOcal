@@ -258,6 +258,15 @@ public partial class EventList : ObservableObject
                         }
                     };
 
+                    // initialize visual state correctly for reused views
+                    border.BindingContextChanged += (o, e) =>
+                    {
+                        var evnt = (EventView)border.BindingContext;
+                        var isSelected = model.selected.Contains(evnt);
+                        var state = isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal;
+                        VisualStateManager.GoToState(border, state);
+                    };
+
                     return new SwipeView()
                     {
                         StyleClass = ["list-event"],
@@ -278,7 +287,19 @@ public partial class EventList : ObservableObject
                 .Bind(SelectableItemsView.SelectedItemsProperty, nameof(SelectedEvents));
 
             // Setting SelectedEvents as SelectedItemsProperty above doesn't raise PropertyChanged for it on selection.
-            list.SelectionChanged += (_, e) => model.OnSelectionChanged(e);
+            list.SelectionChanged += (_, e) =>
+            {
+                model.OnSelectionChanged(e);
+
+                if (!isDesktop) // propagate visual state to state-sensitive styled item border
+                {
+                    foreach (var item in e.CurrentSelection.Except(e.PreviousSelection))
+                        PropagateState(list, item, VisualStateManager.CommonStates.Selected);
+
+                    foreach (var item in e.PreviousSelection.Except(e.CurrentSelection))
+                        PropagateState(list, item, VisualStateManager.CommonStates.Normal);
+                }
+            };
 
             /*  work-around that fixes the de/selected visual state of events
              *  after switching from selected only back to displaying all events,
@@ -307,6 +328,53 @@ public partial class EventList : ObservableObject
 
             Content = Grd(cols: [Star], rows: [Auto, Auto, Star, Auto], spacing: 0,
                 header, recentSearches.Row(1), list.Row(2).RowSpan(2), SelectionMenu().Row(3));
+        }
+
+        private static void PropagateState(VisualElement root, object item, string state)
+        {
+            var view = (SwipeView)FindViewForItem(root, item)!;
+            VisualStateManager.GoToState(view!.Content, state);
+        }
+
+        private static VisualElement? FindViewForItem(VisualElement root, object item)
+        {
+            foreach (var view in GetVisualDescendants(root))
+            {
+                if (view is BindableObject bindable &&
+                    ReferenceEquals(bindable.BindingContext, item))
+                {
+                    return view;
+                }
+            }
+
+            return null;
+        }
+
+        private static IEnumerable<VisualElement> GetVisualDescendants(Element root)
+        {
+            if (root is null)
+                yield break;
+
+            var stack = new Stack<Element>();
+            stack.Push(root);
+
+            while (stack.Count > 0)
+            {
+                var current = stack.Pop();
+
+                if (current is VisualElement ve && current != root)
+                    yield return ve;
+
+                // 1. Visual tree (preferred)
+                if (current is IVisualTreeElement visual)
+                {
+                    foreach (var child in visual.GetVisualChildren())
+                    {
+                        if (child is Element e)
+                            stack.Push(e);
+                    }
+                }
+            }
         }
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)
