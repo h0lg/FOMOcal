@@ -330,51 +330,21 @@ public partial class EventList : ObservableObject
                 header, recentSearches.Row(1), list.Row(2).RowSpan(2), SelectionMenu().Row(3));
         }
 
-        private static void PropagateState(VisualElement root, object item, string state)
+        private static void PropagateState(CollectionView root, object item, string state)
         {
             var view = (SwipeView)FindViewForItem(root, item)!;
-            VisualStateManager.GoToState(view!.Content, state);
+            if (view != null) VisualStateManager.GoToState(view.Content, state);
         }
 
-        private static VisualElement? FindViewForItem(VisualElement root, object item)
+        private static IVisualTreeElement? FindViewForItem(IVisualTreeElement root, object item)
         {
-            foreach (var view in GetVisualDescendants(root))
+            foreach (var view in root.GetVisualChildren())
             {
-                if (view is BindableObject bindable &&
-                    ReferenceEquals(bindable.BindingContext, item))
-                {
+                if (view is BindableObject bindable && ReferenceEquals(bindable.BindingContext, item))
                     return view;
-                }
             }
 
             return null;
-        }
-
-        private static IEnumerable<VisualElement> GetVisualDescendants(Element root)
-        {
-            if (root is null)
-                yield break;
-
-            var stack = new Stack<Element>();
-            stack.Push(root);
-
-            while (stack.Count > 0)
-            {
-                var current = stack.Pop();
-
-                if (current is VisualElement ve && current != root)
-                    yield return ve;
-
-                // 1. Visual tree (preferred)
-                if (current is IVisualTreeElement visual)
-                {
-                    foreach (var child in visual.GetVisualChildren())
-                    {
-                        if (child is Element e)
-                            stack.Push(e);
-                    }
-                }
-            }
         }
 
         private static Label OptionalTextLabel(string property, string? stringFormat = null)
