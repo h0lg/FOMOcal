@@ -216,6 +216,10 @@
         </Setter>
     </Style>
 
+    <Style TargetType="Label" BasedOn="{StaticResource DefaultLabel}">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
+    </Style>
+
     <Style TargetType="Label" Class="TitleView" BasedOn="{StaticResource Headline}">
         <Setter Property="FontSize" Value="20" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />

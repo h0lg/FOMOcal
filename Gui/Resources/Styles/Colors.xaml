@@ -15,25 +15,25 @@
     -->
     <Color x:Key="Primary">#0081a7</Color>
     <Color x:Key="PrimaryText">#fdfcdc</Color>
-    <Color x:Key="PrimaryDark">#CD9138</Color>
-    <Color x:Key="PrimaryDarkText">#5E2B84</Color>
+    <Color x:Key="PrimaryDark">#CFB53B</Color>
+    <Color x:Key="PrimaryDarkText">#001929</Color>
     <Color x:Key="Secondary">#00afb9</Color>
-    <Color x:Key="SecondaryDark">#956825</Color>
-    <Color x:Key="SecondaryDarkText">#9880e5</Color>
+    <Color x:Key="SecondaryDark">#B59C2C</Color>
+    <Color x:Key="SecondaryDarkText">#001929</Color>
     <Color x:Key="Tertiary">#00296b</Color>
     <Color x:Key="TertiaryDark">#2B0B98</Color>
 
-    <Color x:Key="DarkBackground">#290025</Color>
-    <Color x:Key="LightOnDarkBackground">#C3C3C3</Color>
+    <Color x:Key="DarkBackground">#001929</Color>
+    <Color x:Key="LightOnDarkBackground">#E8E4D9</Color>
     <Color x:Key="LightBackground">#fed9b7</Color>
     <Color x:Key="DarkOnLightBackground">#00509d</Color>
 
     <Color x:Key="LightChromeBackground">#f07167</Color>
-    <Color x:Key="DarkChromeBackground">#4f0147</Color>
+    <Color x:Key="DarkChromeBackground">#264653</Color>
     <Color x:Key="LightSecondaryBackground">#fdfcdc</Color>
     <Color x:Key="LightSecondaryBackground50">#88fdfcdc</Color>
-    <Color x:Key="DarkSecondaryBackground">#4f0147</Color>
-    <Color x:Key="DarkSecondaryBackground50">#88411163</Color>
+    <Color x:Key="DarkSecondaryBackground">#002C47</Color>
+    <Color x:Key="DarkSecondaryBackground50">#88002C47</Color>
 
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
