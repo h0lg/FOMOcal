@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
-<ResourceDictionary 
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <!-- Dark: Twilight Muted Navy Turtles https://colorkit.co/color-palette-generator/A48D28-837120-6e6336-E8E4D9-001929-00263D-0f3247-1C352D-954C2E-3a6134/ -->
     <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
     <!-- Other light pallettes
         https://coolors.co/palette/0081a7-00afb9-fdfcdc-fed9b7-f07167
@@ -15,13 +16,13 @@
     -->
     <Color x:Key="Primary">#0081a7</Color>
     <Color x:Key="PrimaryText">#fdfcdc</Color>
-    <Color x:Key="PrimaryDark">#CFB53B</Color>
+    <Color x:Key="PrimaryDark">#A48D28</Color>
     <Color x:Key="PrimaryDarkText">#001929</Color>
     <Color x:Key="Secondary">#00afb9</Color>
-    <Color x:Key="SecondaryDark">#B59C2C</Color>
+    <Color x:Key="SecondaryDark">#837120</Color>
     <Color x:Key="SecondaryDarkText">#001929</Color>
     <Color x:Key="Tertiary">#00296b</Color>
-    <Color x:Key="TertiaryDark">#2B0B98</Color>
+    <Color x:Key="TertiaryDark">#6e6336</Color>
 
     <Color x:Key="DarkBackground">#001929</Color>
     <Color x:Key="LightOnDarkBackground">#E8E4D9</Color>
@@ -29,11 +30,11 @@
     <Color x:Key="DarkOnLightBackground">#00509d</Color>
 
     <Color x:Key="LightChromeBackground">#f07167</Color>
-    <Color x:Key="DarkChromeBackground">#264653</Color>
+    <Color x:Key="DarkChromeBackground">#1C352D</Color>
     <Color x:Key="LightSecondaryBackground">#fdfcdc</Color>
     <Color x:Key="LightSecondaryBackground50">#88fdfcdc</Color>
-    <Color x:Key="DarkSecondaryBackground">#002C47</Color>
-    <Color x:Key="DarkSecondaryBackground50">#88002C47</Color>
+    <Color x:Key="DarkSecondaryBackground">#00263D</Color>
+    <Color x:Key="DarkSecondaryBackground50">#0f3247</Color>
 
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
@@ -42,13 +43,13 @@
     <Color x:Key="OffBlack">#1f1f1f</Color>
 
     <Color x:Key="HelpBg">#ccdbfd</Color>
-    <Color x:Key="HelpBgDark">#55ffffff</Color>
+    <Color x:Key="HelpBgDark">#881C352D</Color>
     <Color x:Key="Help">#003049</Color>
-    <Color x:Key="HelpDark">#003049</Color>
+    <Color x:Key="HelpDark">#E8E4D9</Color>
     <Color x:Key="Success">#2a9d8f</Color>
-    <Color x:Key="SuccessDark">#2a9d8f</Color>
+    <Color x:Key="SuccessDark">#3a6134</Color>
     <Color x:Key="Error">#c1121f</Color>
-    <Color x:Key="ErrorDark">#c1121f</Color>
+    <Color x:Key="ErrorDark">#954C2E</Color>
 
     <Color x:Key="Gray100">#E1E1E1</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>
@@ -75,9 +76,9 @@
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
 
     <Color x:Key="HighlitTextLight">#c1121f</Color>
-    <Color x:Key="HighlitTextDark">#CD9138</Color>
+    <Color x:Key="HighlitTextDark">#A48D28</Color>
     <Color x:Key="LinkTextLight">#003049</Color>
-    <Color x:Key="LinkTextDark">#CD9138</Color>
+    <Color x:Key="LinkTextDark">#837120</Color>
 
     <LinearGradientBrush x:Key="BackgroundBrush" StartPoint="0.5,0" EndPoint="0.5,1.0">
         <GradientStop Color="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
