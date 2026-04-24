@@ -311,6 +311,10 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}" />
     </Style>
 
+    <Style TargetType="SwipeItem" BasedOn="{StaticResource DefaultSwipeItem}">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
+    </Style>
+
     <!--see https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/radiobutton?view=net-maui-9.0#redefine-radiobutton-appearance-->
     <ControlTemplate x:Key="SingleSelectToggleButtonTemplate">
         <Border Padding="10,0" StrokeThickness="0" StrokeShape="RoundRectangle 10">
@@ -319,14 +323,12 @@
                     <VisualStateGroup x:Name="CheckedStates">
                         <VisualState x:Name="Checked">
                             <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryDarkText}}" />
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Unchecked">
                             <VisualState.Setters>
                                 <Setter Property="BackgroundColor" Value="Transparent"/>
-                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
@@ -337,8 +339,7 @@
                 <ContentPresenter.Resources>
                     <ResourceDictionary>
                         <Style TargetType="Label">
-                            <!-- bind presenting Label TextColor to parent Border Stroke color set for that reason, from https://stackoverflow.com/a/79442468 -->
-                            <Setter Property="TextColor" Value="{Binding Stroke.Color, x:DataType=Border, Source={RelativeSource AncestorType={x:Type Border}}}" />
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
                         </Style>
                     </ResourceDictionary>
                 </ContentPresenter.Resources>
@@ -355,16 +356,19 @@
     </Style>
 
     <Style TargetType="Shell" ApplyToDerivedTypes="True" BasedOn="{StaticResource DefaultShell}">
+        <!-- Nav bar background -->
         <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightChromeBackground}, Dark={StaticResource DarkChromeBackground}}" />
-        <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryDark}}" />
-        <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryDark}}" />
+        <!-- Nav bar title and primary commands as well as tab bar titles -->
+        <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+        <!-- Nav bar back button and menu trigger for secondary commands -->
+        <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+
         <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light={StaticResource LightChromeBackground}, Dark={StaticResource DarkChromeBackground}}" />
-        <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
     </Style>
 
     <Style TargetType="NavigationPage" BasedOn="{StaticResource DefaultNavigationPage}">
         <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource LightChromeBackground}, Dark={StaticResource DarkChromeBackground}}" />
-        <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
     </Style>
 
     <Style TargetType="Grid" Class="VisualSelector">

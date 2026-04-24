@@ -143,7 +143,7 @@ partial class EventList
                     Btn(Glyphs.Export + " Share", nameof(ShareSelectedEventsCommand)).ToolTip("share selected events"))
                     .BindVisible(nameof(HasSelection)),
                 Lbl(" - tap an event to select it")
-                    .StyleClass(Styles.Label.Demoted).TextCenterVertical().Height(50)
+                    .StyleClass(Styles.Label.Demoted).TextCenterVertical().Height(44)
                     .BindVisible(nameof(HasSelection), converter: Converters.Not))
         };
 

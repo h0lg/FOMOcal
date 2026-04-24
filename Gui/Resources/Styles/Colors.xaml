@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <!-- Light: Pueblo at the sea https://colorkit.co/color-palette-generator/16404d-23667b-598595-A6CDC6-d1e1d2-FBF5DD-DDA853-e09376-a5cda4/ -->
     <!-- Dark: Twilight Muted Navy Turtles https://colorkit.co/color-palette-generator/A48D28-837120-6e6336-E8E4D9-001929-00263D-0f3247-1C352D-954C2E-3a6134/ -->
     <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
     <!-- Other light pallettes
@@ -14,25 +15,25 @@
         dark
         https://coolors.co/000814-001d3d-003566-ffc300-ffd60a
     -->
-    <Color x:Key="Primary">#0081a7</Color>
-    <Color x:Key="PrimaryText">#fdfcdc</Color>
+    <Color x:Key="Primary">#16404D</Color>
+    <Color x:Key="PrimaryText">#FBF5DD</Color>
     <Color x:Key="PrimaryDark">#A48D28</Color>
     <Color x:Key="PrimaryDarkText">#001929</Color>
-    <Color x:Key="Secondary">#00afb9</Color>
+    <Color x:Key="Secondary">#23667b</Color>
     <Color x:Key="SecondaryDark">#837120</Color>
     <Color x:Key="SecondaryDarkText">#001929</Color>
-    <Color x:Key="Tertiary">#00296b</Color>
+    <Color x:Key="Tertiary">#598595</Color>
     <Color x:Key="TertiaryDark">#6e6336</Color>
 
     <Color x:Key="DarkBackground">#001929</Color>
     <Color x:Key="LightOnDarkBackground">#E8E4D9</Color>
-    <Color x:Key="LightBackground">#fed9b7</Color>
-    <Color x:Key="DarkOnLightBackground">#00509d</Color>
+    <Color x:Key="LightBackground">#A6CDC6</Color>
+    <Color x:Key="DarkOnLightBackground">#16404D</Color>
 
-    <Color x:Key="LightChromeBackground">#f07167</Color>
+    <Color x:Key="LightChromeBackground">#DDA853</Color>
     <Color x:Key="DarkChromeBackground">#1C352D</Color>
-    <Color x:Key="LightSecondaryBackground">#fdfcdc</Color>
-    <Color x:Key="LightSecondaryBackground50">#88fdfcdc</Color>
+    <Color x:Key="LightSecondaryBackground">#FBF5DD</Color>
+    <Color x:Key="LightSecondaryBackground50">#d1e1d2</Color>
     <Color x:Key="DarkSecondaryBackground">#00263D</Color>
     <Color x:Key="DarkSecondaryBackground50">#0f3247</Color>
 
@@ -42,13 +43,13 @@
     <Color x:Key="MidnightBlue">#190649</Color>
     <Color x:Key="OffBlack">#1f1f1f</Color>
 
-    <Color x:Key="HelpBg">#ccdbfd</Color>
+    <Color x:Key="HelpBg">#88DDA853</Color>
     <Color x:Key="HelpBgDark">#881C352D</Color>
     <Color x:Key="Help">#003049</Color>
     <Color x:Key="HelpDark">#E8E4D9</Color>
-    <Color x:Key="Success">#2a9d8f</Color>
+    <Color x:Key="Success">#a5cda4</Color>
     <Color x:Key="SuccessDark">#3a6134</Color>
-    <Color x:Key="Error">#c1121f</Color>
+    <Color x:Key="Error">#e09376</Color>
     <Color x:Key="ErrorDark">#954C2E</Color>
 
     <Color x:Key="Gray100">#E1E1E1</Color>
@@ -75,9 +76,9 @@
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
 
-    <Color x:Key="HighlitTextLight">#c1121f</Color>
+    <Color x:Key="HighlitTextLight">#DDA853</Color>
     <Color x:Key="HighlitTextDark">#A48D28</Color>
-    <Color x:Key="LinkTextLight">#003049</Color>
+    <Color x:Key="LinkTextLight">#598595</Color>
     <Color x:Key="LinkTextDark">#837120</Color>
 
     <LinearGradientBrush x:Key="BackgroundBrush" StartPoint="0.5,0" EndPoint="0.5,1.0">
