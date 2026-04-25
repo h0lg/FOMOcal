@@ -126,18 +126,25 @@
         <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=14}" />
     </Style>
 
-    <Style TargetType="Span">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+    <Style TargetType="Span" x:Key="Span.Normal">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
+        <!-- reset properties set in buddy Span styles -->
+        <Setter Property="FontAttributes" Value="None" />
+        <Setter Property="TextDecorations" Value="None" />
     </Style>
 
     <Style TargetType="Span" x:Key="Span.Link">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LinkTextLight}, Dark={StaticResource LinkTextDark}}" />
         <Setter Property="TextDecorations" Value="Underline" />
+        <!-- reset properties set in buddy Span styles -->
+        <Setter Property="FontAttributes" Value="None" />
     </Style>
 
     <Style TargetType="Span" x:Key="Span.Highlit">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource HighlitTextLight}, Dark={StaticResource HighlitTextDark}}" />
         <Setter Property="FontAttributes" Value="Bold" />
+        <!-- reset properties set in buddy Span styles -->
+        <Setter Property="TextDecorations" Value="None" />
     </Style>
 
     <Style TargetType="Span" x:Key="Span.Help">

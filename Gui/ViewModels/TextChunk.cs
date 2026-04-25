@@ -130,7 +130,7 @@ internal static class TextChunkExtensions
     }
 }
 
-public class TextChunkConverter(Style linkStyle, Style highlitStyle, Style? normalStyle = null) : IValueConverter
+public class TextChunkConverter(Style linkStyle, Style highlitStyle, Style normalStyle) : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
@@ -142,12 +142,13 @@ public class TextChunkConverter(Style linkStyle, Style highlitStyle, Style? norm
         {
             Span span = new() { Text = chunk.Text };
 
-            if (chunk.LinkUrl == null) span.Style = chunk.Matches ? highlitStyle : normalStyle;
-            else
+            if (chunk.LinkUrl is not null)
             {
-                span.Style = linkStyle;
+                ApplyStyle(span, linkStyle);
                 span.TapGesture(() => WebViewPage.OpenUrlAsync(chunk.LinkUrl));
             }
+            else if (chunk.Matches) ApplyStyle(span, highlitStyle);
+            else ApplyStyle(span, normalStyle);
 
             fs.Spans.Add(span);
         }
@@ -157,4 +158,15 @@ public class TextChunkConverter(Style linkStyle, Style highlitStyle, Style? norm
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotImplementedException();
+
+    private static void ApplyStyle(Span span, Style style)
+    {
+        foreach (var setter in style.Setters)
+        {
+            if (setter is Setter s)
+            {
+                span.SetValue(s.Property, s.Value);
+            }
+        }
+    }
 }

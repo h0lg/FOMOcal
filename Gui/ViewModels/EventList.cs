@@ -33,6 +33,13 @@ public partial class EventList : ObservableObject
                 NotifySelectionChanged(); // because FilteredEvents changed
             }
         };
+
+        // re-render filtered items to apply correct styles on theme change
+        Application.Current!.RequestedThemeChanged += (o, e) =>
+        {
+            foreach (var evt in FilteredEvents)
+                evt.RefreshTextRendering();
+        };
     }
 
     // Called from the MainPage on VenueList.EventsScraped
@@ -169,7 +176,7 @@ public partial class EventList : ObservableObject
     public partial class View : ContentView
     {
         private static readonly TextChunkConverter textChunkConverter =
-            new(linkStyle: Styles.Span.Link, highlitStyle: Styles.Span.Highlit);
+            new(linkStyle: Styles.Span.Link, highlitStyle: Styles.Span.Highlit, normalStyle: Styles.Span.Normal);
 
         public View(EventList model)
         {

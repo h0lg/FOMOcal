@@ -52,7 +52,7 @@ internal static class Styles
 
     internal static class Span
     {
-        internal static Style Link = Get(), Highlit = Get(),
+        internal static Style Link = Get(), Highlit = Get(), Normal = Get(),
             HelpHeader = Get(), Help = Get(),
             HelpLink = Get(), HelpFooter = Get(),
             HelpFooterLink = MergedStyle.Combine(HelpFooter, HelpLink)!;

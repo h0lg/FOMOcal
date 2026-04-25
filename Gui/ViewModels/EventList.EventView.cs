@@ -6,6 +6,11 @@ partial class EventList
 {
     public partial class EventView : ObservableObject, IHaveAnEvent
     {
+        private static readonly string[] searchableProperties =
+            typeof(EventView).GetProperties()
+                .Where(p => p.PropertyType == typeof(IReadOnlyList<TextChunk>))
+                .Select(p => p.Name).ToArray();
+
         private IReadOnlyList<TextChunk>? name, subTitle, genres, description, venue, stage;
         private readonly PropertyChangeBatcher batcher; // used to batch PropertyChange notifications to reduce layout passes
 
@@ -94,6 +99,15 @@ partial class EventList
                 Set(ref venue, Model.Venue.ChunkBy(terms).PrependWith(Glyphs.Venue), nameof(Venue));
                 Set(ref stage, Model.Stage.ChunkBy(terms).PrependWith(Glyphs.Stage), nameof(Stage));
             }
+        }
+
+        /// <summary>Raises PropertyChanged events for all searchable properties
+        /// so their styles may be re-applied on theme change.</summary>
+        internal void RefreshTextRendering()
+        {
+            using (batcher.Defer()) // batch property change notifications into one cycle to avoid intermediate layout passes
+                foreach (var name in searchableProperties)
+                    batcher.Notify(name);
         }
 
         public override bool Equals(object? obj) => obj is EventView other && Equals(other);
