@@ -237,17 +237,29 @@
                         <VisualState x:Name="Checked">
                             <VisualState.Setters>
                                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryDarkText}}" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Unchecked">
                             <VisualState.Setters>
                                 <Setter Property="BackgroundColor" Value="Transparent"/>
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
                 </VisualStateGroupList>
             </VisualStateManager.VisualStateGroups>
-            <ContentPresenter VerticalOptions="Center" />
+
+            <ContentPresenter VerticalOptions="Center">
+                <ContentPresenter.Resources>
+                    <ResourceDictionary>
+                        <Style TargetType="Label">
+                            <!-- bind presenting Label TextColor to parent Border Stroke color set for that reason, from https://stackoverflow.com/a/79442468 -->
+                            <Setter Property="TextColor" Value="{Binding Stroke.Color, x:DataType=Border, Source={RelativeSource AncestorType={x:Type Border}}}" />
+                        </Style>
+                    </ResourceDictionary>
+                </ContentPresenter.Resources>
+            </ContentPresenter>
         </Border>
     </ControlTemplate>
 
