@@ -111,7 +111,10 @@ internal static partial class ViewExtensions
             help.label.BindingContext = null; // reset remembered host
             await Task.Delay(100); // defer unfocus reaction to allow another control to take focus
             if (help.label.BindingContext != null) return; // another host took focus, do not hide
-            await Task.WhenAll(help.layout.FadeToAsync(0, 300), help.layout.ScaleToAsync(0, 300, Easing.CubicIn)); // hide label
+
+            if (help.layout.IsLoaded) // hide label, guarding against layout being already unloaded when closing app while help is showing
+                await Task.WhenAll(help.layout.FadeToAsync(0, 300), help.layout.ScaleToAsync(0, 300, Easing.CubicIn));
+
             help.layout.IsVisible = false;
             if (help.label.BindingContext == null) help.label.FormattedText = null; // only reset content if no other host took focus
         }
