@@ -176,7 +176,7 @@ partial class VenueEditor
                 host.Text = FomoCal.ScrapeJob.FormatXpathSelector(selector);
             }
             else host.Text = hasXpath ? normalized // discard XPath query
-                : existing + " " + normalized; // append to existing CSS
+                : (existing + " " + normalized).Trim(); // append to existing CSS
         }
 
         private async Task ReloadAsync()
