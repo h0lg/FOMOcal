@@ -196,16 +196,22 @@ public partial class VenueEditor : ObservableObject
             this.model = model;
             BindingContext = model;
             Title = model.isDeletable ? "Edit " + model.originalVenueName : "Add a venue";
-            if (Shell.Current != null) Shell.SetTabBarIsVisible(this, false);
-            Shell.SetNavBarIsVisible(this, true); // to show ToolbarItems and Title
 
             // Progress Indicator
             var progress = new ProgressBar().Bind(ProgressBar.ProgressProperty, nameof(Progress))
                 .ToolTip("your progress towards the minimum required configuration to make this venue scrapable");
 
-            Shell.SetTitleView(this, VStack(null,
+            var title = VStack(null,
                 Lbl(Title).StyleClass(Styles.Label.Headline),
-                progress));
+                progress).FillHorizontal();
+
+            if (Shell.Current == null) NavigationPage.SetTitleView(this, title);
+            else
+            {
+                Shell.SetTabBarIsVisible(this, false);
+                Shell.SetNavBarIsVisible(this, true); // to show ToolbarItems and Title
+                Shell.SetTitleView(this, title);
+            }
 
             ToolbarItems.Add(new ToolbarItem("💾 Save", null, model.Save)
                 .Bind(MenuItem.IsEnabledProperty, nameof(HasRequiredInfo)));
