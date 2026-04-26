@@ -83,7 +83,8 @@ partial class EventList
                 ItemTemplate = new DataTemplate(() =>
                     Grd(cols: [Star, Auto], rows: [Auto], spacing: 5,
                         BndLbl().TextEnd().TextCenterVertical(),
-                        Btn(Glyphs.Delete, nameof(DeleteSearchCommand), source: model).Column(1)))
+                        Btn(Glyphs.Delete, nameof(DeleteSearchCommand), source: model)
+                            .StyleClass(Styles.Button.Tertiary).Column(1)))
             };
 
             var closeRecentSearches = Btn("⬆️ Close");

@@ -18,12 +18,13 @@ internal static class NumericStepper
 
         var layout = HStackable();
         if (startLabel != null) layout.AddChild(Lbl(startLabel).Margins(right: 5));
+        string[] buttonClasses = [Styles.Button.Tertiary, nameof(NumericStepper)];
 
         layout.AddChild(new Border
         {
             StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(topLeft: 10, 0, bottomLeft: 10, 0) },
             StrokeThickness = 0,
-            Content = new Button { Text = "−", StyleClass = [nameof(NumericStepper)] }.RepeatOnHold(ran => DoStep(-ran))
+            Content = new Button { Text = "−", StyleClass = buttonClasses }.RepeatOnHold(ran => DoStep(-ran))
         });
 
         layout.AddChild(entry);
@@ -32,7 +33,7 @@ internal static class NumericStepper
         {
             StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(0, topRight: 10, 0, bottomRight: 10) },
             StrokeThickness = 0,
-            Content = new Button { Text = "+", StyleClass = [nameof(NumericStepper)] }.RepeatOnHold(DoStep)
+            Content = new Button { Text = "+", StyleClass = buttonClasses }.RepeatOnHold(DoStep)
         });
 
         if (endLabel != null) layout.AddChild(Lbl(endLabel).Margins(left: 5));

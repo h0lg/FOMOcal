@@ -205,6 +205,10 @@ internal static class Widgets
         return (view, addChild);
     }
 
-    internal static Label MenuTrigger(Action onTap)
-        => Lbl("︙").StyleClass(Styles.Label.Headline).CenterVertical().Paddings(left: 5, right: 5).Bold().TapGesture(onTap);
+    internal static Button MenuTrigger(Action onTap, bool floatingAction = false)
+    {
+        var btn = Shell.Current == null ? Btn("• • •") : Btn("⋮").FontSize(24).Padding(0, verticalSize: -3);
+        string styleClass = floatingAction ? Styles.Button.Tertiary : Styles.Button.Transparent;
+        return btn.TapGesture(onTap).StyleClass(styleClass);
+    }
 }

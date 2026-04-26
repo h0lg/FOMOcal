@@ -109,6 +109,25 @@
         <Setter Property="FontSize" Value="14"/>
     </Style>
 
+    <Style TargetType="Button" Class="Secondary">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDark}}" />
+    </Style>
+
+    <Style TargetType="Button" Class="Tertiary">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource TertiaryDark}}" />
+    </Style>
+
+    <Style TargetType="Button" x:Key="transparentButton">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
+    </Style>
+
+    <Style TargetType="Button" Class="Transparent" BasedOn="{StaticResource transparentButton}" />
+
+    <Style TargetType="Button" Class="SwipeItem" BasedOn="{StaticResource transparentButton}">
+        <Setter Property="LineBreakMode" Value="WordWrap" />
+    </Style>
+
     <Style TargetType="Button" Class="NumericStepper">
         <Setter Property="CornerRadius" Value="0" />
         <Setter Property="FontSize" Value="32" />
@@ -209,7 +228,7 @@
     </Style>
 
     <Style TargetType="Border" Class="EndingEntryButton">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDark}}" />
         <Setter Property="StrokeThickness" Value="0" />
 
         <Setter Property="Margin">

@@ -57,7 +57,9 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                         .StyleClass(Styles.Label.VenueRowDetail)
                         .BindIsVisibleToHasValueOf<Label, DateTime>(nameof(Venue.LastRefreshed));
 
-                    var refresh = Btn(Glyphs.Scrape, nameof(VenueCollection.RefreshVenueCommand), source: model.Venues);
+                    var refresh = Btn(Glyphs.Scrape, nameof(VenueCollection.RefreshVenueCommand), source: model.Venues)
+                        .StyleClass(Styles.Button.Secondary);
+
                     SwingPickaxeDuring(refresh, model.Venues.RefreshVenueCommand);
 
                     var border = new Border
@@ -88,13 +90,15 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                     };
                 }));
 
-            var addVenue = Btn(Glyphs.Add, nameof(AddVenueCommand)).ToolTip("add a venue").Margin(3);
+            var addVenue = Btn(Glyphs.Add, nameof(AddVenueCommand)).ToolTip("add a venue")
+                .StyleClass(Styles.Button.Tertiary).Margin(5);
 
             var refreshAll = Btn(Glyphs.Scrape + " dig all gigs",
                 nameof(VenueCollection.RefreshAllVenuesCommand), source: model.Venues)
                 .ToolTip("refresh events from all venues").Margin(3);
 
-            var menuTrigger = MenuTrigger(async () => await model.ShowMenu());
+            bool isDesktop = Shell.Current == null;
+            var menuTrigger = MenuTrigger(async () => await model.ShowMenu(), floatingAction: !isDesktop);
 
             var refreshAllProgress = new ProgressBar()
                 .Bind(ProgressBar.ProgressProperty, nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues)
@@ -103,7 +107,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                 .BindVisible(nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues,
                     converter: Converters.Predicate<double>(progress => progress < 1d));
 
-            if (Shell.Current == null) // desktop layout with Venue and Event list side by side
+            if (isDesktop) // desktop layout with Venue and Event list side by side
             {
                 // title display and settings access are take care of by tabs in the Shell
                 var title = Lbl(Glyphs.Venue + "Venues").StyleClass(Styles.Label.Headline).CenterVertical();

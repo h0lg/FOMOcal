@@ -66,6 +66,12 @@ internal static class Styles
             EndingEntryButton = GetName(), ScrapedValue = GetName();
     }
 
+    internal static class Button
+    {
+        internal static string Secondary = GetName(), Tertiary = GetName(),
+            Transparent = GetName(), SwipeItem = GetName();
+    }
+
     internal static class RadioButton
     {
         internal static string SingleSelectToggleButton = GetName();
@@ -178,12 +184,6 @@ internal static partial class ViewExtensions
     {
         label.LineBreakMode = LineBreakMode.WordWrap;
         return label;
-    }
-
-    internal static Button Wrap(this Button btn)
-    {
-        btn.LineBreakMode = LineBreakMode.WordWrap;
-        return btn;
     }
 
     [GeneratedRegex(@"^(#+)\s+(.*)")] private static partial Regex HeaderRegex(); // e.g. # Heading

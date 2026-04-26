@@ -219,7 +219,8 @@ public partial class EventList : ObservableObject
                 var tickets = VStack(5,
                     OptionalTextLabel(nameof(EventView.PresalePrice), Glyphs.PresalePrice + "{0}"),
                     OptionalTextLabel(nameof(EventView.DoorsPrice), Glyphs.DoorPrice + "{0}"),
-                    OpenUrlButton(Glyphs.Tickets + "Tickets " + Glyphs.Link, nameof(EventView.TicketUrl), model));
+                    OpenUrlButton(Glyphs.Tickets + "Tickets " + Glyphs.Link,
+                        nameof(EventView.TicketUrl), model, Styles.Button.Tertiary));
 
                 Grid eventLayout = useVerticalEventLayout
                     ? Grd(cols: [Star, Auto], rows: [Auto, Auto, Auto, Auto], spacing: 5,
@@ -264,8 +265,10 @@ public partial class EventList : ObservableObject
                         JustifyContent = FlexJustify.SpaceEvenly,
                         AlignItems = FlexAlignItems.Center,
                         Children = {
-                            Btn($"{Glyphs.Scrape} Refresh events from {Glyphs.Venue} venue", nameof(RefreshVenueCommand), source: model).Wrap(),
-                            Btn($"{Glyphs.Edit} Edit {Glyphs.Venue} venue", nameof(EditVenueCommand), source: model).Wrap()
+                            Btn($"{Glyphs.Scrape} Refresh events from {Glyphs.Venue} venue", nameof(RefreshVenueCommand), source: model)
+                                .StyleClass(Styles.Button.SwipeItem),
+                            Btn($"{Glyphs.Edit} Edit {Glyphs.Venue} venue", nameof(EditVenueCommand), source: model)
+                                .StyleClass(Styles.Button.SwipeItem)
                         }
                     };
 
@@ -312,8 +315,9 @@ public partial class EventList : ObservableObject
         private static Label OptionalFormattedLabel(string property)
             => BndFmtLbl(property, converter: textChunkConverter).BindVisibleToNotNullOf(property);
 
-        private static Button OpenUrlButton(string text, string urlProperty, object source)
+        private static Button OpenUrlButton(string text, string urlProperty, object source, string? styleClass = null)
             => Btn(text, nameof(OpenUrlCommand), source: source, parameterPath: urlProperty)
+                .StyleClass(styleClass ?? Styles.Button.Secondary)
                 .BindVisibleToSignificanceOf(urlProperty);
     }
 
