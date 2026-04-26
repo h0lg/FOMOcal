@@ -401,7 +401,7 @@
     </Style>
     -->
 
-    <Style TargetType="Page" ApplyToDerivedTypes="True" x:Key="DefaultPage">
+    <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0"/>
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
     </Style>

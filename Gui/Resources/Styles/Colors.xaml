@@ -6,15 +6,6 @@
     <!-- Light: Pueblo at the sea https://colorkit.co/color-palette-generator/16404d-23667b-598595-A6CDC6-d1e1d2-FBF5DD-DDA853-e09376-a5cda4/ -->
     <!-- Dark: Twilight Muted Navy Turtles https://colorkit.co/color-palette-generator/A48D28-837120-6e6336-E8E4D9-001929-00263D-0f3247-1C352D-954C2E-3a6134/ -->
     <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
-    <!-- Other light pallettes
-        https://coolors.co/palette/0081a7-00afb9-fdfcdc-fed9b7-f07167
-        https://coolors.co/palette/ff6b35-f7c59f-efefd0-004e89-1a659e
-        https://coolors.co/8ecae6-219ebc-023047-ffb703-fb8500
-        https://colorkit.co/palette/151c4a-f29a35-ffb000-ffd880-0069b0/
-        https://colorpaletted.com/color-palette-editor/FBBEF3-AED6F8-FDFDED-F7F0D1-D9F2F8
-        dark
-        https://coolors.co/000814-001d3d-003566-ffc300-ffd60a
-    -->
     <Color x:Key="Primary">#16404D</Color>
     <Color x:Key="PrimaryText">#FBF5DD</Color>
     <Color x:Key="PrimaryDark">#A48D28</Color>
@@ -80,14 +71,4 @@
     <Color x:Key="HighlitTextDark">#A48D28</Color>
     <Color x:Key="LinkTextLight">#598595</Color>
     <Color x:Key="LinkTextDark">#837120</Color>
-
-    <LinearGradientBrush x:Key="BackgroundBrush" StartPoint="0.5,0" EndPoint="0.5,1.0">
-        <GradientStop Color="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
-        <GradientStop Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" Offset="0.3" />
-    </LinearGradientBrush>
-
-    <RadialGradientBrush x:Key="BackgroundBrush2" Center="0.5,1.0">
-        <GradientStop Color="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" Offset="0.1" />
-        <GradientStop Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" Offset="1.0" />
-    </RadialGradientBrush>
 </ResourceDictionary>

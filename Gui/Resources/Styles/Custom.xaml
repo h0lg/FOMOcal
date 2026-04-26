@@ -15,10 +15,6 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
     </Style>
 
-    <Style TargetType="VisualElement" Class="BackGround" ApplyToDerivedTypes="True">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
-    </Style>
-
     <Style TargetType="VisualElement" Class="SelectableListItem" ApplyToDerivedTypes="True">
         <!-- style the selected item of the EventList CollectionView, see
             https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/collectionview/selection?view=net-maui-9.0#change-selected-item-color -->
@@ -115,10 +111,6 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDark}}" />
     </Style>
 
-    <Style TargetType="Button" Class="Secondary">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDark}}" />
-    </Style>
-
     <Style TargetType="Button" Class="Tertiary">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource TertiaryDark}}" />
     </Style>
@@ -149,7 +141,6 @@
 
     <Style TargetType="Entry" BasedOn="{StaticResource DefaultEntry}">
         <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=14}" />
-        <!--<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />-->
         <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
     </Style>
 
@@ -274,24 +265,20 @@
     </Style>
 
     <Style TargetType="Label" Class="EndingEntryButton">
-        <!--<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryDarkText}}" />-->
         <Setter Property="FontSize" Value="20" />
     </Style>
 
     <Style TargetType="Editor" BasedOn="{StaticResource DefaultEditor}">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
-        <!--<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />-->
         <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
     </Style>
 
     <Style TargetType="Editor" x:Key="Editor.Error">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
-        <!--<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />-->
     </Style>
 
     <Style TargetType="Editor" x:Key="Editor.Success">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource SuccessDark}}" />
-        <!--<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />-->
     </Style>
 
     <Style TargetType="Picker" BasedOn="{StaticResource DefaultPicker}">
@@ -308,7 +295,6 @@
     </Style>
 
     <Style TargetType="SearchBar" BasedOn="{StaticResource DefaultSearchBar}">
-        <!--<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />-->
         <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
     </Style>
 
@@ -350,10 +336,6 @@
 
     <Style TargetType="RadioButton" Class="SingleSelectToggleButton">
         <Setter Property="ControlTemplate" Value="{StaticResource SingleSelectToggleButtonTemplate}" />
-    </Style>
-
-    <Style TargetType="Page" ApplyToDerivedTypes="True" BasedOn="{StaticResource DefaultPage}">
-        <!--<Setter Property="Background" Value="{AppThemeBinding Light={StaticResource BackgroundBrush}, Dark={StaticResource BackgroundBrush}}" />-->
     </Style>
 
     <Style TargetType="Shell" ApplyToDerivedTypes="True" BasedOn="{StaticResource DefaultShell}">

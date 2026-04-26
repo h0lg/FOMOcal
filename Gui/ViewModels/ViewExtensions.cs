@@ -79,7 +79,7 @@ internal static class Styles
 
     internal static class VisualElement
     {
-        internal static string BackGround = GetName(), ChromeBg = GetName(), NormalBg = GetName(),
+        internal static string ChromeBg = GetName(), NormalBg = GetName(),
             ListItemBg = GetName(), SelectableListItem = GetName();
     }
 
