@@ -149,8 +149,8 @@
 
     <Style TargetType="Entry" BasedOn="{StaticResource DefaultEntry}">
         <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=14}" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}" />
-        <!--<Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDark}}" />-->
+        <!--<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />-->
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
     </Style>
 
     <Style TargetType="Entry" Class="NumericStepper">
@@ -274,14 +274,14 @@
     </Style>
 
     <Style TargetType="Label" Class="EndingEntryButton">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
+        <!--<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryDarkText}}" />-->
         <Setter Property="FontSize" Value="20" />
     </Style>
 
     <Style TargetType="Editor" BasedOn="{StaticResource DefaultEditor}">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}" />
-        <!--<Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDark}}" />-->
+        <!--<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />-->
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
     </Style>
 
     <Style TargetType="Editor" x:Key="Editor.Error">
@@ -308,7 +308,8 @@
     </Style>
 
     <Style TargetType="SearchBar" BasedOn="{StaticResource DefaultSearchBar}">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}" />
+        <!--<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />-->
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
     </Style>
 
     <Style TargetType="SwipeItem" BasedOn="{StaticResource DefaultSwipeItem}">
