@@ -29,7 +29,7 @@ public static class ScraperExtensions
 
         return ScrapeJob.TryGetXPathSelector(filter, out var xPathFilter)
             ? events.Where(el => el.SelectNodes(xPathFilter).Count > 0)
-            // fallback: treat as text substring filter
+            // fallback: treat as text substring filter; interpreting it as CSS wouldn't add much, you can filter via the selector
             : events.Where(el => el.TextContent?.Contains(filter, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
