@@ -11,12 +11,7 @@ internal static class NumericStepper
         string? startLabel = null, string? endLabel = null,
         int min = 0, int max = int.MaxValue, int stepSize = 1)
     {
-        var entry = new Entry
-        {
-            Keyboard = Keyboard.Numeric,
-            Margin = new Thickness(left: -4, 0, right: -4, 0), // pull in button siblings to overlay rounded corners
-            ZIndex = -1 // let preceding button overlay
-        }.TextCenterHorizontal();
+        var entry = new Entry { StyleClass = [nameof(NumericStepper)] }.TextCenterHorizontal();
 
         entry.SetBinding(Entry.TextProperty, property, BindingMode.TwoWay,
             converter: new ClampedIntConverter(min, max), stringFormat: "{0}");
@@ -28,7 +23,7 @@ internal static class NumericStepper
         {
             StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(topLeft: 10, 0, bottomLeft: 10, 0) },
             StrokeThickness = 0,
-            Content = new Button { Text = "-", StyleClass = ["stepper-btn"] }.RepeatOnHold(ran => DoStep(-ran))
+            Content = new Button { Text = "−", StyleClass = [nameof(NumericStepper)] }.RepeatOnHold(ran => DoStep(-ran))
         });
 
         layout.AddChild(entry);
@@ -37,7 +32,7 @@ internal static class NumericStepper
         {
             StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(0, topRight: 10, 0, bottomRight: 10) },
             StrokeThickness = 0,
-            Content = new Button { Text = "+", StyleClass = ["stepper-btn"] }.RepeatOnHold(DoStep)
+            Content = new Button { Text = "+", StyleClass = [nameof(NumericStepper)] }.RepeatOnHold(DoStep)
         });
 
         if (endLabel != null) layout.AddChild(Lbl(endLabel).Margins(left: 5));

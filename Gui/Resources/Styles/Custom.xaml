@@ -109,14 +109,14 @@
         <Setter Property="FontSize" Value="14"/>
     </Style>
 
-    <Style TargetType="Button" Class="stepper-btn">
+    <Style TargetType="Button" Class="NumericStepper">
         <Setter Property="CornerRadius" Value="0" />
         <Setter Property="FontSize" Value="32" />
 
         <Setter Property="Margin">
             <Setter.Value>
                 <OnPlatform x:TypeArguments="Thickness" Default="-5,-11,-5,-10">
-                    <On Platform="Android" Value="-5,-13,-5,-13" />
+                    <On Platform="Android" Value="-5,-8,-5,-8" />
                 </OnPlatform>
             </Setter.Value>
         </Setter>
@@ -124,6 +124,22 @@
 
     <Style TargetType="Entry" BasedOn="{StaticResource DefaultEntry}">
         <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=14}" />
+    </Style>
+
+    <Style TargetType="Entry" Class="NumericStepper">
+        <Setter Property="Keyboard" Value="Numeric" />
+
+        <!--let preceding button overlay-->
+        <Setter Property="ZIndex" Value="-1" />
+
+        <Setter Property="Margin">
+            <Setter.Value>
+                <!--pull in button siblings to overlay rounded corners-->
+                <OnPlatform x:TypeArguments="Thickness" Default="-4, 0,-4, 0">
+                    <On Platform="Android" Value="0" />
+                </OnPlatform>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style TargetType="Span" x:Key="Span.Normal">
@@ -194,8 +210,15 @@
 
     <Style TargetType="Border" Class="EndingEntryButton">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-        <Setter Property="Margin" Value="-4,0,0,0" />
         <Setter Property="StrokeThickness" Value="0" />
+
+        <Setter Property="Margin">
+            <Setter.Value>
+                <OnPlatform x:TypeArguments="Thickness" Default="-4,0,0,0">
+                    <On Platform="Android" Value="0" />
+                </OnPlatform>
+            </Setter.Value>
+        </Setter>
 
         <Setter Property="Padding">
             <Setter.Value>
