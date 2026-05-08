@@ -24,6 +24,7 @@ public partial class Settings : ObservableObject
         {
             BindingContext = model;
             Title = "Settings";
+            if (Shell.Current != null) Shell.SetNavBarIsVisible(this, false); // to save space
 
             var htmlExport = EventPropertySelection.Views(model.ExportedHtmlEventFields);
             var exportTextAlignedWithHeaders = Swtch(nameof(ExportTextAlignedWithHeaders)).Wrapper;

@@ -39,6 +39,7 @@ public partial class WebViewPage : ContentPage, IQueryAttributable
 
     public WebViewPage()
     {
+        if (Shell.Current != null) Shell.SetNavBarIsVisible(this, false); // to save space
         BindingContext = this;
 
         Content = new WebView

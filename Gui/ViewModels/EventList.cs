@@ -318,6 +318,7 @@ public partial class EventList : ObservableObject
             Title = "Events";
             EventList eventList = new(eventRepo, venues, Navigation);
             Content = new View(eventList);
+            Shell.SetNavBarIsVisible(this, false); // to save space
 
             // refresh events when navigated to, in case they were refreshed
             NavigatedTo += async (_, __) => await eventList.LoadEvents();

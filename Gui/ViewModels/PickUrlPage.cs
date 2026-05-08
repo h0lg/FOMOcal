@@ -33,13 +33,7 @@ public partial class PickUrlPage : PickerPage<string>
         WebView webView = new() { Source = url };
         webView.Navigated += (sender, e) => url = e.Url;
         ToolbarItems.Add(new ToolbarItem(Glyphs.Target + "Use this URL", null, () => SetResult(url)));
-
-        if (Shell.Current != null)
-        {
-            Shell.SetTabBarIsVisible(this, false); // to avoid navigating to another tab
-            Shell.SetNavBarIsVisible(this, true); // to show ToolbarItems
-        }
-
+        if (Shell.Current != null) Shell.SetTabBarIsVisible(this, false); // to avoid navigating to another tab
         Content = webView;
     }
 }

@@ -175,7 +175,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
             venues.Renamed += async (oldName, newName) => await eventRepo.RenameVenueAsync(oldName, newName);
             venues.Deleted += async (venueName) => await eventRepo.DeleteVenueAsync(venueName);
             Content = new View(venueList);
-
+            Shell.SetNavBarIsVisible(this, false); // to save space
             NavigatedTo += LoadOnce;
 
             async void LoadOnce(object? sender, NavigatedToEventArgs e)

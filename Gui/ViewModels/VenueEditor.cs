@@ -208,9 +208,8 @@ public partial class VenueEditor : ObservableObject
             if (Shell.Current == null) NavigationPage.SetTitleView(this, title);
             else
             {
-                Shell.SetTabBarIsVisible(this, false);
-                Shell.SetNavBarIsVisible(this, true); // to show ToolbarItems and Title
                 Shell.SetTitleView(this, title);
+                Shell.SetTabBarIsVisible(this, false);
             }
 
             ToolbarItems.Add(new ToolbarItem("💾 Save", null, model.Save)

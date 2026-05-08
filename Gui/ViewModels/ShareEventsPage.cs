@@ -8,7 +8,6 @@ public partial class ShareEventsPage : PickerPage<ShareEventsPage.Format?>
     internal ShareEventsPage()
     {
         Title = Glyphs.Export + " Share selected events";
-        if (Shell.Current != null) Shell.SetNavBarIsVisible(this, true); // to show Title and Back Button for canceling
 
         const string configurableInSettings = "\nConfigure included event properties in the 🛠 Settings.";
 
