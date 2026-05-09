@@ -89,8 +89,8 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                     };
                 }));
 
-            var addVenue = Btn(Glyphs.Add, nameof(AddVenueCommand)).ToolTip("add a venue")
-                .StyleClass(Styles.Button.Secondary).Margin(5);
+            var addVenue = Btn("+", nameof(AddVenueCommand)).ToolTip("add a venue").Margin(5);
+            addVenue.StyleClass = [Styles.Button.PlusMinus, Styles.Button.Secondary];
 
             var refreshAll = Btn(Glyphs.Scrape + " dig all gigs",
                 nameof(VenueCollection.RefreshAllVenuesCommand), source: model.Venues)

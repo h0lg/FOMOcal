@@ -126,9 +126,22 @@
         <Setter Property="LineBreakMode" Value="WordWrap" />
     </Style>
 
-    <Style TargetType="Button" Class="NumericStepper">
-        <Setter Property="CornerRadius" Value="0" />
+    <Style TargetType="Button" x:Key="plusMinusBtn">
         <Setter Property="FontSize" Value="32" />
+    </Style>
+
+    <Style TargetType="Button" Class="PlusMinus" BasedOn="{StaticResource plusMinusBtn}">
+        <Setter Property="Padding">
+            <Setter.Value>
+                <OnPlatform x:TypeArguments="Thickness" Default="-5,-11,-5,-10">
+                    <On Platform="Android" Value="-5,-8,-5,-8" />
+                </OnPlatform>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" Class="NumericStepper" BasedOn="{StaticResource plusMinusBtn}">
+        <Setter Property="CornerRadius" Value="0" />
 
         <Setter Property="Margin">
             <Setter.Value>

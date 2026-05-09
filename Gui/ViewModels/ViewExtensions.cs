@@ -69,7 +69,7 @@ internal static class Styles
     internal static class Button
     {
         internal static string Secondary = GetName(), Tertiary = GetName(),
-            Transparent = GetName(), SwipeItem = GetName();
+            Transparent = GetName(), SwipeItem = GetName(), PlusMinus = GetName();
     }
 
     internal static class RadioButton
