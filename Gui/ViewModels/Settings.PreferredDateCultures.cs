@@ -13,6 +13,13 @@ public partial class PreferredDateCultures : ObservableObject
     private static readonly RememberedStrings remembered = new("PreferredDateCultures.remembered", "📆");
     internal static IEnumerable<CultureInfo> Remembered => remembered.Get().Select(name => new CultureInfo(name));
 
+    internal static void AddRemembered(CultureInfo culture)
+    {
+        var memory = remembered.Get();
+        if (memory.Contains(culture.Name)) return;
+        remembered.Set(memory.Append(culture.Name));
+    }
+
     public ObservableCollection<CultureInfo> Selected { get; }
     public bool HasSelection => Selected.Any();
     public CultureSearch Search { get; } = new CultureSearch();

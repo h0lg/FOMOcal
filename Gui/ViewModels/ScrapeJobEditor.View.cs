@@ -45,16 +45,17 @@ partial class ScrapeJobEditor
                 LbldView("ignore nested text", ignoreNestedText.Wrapper).DisplayWithChecked(nameof(IgnoreNestedText)),
                 TextEntry("attribute", nameof(Attribute), HelpTexts.ScrapeJobAttribute),
 
-                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, multiLine: true,
-                    placeholder: "a }} b", regex101DeepLink: ScrapeJob.Step.Replacements),
+                TextEntry("replace", nameof(Replace), HelpTexts.ScrapeJobReplace, multiLine: true, placeholder: "a }} b",
+                    buildInputExtension: CreateRegex101Link(ScrapeJob.Step.Replacements)),
 
                 TextEntry("match", nameof(Match), HelpTexts.ScrapeJobMatch, multiLine: true,
-                    regex101DeepLink: ScrapeJob.Step.Match)
+                    buildInputExtension: CreateRegex101Link(ScrapeJob.Step.Match))
             ];
 
             if (model.DateScrapeJob is not null) children.AddRange(
                 TextEntry(Glyphs.Date + "format", nameof(Format), HelpTexts.DateScrapeJobFormat),
-                TextEntry("culture", nameof(Culture), HelpTexts.DateScrapeJobCulture));
+                TextEntry("culture", nameof(Culture), HelpTexts.DateScrapeJobCulture,
+                    buildInputExtension: input => PickDateCultureBtn(model, input)));
 
             children.Add(TextEntry(Glyphs.Comment, nameof(Comment), HelpTexts.Comment, multiLine: true));
 
@@ -90,14 +91,12 @@ partial class ScrapeJobEditor
         }
 
         private Grid TextEntry(string label, string property, string tooltip,
-            bool multiLine = false, string? placeholder = null, ScrapeJob.Step? regex101DeepLink = null)
+            bool multiLine = false, string? placeholder = null,
+            Func<InputView, Microsoft.Maui.Controls.View>? buildInputExtension = null)
         {
             InputView input = multiLine ? Edtr(property) : Entr(property);
             HintedInput(input, tooltip).Placeholder(placeholder);
-
-            Microsoft.Maui.Controls.View[] views = regex101DeepLink == null ? [input]
-                : [input, Regex101.DeepLink(regex101DeepLink.Value, input, model.GetPreviewValues)];
-
+            Microsoft.Maui.Controls.View[] views = buildInputExtension == null ? [input] : [input, buildInputExtension(input)];
             Grid wrapper = LbldView(label, views);
             if (multiLine) wrapper.FlexFitContents();
             return wrapper.DisplayWithSignificant(property);
@@ -106,6 +105,17 @@ partial class ScrapeJobEditor
         private T HintedInput<T>(T vis, string tooltip,
             Func<VisualElement, bool, bool>? cancelFocusChanged = null) where T : VisualElement
             => vis.InlineTooltipOnFocus(tooltip, help, async (vis, focused) => await model.SetFocusAsync(vis, focused), cancelFocusChanged);
+
+        private Func<InputView, Microsoft.Maui.Controls.View> CreateRegex101Link(ScrapeJob.Step step) =>
+            input => Regex101.DeepLink(step, input, model.GetPreviewValues);
+
+        private static Border PickDateCultureBtn(ScrapeJobEditor model, InputView input)
+            => EndingEntryButton("🔍").TapGesture(async () =>
+            {
+                await model.PickDateCulture();
+                await Task.Delay(50); // after navigating back
+                input.Focus(); // to show validation after picking a culture
+            });
     }
 }
 

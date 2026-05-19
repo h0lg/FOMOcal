@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Markup;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FomoCal.Gui.ViewModels;
 
@@ -9,6 +8,7 @@ public partial class ScrapeJobEditor : ObservableObject
     private readonly Func<IDomElement[]?> getEventsForPreview;
     private readonly Func<VisualElement?> getVisualSelectorHost;
     private readonly string? defaultAttribute;
+    private readonly INavigation navigation;
     internal readonly bool IsOptional;
 
     internal ScrapeJob ScrapeJob { get; private set; }
@@ -66,14 +66,15 @@ public partial class ScrapeJobEditor : ObservableObject
     }
 #endif
 
-    internal ScrapeJobEditor(string label, ScrapeJob scrapeJob,
-        Func<IDomElement[]?> getEventsForPreview, Func<VisualElement?> getVisualSelectorHost,
-        string eventProperty, bool isOptional, string? defaultAttribute = null)
+    internal ScrapeJobEditor(string label, ScrapeJob scrapeJob, string eventProperty,
+        bool isOptional, string? defaultAttribute, INavigation navigation,
+        Func<IDomElement[]?> getEventsForPreview, Func<VisualElement?> getVisualSelectorHost)
     {
         this.label = label;
         this.getEventsForPreview = getEventsForPreview;
         this.getVisualSelectorHost = getVisualSelectorHost;
         this.defaultAttribute = defaultAttribute;
+        this.navigation = navigation;
         ScrapeJob = scrapeJob;
         IsOptional = isOptional;
         EventProperty = eventProperty;
@@ -229,5 +230,11 @@ public partial class ScrapeJobEditor : ObservableObject
 
         if (pick.culture != null) Culture = pick.culture;
         if (pick.format != null) Format = pick.format;
+    }
+
+    private async Task PickDateCulture()
+    {
+        var dateCulture = await new PickDateCulturePage().GetResult(navigation);
+        if (dateCulture != null) Culture = dateCulture.Name;
     }
 }

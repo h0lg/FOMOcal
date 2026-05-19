@@ -105,8 +105,8 @@ public partial class VenueEditor : ObservableObject
         bool isOptional = false, string? defaultAttribute = null)
     {
         ScrapeJobEditor editor = new(label, scrapeJob ?? new ScrapeJob(),
-            () => previewedEvents, () => visualSelectorHost,
-            eventProperty, isOptional, defaultAttribute);
+            eventProperty, isOptional, defaultAttribute, navigation,
+            () => previewedEvents, () => visualSelectorHost);
 
         scrapeJobEditors.Add(editor);
         return editor;
