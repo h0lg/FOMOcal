@@ -328,11 +328,7 @@ public partial class VenueEditor : ObservableObject
 
         private Grid SelectorInput(InputView input, Func<(string selector, bool pickDescendant)> pickRelativeTo)
         {
-            Border button = new()
-            {
-                StyleClass = [Styles.Border.EndingEntryButton],
-                Content = Lbl("🥢").StyleClass(Styles.Label.EndingEntryButton)
-            };
+            Border button = EndingEntryButton("🥢");
 
             button.ToolTip("🥢 pluck from the page").TapGesture(async () =>
             {

@@ -33,13 +33,9 @@ internal static class Regex101
     internal static Border DeepLink(ScrapeJob.Step step, InputView input,
         Func<ScrapeJob.Step?, IEnumerable<string>> getPreviewValuesBeforeStep)
     {
-        var btn = new Border
-        {
-            Content = Lbl(Glyphs.Test).StyleClass(Styles.Label.EndingEntryButton),
-            StyleClass = [Styles.Border.EndingEntryButton],
-            IsVisible = false,
-            IsEnabled = false
-        }.ToolTip(Glyphs.Test + " test this RegEx on " + BaseUrl);
+        Border btn = EndingEntryButton(Glyphs.Test).ToolTip(Glyphs.Test + " test this RegEx on " + BaseUrl);
+        btn.IsVisible = false;
+        btn.IsEnabled = false;
 
         // toggle button enabled with input having a value
         input.TextChanged += (o, e) => btn.IsVisible = btn.IsEnabled = e.NewTextValue.IsSignificant();

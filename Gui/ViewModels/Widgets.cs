@@ -205,6 +205,12 @@ internal static class Widgets
         return (view, addChild);
     }
 
+    internal static Border EndingEntryButton(string text) => new()
+    {
+        StyleClass = [Styles.Border.EndingEntryButton],
+        Content = Lbl(text).StyleClass(Styles.Label.EndingEntryButton)
+    };
+
     internal static Button MenuTrigger(Action onTap, bool floatingAction = false)
     {
         var btn = Shell.Current == null ? Btn("• • •") : Btn("⋮").FontSize(24).Padding(0, verticalSize: -3);
