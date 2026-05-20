@@ -107,21 +107,23 @@ public partial class PickDateCulturePage : PickerPage<CultureInfo>
                 useSelected.IsEnabled = model.Selected != null;
         };
 
+        var addToPreferred = new Button().CenterHorizontal()
+            .Bind(Button.TextProperty, nameof(Model.AddToPreferredLabel))
+            .BindCommand(nameof(Model.AddToPreferredCommand))
+            .BindVisible(nameof(Model.AddToPreferredShows));
+
         Content = VStack(5,
             CultureSearch.Input(model.Search, "search a culture"),
             CultureSearch.Result(model.Search),
-            BndLbl(nameof(Model.Display)).CenterHorizontal().StyleClass(Styles.Label.SubHeadline)
-                .BindVisible(nameof(Model.ShowDisplay)),
-            Btn("add to preferred date cultures", nameof(Model.AddToPreferredCommand))
-                .CenterHorizontal().BindVisible(nameof(Model.ShowDisplay)));
+            addToPreferred);
     }
 
     public partial class Model : ObservableObject
     {
         internal CultureSearch Search { get; } = new CultureSearch(selectsSingle: true);
         public CultureInfo? Selected { get; private set; }
-        public string Display => Selected == null ? "select one" : Selected.DisplayName + " selected";
-        public bool ShowDisplay => Search.Filtered.Count > 0;
+        public string AddToPreferredLabel => $"add {Selected?.DisplayName ?? "selected"} to preferred date cultures";
+        public bool AddToPreferredShows => Selected != null && !PreferredDateCultures.Remembered.Contains(Selected);
 
         public Model()
         {
@@ -129,13 +131,13 @@ public partial class PickDateCulturePage : PickerPage<CultureInfo>
             {
                 Selected = culture.Selected ? culture.Culture : null;
                 OnPropertyChanged(nameof(Selected));
-                OnPropertyChanged(nameof(Display));
-                OnPropertyChanged(nameof(ShowDisplay));
+                OnPropertyChanged(nameof(AddToPreferredLabel));
+                OnPropertyChanged(nameof(AddToPreferredShows));
                 AddToPreferredCommand.NotifyCanExecuteChanged();
             };
         }
 
-        internal bool CanAddToPreferred() => Selected != null && !PreferredDateCultures.Remembered.Contains(Selected);
+        internal bool CanAddToPreferred() => AddToPreferredShows;
 
         [RelayCommand(CanExecute = nameof(CanAddToPreferred))]
         public void AddToPreferred()
