@@ -1,6 +1,6 @@
 ﻿namespace FomoCal.Gui.ViewModels;
 
-public sealed class PropertyChangeBatcher(Action<string> raise)
+public sealed partial class PropertyChangeBatcher(Action<string> raise)
 {
     private readonly Action<string> raise = raise ?? throw new ArgumentNullException(nameof(raise));
     private int level;
