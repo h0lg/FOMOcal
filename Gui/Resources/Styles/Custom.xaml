@@ -365,6 +365,7 @@
     <Style TargetType="NavigationPage" BasedOn="{StaticResource DefaultNavigationPage}">
         <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource LightChromeBackground}, Dark={StaticResource DarkChromeBackground}}" />
         <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="IconColor" Value="{StaticResource Gray200}" />
     </Style>
 
     <Style TargetType="Grid" Class="VisualSelector">
