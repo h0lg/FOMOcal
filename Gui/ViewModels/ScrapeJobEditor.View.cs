@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using FomoCal.Gui.Resources;
-using Microsoft.Maui.Layouts;
 using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
@@ -31,7 +30,7 @@ partial class ScrapeJobEditor
             (Switch Switch, Grid Wrapper) ignoreNestedText = Swtch(nameof(IgnoreNestedText));
             HintedInput(ignoreNestedText.Switch, HelpTexts.ScrapeJobIgnoreNestedText);
 
-            List<IView> children = [
+            var form = HWrap(new Thickness(left: 10, 0, 0, 0),
                 HStack(5, Lbl(model.label).Bold(), displayInputs.Wrapper.BindVisible(nameof(IsEmpty))),
 
                 SelectorInput("closest", nameof(Closest),
@@ -49,32 +48,24 @@ partial class ScrapeJobEditor
                     buildInputExtension: CreateRegex101Link(ScrapeJob.Step.Replacements)),
 
                 TextEntry("match", nameof(Match), HelpTexts.ScrapeJobMatch, multiLine: true,
-                    buildInputExtension: CreateRegex101Link(ScrapeJob.Step.Match))
-            ];
+                    buildInputExtension: CreateRegex101Link(ScrapeJob.Step.Match)));
 
-            if (model.DateScrapeJob is not null) children.AddRange(
-                TextEntry(Glyphs.Date + "format", nameof(Format), HelpTexts.DateScrapeJobFormat),
-                TextEntry("culture", nameof(Culture), HelpTexts.DateScrapeJobCulture,
-                    buildInputExtension: input => PickDateCultureBtn(model, input)));
-
-            children.Add(TextEntry(Glyphs.Comment, nameof(Comment), HelpTexts.Comment, multiLine: true));
-
-            FlexLayout form = new() { Wrap = FlexWrap.Wrap, AlignItems = FlexAlignItems.Center };
-
-            foreach (var child in children.Cast<Microsoft.Maui.Controls.View>())
+            if (model.DateScrapeJob is not null)
             {
-                child.Margins(left: 10);
-                form.Children.Add(child);
+                form.AddChild(TextEntry(Glyphs.Date + "format", nameof(Format), HelpTexts.DateScrapeJobFormat));
+
+                form.AddChild(TextEntry("culture", nameof(Culture), HelpTexts.DateScrapeJobCulture,
+                    buildInputExtension: input => PickDateCultureBtn(model, input)));
             }
 
-            var previewSummary = BndLbl(nameof(PreviewSummary))
+            form.AddChild(TextEntry(Glyphs.Comment, nameof(Comment), HelpTexts.Comment, multiLine: true));
+
+            form.AddChild(BndLbl(nameof(PreviewSummary)).End().Grow(1)
                 // display if PreviewSummary has value. hide if editor has focus because ValuePreview.List is then shown
                 .BindVisible(new Binding(nameof(PreviewSummary), converter: Converters.NotNull),
-                    Converters.And, new Binding(nameof(HasFocus), converter: Converters.Not));
+                    Converters.And, new Binding(nameof(HasFocus), converter: Converters.Not)));
 
-            form.Children.Add(previewSummary.End().Grow(1));
-
-            Content = VStack(5, help.layout, form,
+            Content = VStack(5, help.layout, form.View,
                 ValuePreview.List(itemsSource: nameof(PreviewResults),
                     hasFocus: nameof(HasFocus), source: model, editor: model));
 
