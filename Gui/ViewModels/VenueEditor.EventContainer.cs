@@ -106,7 +106,9 @@ partial class VenueEditor
 
             var selectorText = Edtr(nameof(EventSelector), placeholder: "event container selector");
 
-            var containerSelector = SelectorInput(selectorText, pickRelativeTo: () => (selector: "body", pickDescendant: true));
+            var containerSelector = SelectorInput(BndLbl(nameof(SelectedEventCount), "{0} selected by"), selectorText,
+                pickRelativeTo: () => (selector: "body", pickDescendant: true));
+
             (Switch Switch, Grid Wrapper) lazyLoaded = Swtch(nameof(LazyLoaded));
 
             var eventFilter = Entr(nameof(EventFilter), placeholder: "text or XPath");
@@ -115,8 +117,7 @@ partial class VenueEditor
                 itemsSource: nameof(PreviewedEventTexts), hasFocus: nameof(PreviewRelatedHasFocus), source: model);
 
             var controls = HWrap(5,
-                Lbl("Event container").Bold(),
-                BndLbl(nameof(SelectedEventCount), "{0} selected by"), containerSelector,
+                Lbl("Event container").Bold(), containerSelector,
                 BndLbl(nameof(FilteredEventCount), "{0} filtered by"), eventFilter,
                 LbldView("lazy", lazyLoaded.Wrapper));
 

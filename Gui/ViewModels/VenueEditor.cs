@@ -326,7 +326,7 @@ public partial class VenueEditor : ObservableObject
                     RelativeSelectorEntry, () => model.visualSelectorHost), scrapeJob == null);
         }
 
-        private Grid SelectorInput(InputView input, Func<(string selector, bool pickDescendant)> pickRelativeTo)
+        private Grid SelectorInput(Label? label, InputView input, Func<(string selector, bool pickDescendant)> pickRelativeTo)
         {
             Border button = EndingEntryButton("🥢");
 
@@ -341,11 +341,11 @@ public partial class VenueEditor : ObservableObject
                     "Loading the event listing requires internet access.", "OK");
             });
 
-            return Grd(cols: [Star, Auto], rows: [Auto], 0, input, button.Column(1));
+            return label == null ? HGrd([Auto, Auto], input, button.Column(1)) : LbldView(label, input, button.Column(1));
         }
 
-        private Grid RelativeSelectorEntry(InputView input, Func<string?>? maybeGetDescendantOfClosest)
-            => SelectorInput(input, pickRelativeTo: () =>
+        private Grid RelativeSelectorEntry(Label label, InputView input, Func<string?>? maybeGetDescendantOfClosest)
+            => SelectorInput(label, input, pickRelativeTo: () =>
             {
                 /*  if maybeGetDescendantOfClosest is set, we're selecting the descendant
                  *  and prefer selecting from the Closest expression over the EventSelector */

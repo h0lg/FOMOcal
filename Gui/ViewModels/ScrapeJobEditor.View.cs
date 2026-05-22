@@ -11,11 +11,11 @@ partial class ScrapeJobEditor
     {
         private readonly (Label label, Border layout) help;
         private readonly ScrapeJobEditor model;
-        private readonly Func<InputView, Func<string?>?, Grid> createVisualSelectorEntry;
+        private readonly Func<Label, InputView, Func<string?>?, Grid> createVisualSelectorEntry;
         private readonly Func<InputView?> getVisualSelectorHost;
 
         public View(ScrapeJobEditor model,
-            Func<InputView, Func<string?>?, Grid> createVisualSelectorEntry,
+            Func<Label, InputView, Func<string?>?, Grid> createVisualSelectorEntry,
             Func<InputView?> getVisualSelectorHost)
         {
             this.model = model;
@@ -83,11 +83,11 @@ partial class ScrapeJobEditor
 
         private Grid SelectorInput(string label, string property, Func<string?>? maybeGetDescendantOfClosest, string tooltip)
         {
-            var input = createVisualSelectorEntry(HintedInput(Edtr(property), tooltip,
+            var wrapper = createVisualSelectorEntry(Lbl(label), HintedInput(Edtr(property), tooltip,
                 cancelFocusChanged: (vis, focused) => !focused && getVisualSelectorHost() == vis),
                 maybeGetDescendantOfClosest);
 
-            return LbldView(label, input).FlexFitContents().DisplayWithSignificant(property);
+            return wrapper.FlexFitContents().DisplayWithSignificant(property);
         }
 
         private Grid TextEntry(string label, string property, string tooltip,

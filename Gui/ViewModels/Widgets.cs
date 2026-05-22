@@ -39,8 +39,13 @@ internal static class Widgets
     {
         label.TextCenterVertical().Margins(right: 5);
         GridLength[] cols = [Auto, Star, .. Enumerable.Repeat(Auto, views.Length - 1)];
-        var grid = Grd(cols: cols, rows: [Auto], spacing: 0, label);
-        var column = 1;
+        return HGrd(cols, [label, .. views]);
+    }
+
+    internal static Grid HGrd(GridLength[] columnWidths, params View[] views)
+    {
+        var grid = Grd(columnWidths, rows: [Auto], spacing: 0);
+        var column = 0;
 
         foreach (View view in views)
             grid.Add(view, column: column++);
