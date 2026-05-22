@@ -12,13 +12,8 @@ public sealed class MauiEventListingAutomatorFactory : IBuildEventListingAutomat
     {
         get
         {
-            if (topLayout == null)
-            {
-                topLayout = App.GetCurrentContentPage().FindTopLayout() as Layout;
-
-                if (topLayout == null) throw new InvalidOperationException(
-                    $"You need to use the {nameof(Scraper)} on a {nameof(ContentPage)} with a {nameof(Layout)} to attach the {nameof(AutomatedEventPageView)} to.");
-            }
+            topLayout ??= App.GetCurrentContentPage().FindTopLayout() as Layout ?? throw new InvalidOperationException(
+                $"You need to use the {nameof(Scraper)} on a {nameof(ContentPage)} with a {nameof(Layout)} to attach the {nameof(AutomatedEventPageView)} to.");
 
             return topLayout!;
         }
