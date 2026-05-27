@@ -47,8 +47,8 @@ public sealed class ValuePreview(string? result, bool? succeeded)
         // Animate show/hide when hasFocus changes
         async void UpdateVisibilityUndebouncedAsync()
         {
+            if (!list.IsLoaded) return;
             Type type = observable!.GetType();
-
             bool shouldBeVisible = (bool)type.GetProperty(hasFocus)!.GetValue(source)!;
 
             if (shouldBeVisible && !list.IsVisible)
@@ -63,7 +63,7 @@ public sealed class ValuePreview(string? result, bool? succeeded)
                 await Task.WhenAll(list.FadeToAsync(0, 300),
                     list.ScaleToAsync(0, 300, Easing.CubicIn));
 
-                list.IsVisible = false;
+                if (list.IsLoaded) list.IsVisible = false;
             }
         }
     }

@@ -115,8 +115,8 @@ internal static partial class ViewExtensions
             if (help.layout.IsLoaded) // hide label, guarding against layout being already unloaded when closing app while help is showing
                 await Task.WhenAll(help.layout.FadeToAsync(0, 300), help.layout.ScaleToAsync(0, 300, Easing.CubicIn));
 
-            help.layout.IsVisible = false;
-            if (help.label.BindingContext == null) help.label.FormattedText = null; // only reset content if no other host took focus
+            if (help.layout.IsLoaded) help.layout.IsVisible = false;
+            if (help.label.IsLoaded && help.label.BindingContext == null) help.label.FormattedText = null; // only reset content if no other host took focus
         }
     }
 
