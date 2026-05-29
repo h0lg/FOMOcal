@@ -222,35 +222,23 @@ public partial class VenueEditor : ObservableObject
              * created by the former is referenced as a command arg in the latter */
             visualSelector = CreateVisualSelector();
 
-            // Step 1: Venue Name and Program URL
-            var venueFields = VenueFields();
+            const string showRequired = nameof(ShowRequiredEventFields),
+                showOptional = nameof(ShowOptionalEventFields);
 
-            // Step 2: Event container
-            var eventContainer = EventContainer().BindVisible(nameof(HasRequiredInfo));
+            IView[] fields = [VenueFields(), // Step 1: Venue Name and Program URL
+                EventContainer().BindVisible(nameof(HasRequiredInfo)), // Step 2: Event container
+                // Step 3: Required Event Details (Name, Date) & paging
+                PagingControls().BindVisible(showRequired),
+                // bind to model explicitly because ScrapeJobEditor.View is bound to ScrapeJobEditor model
+                JobEditor(model.eventName).BindVisible(showRequired, source: model),
+                JobEditor(model.eventDate).BindVisible(showRequired, source: model),
+                // Step 4: Additional Event Details
+                .. OptionalEventFields().Select(f => f.BindVisible(showOptional, source: model)),
+                EncodingOverride().BindVisible(showRequired),
+                ScrapeLogs(model).BindVisible(showOptional),
+                ScriptLog(model).BindVisible(showOptional)];
 
-            // Step 3: Event Details (Name, Date)
-            const string showRequired = nameof(ShowRequiredEventFields);
-
-            var requiredEventFields = VStack(0,
-                new ScrapeJobEditor.View(model.eventName, RelativeSelectorEntry, () => model.visualSelectorHost),
-                new ScrapeJobEditor.View(model.eventDate, RelativeSelectorEntry, () => model.visualSelectorHost))
-                .BindVisible(showRequired);
-
-            // Step 4: Additional Event Details
-            const string showOptional = nameof(ShowOptionalEventFields);
-            var optionalEventFields = OptionalEventFields().BindVisible(showOptional);
-
-            form = new ScrollView
-            {
-                Content = VStack(20, venueFields, eventContainer,
-                    PagingControls().BindVisible(showRequired),
-                    requiredEventFields, optionalEventFields,
-                    EncodingOverride().BindVisible(showRequired),
-                    ScrapeLogs(model).BindVisible(showOptional),
-                    ScriptLog(model).BindVisible(showOptional))
-                    .Padding(20)
-            };
-
+            form = new ScrollView { Content = VStack(20, fields).Padding(20) };
             Content = Grd(cols: [Star], rows: [Star, Auto], spacing: 0, form, visualSelector.Row(1));
         }
 
@@ -301,7 +289,10 @@ public partial class VenueEditor : ObservableObject
 
         private static Label ErrorLbl(string text) => Lbl(Glyphs.Error + " " + text).TextCenter();
 
-        private VerticalStackLayout OptionalEventFields()
+        private ScrapeJobEditor.View JobEditor(ScrapeJobEditor job)
+            => new(job, RelativeSelectorEntry, () => model.visualSelectorHost);
+
+        private IEnumerable<ScrapeJobEditor.View> OptionalEventFields()
         {
             var evt = model!.venue.Event;
 
@@ -319,11 +310,10 @@ public partial class VenueEditor : ObservableObject
                 OptionalScrapeJob(Glyphs.Tickets + "Tickets " + Glyphs.Link, evt.TicketUrl, nameof(Venue.EventScrapeJob.TicketUrl), defaultAttribute: "href")
             ];
 
-            return VStack(0, [.. fields.OrderBy(f => f.empty).Select(f => f.editor)]); // order empty editors last
+            return fields.OrderBy(f => f.empty).Select(f => f.editor); // order empty editors last
 
             (ScrapeJobEditor.View editor, bool empty) OptionalScrapeJob(string label, ScrapeJob? scrapeJob, string eventProperty, string? defaultAttribute = null)
-               => (new(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute),
-                    RelativeSelectorEntry, () => model.visualSelectorHost), scrapeJob == null);
+               => (JobEditor(model.ScrapeJob(label, scrapeJob, eventProperty, isOptional: true, defaultAttribute)), scrapeJob == null);
         }
 
         private Grid SelectorInput(Label? label, InputView input, Func<(string selector, bool pickDescendant)> pickRelativeTo)
