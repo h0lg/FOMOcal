@@ -19,9 +19,6 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 
-    <!--for partial property support-->
-    <LangVersion>preview</LangVersion>
-
     <!-- Display name -->
     <ApplicationTitle>FOMOcal</ApplicationTitle>
 
