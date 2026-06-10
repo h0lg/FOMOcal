@@ -21,7 +21,7 @@ class EventPage
     public Func<AngleSharp.Dom.IDocument, IHtmlElement>? AddNextPageNavigator { get; set; }
 }
 
-public partial class MockBrowser : FomoCal.IBrowser
+public sealed partial class MockBrowser : FomoCal.IBrowser
 {
     private readonly IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
     private readonly List<EventPage> eventPages = [];

@@ -5,7 +5,7 @@ using AngleSharp.XPath;
 
 namespace FomoCal;
 
-public partial class Browser() : IBrowser
+public sealed partial class Browser() : IBrowser
 {
     private readonly IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
 
@@ -51,7 +51,7 @@ public class ResponseBuilder(VirtualResponse response) : IResponseBuilder
     }
 }
 
-public partial class DomDocument(IDocument doc) : IDomDocument
+public sealed partial class DomDocument(IDocument doc) : IDomDocument
 {
     public string Url => doc.Url;
     public string? Title => doc.Title;
