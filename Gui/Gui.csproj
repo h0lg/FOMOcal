@@ -55,6 +55,14 @@
     <SatelliteResourceLanguages>en-us</SatelliteResourceLanguages>
   </PropertyGroup>
 
+  <!-- fixes using class selectors in AngleSharp for Android Release build -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' And '$(Configuration)' == 'Release'">
+    <!-- https://learn.microsoft.com/en-us/dotnet/android/building-apps/build-properties#androiduseinterpreter -->
+    <AndroidUseInterpreter>True</AndroidUseInterpreter>
+    <!-- https://learn.microsoft.com/en-us/dotnet/android/building-apps/build-properties#runaotcompilation -->
+    <RunAOTCompilation>false</RunAOTCompilation>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- App icon for Android -->
     <MauiIcon Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'"
