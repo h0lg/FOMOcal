@@ -160,20 +160,25 @@ To parse a `date` from text, FOMOcal needs to know the exact
 or [standard](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings)
 date format and [culture](https://en.wikipedia.org/wiki/Language_code) to convert it correctly.
 
-
 ## What do I need?
 
-To run FOMOcal, make sure you have [.NET 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0/runtime) installed.
-On Windows 10+, chances are you have it already. Try installing it if FOMOcal doesn't run without.
+Look for the latest build for your operating system in the **Assets** at the bottom of the [latest release](https://github.com/h0lg/FOMOcal/releases/latest).
 
-Look for the latest build in the Assets of the [latest release](https://github.com/h0lg/FOMOcal/releases/latest).
-Currently, you'll always find a `FOMOcal.*.zip` with a build for Windows 10 or higher.
+On **Android**, look for the `FOMOcal x.x.x.apk`, download it to your phone and [side-load](https://en.wikipedia.org/wiki/Sideloading) it.
+If you've never installed an app via side-loading, you'll probably first have to enable that in your Security settings, where it's called _installing apps from unknown sources_ or similar.
+
+On **Windows**, download the `FOMOcal x.x.x win-x64.zip` and unzip it where you like.
+It should run out of the box on recent Windows versions. If it doesn't, make sure you have the
+[.NET 10 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/10.0/runtime) installed.
+Note that the first app start may take quite long and require internet access to
+[download an embedded browser in the background](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/evergreen-vs-fixed-version#the-evergreen-runtime-distribution-mode).
 
 ### How do I build from source?
 
-You don't have to trust the uploaded bits. You can build from source, currently supported on Windows for Windows using the [.NET SDK](https://dotnet.microsoft.com/en-us/download/visual-studio-sdks) via the included [publish script](https://github.com/h0lg/FOMOcal/blob/master/Gui/Platforms/Windows/publish.cmd).
+You don't have to trust the uploaded bits. You can review the source and build from it yourself, targeting either Windows or Android using the [.NET SDK](https://dotnet.microsoft.com/en-us/download/visual-studio-sdks).
+If building on Windows, you can simply run the `publish.cmd` scripts found in the respective [Platforms](https://github.com/h0lg/FOMOcal/blob/master/Gui/Platforms/) folder for your target.
 
-Get the [current source](https://github.com/h0lg/FOMOcal/archive/refs/heads/master.zip) from the `Code` download widget above - and that for older [releases](https://github.com/h0lg/FOMOcal/releases) from the  github-generated `Source code` archives in the assets.
+Get the [current source](https://github.com/h0lg/FOMOcal/archive/refs/heads/master.zip) from the `Code` download widget above - and that for [older releases](https://github.com/h0lg/FOMOcal/releases) from one of the github-generated `Source code` archives in the _Assets_ at the bottom of each release.
 
 ## What's this about?
 
