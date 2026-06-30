@@ -112,19 +112,10 @@
     </Exec>
   </Target>
 
-  <!-- after Publish for Windows, zip PublishDir to ZipFile -->
-  <Target Name="PostPublish" AfterTargets="Publish" Condition="'$(TargetPlatformIdentifier)' == 'Windows'">
-    <PropertyGroup>
-      <ZipFile>$(PublishBaseDir)\$(Product) $(ApplicationDisplayVersion) $(RuntimeIdentifier).zip</ZipFile>
-    </PropertyGroup>
-
-    <!-- Delete existing zip -->
-    <Exec Command="powershell -Command &quot;if (Test-Path '$(ZipFile)') { Remove-Item '$(ZipFile)' -Force }&quot;" />
-
-    <!-- Create new zip including the folder -->
-    <Exec Command="powershell -Command &quot;Compress-Archive -Path '$(PublishDir)' -DestinationPath '$(ZipFile)'&quot;" />
-
-    <Message Text="Packed $(ZipPath)" Importance="high" />
+  <!-- after Publish for Windows, zip PublishDir to DestinationFile -->
+  <Target Name="ZipPublishDir" AfterTargets="Publish" Condition="'$(TargetPlatformIdentifier)' == 'Windows'">
+    <ZipDirectory SourceDirectory="$(PublishDir)" Overwrite="true"
+                  DestinationFile="$(PublishBaseDir)\$(Product) $(ApplicationDisplayVersion) $(RuntimeIdentifier).zip" />
   </Target>
 
   <!-- after Publish, open PublishBaseDir in explorer for convenience -->
