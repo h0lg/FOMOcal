@@ -112,6 +112,11 @@
     </Exec>
   </Target>
 
+  <!-- before Publish, remove PublishDir to have a clean slate -->
+  <Target Name="RemovePublishDirBeforePublish" BeforeTargets="BeforePublish">
+    <RemoveDir Directories="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
+  </Target>
+
   <!-- after Publish for Windows, zip PublishDir to DestinationFile -->
   <Target Name="ZipPublishDir" AfterTargets="Publish" Condition="'$(TargetPlatformIdentifier)' == 'Windows'">
     <ZipDirectory SourceDirectory="$(PublishDir)" Overwrite="true"
