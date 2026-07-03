@@ -24,6 +24,7 @@ public partial class VenueList : ObservableObject
     [RelayCommand] private Task AddVenue() => Venues.AddAsync(navigation);
     [RelayCommand] private Task EditVenueAsync(Venue original) => Venues.EditAsync(original, navigation);
     [RelayCommand] private Task DeleteVenueAsync(Venue venue) => Venues.DeleteAsync(venue);
+    [RelayCommand] private Task RefreshFilteredVenuesAsync() => Venues.RefreshMultipleVenuesAsync(FilteredVenues);
 
     private async Task ShowMenu()
     {
@@ -103,16 +104,16 @@ public partial class VenueList : ObservableObject
             addVenue.StyleClass = [Styles.Button.PlusMinus, Styles.Button.Secondary];
 
             var refreshAll = Btn(Glyphs.Scrape + " dig all gigs",
-                nameof(VenueCollection.RefreshAllVenuesCommand), source: model.Venues)
-                .ToolTip("refresh events from all venues").Margin(5);
+                nameof(RefreshFilteredVenuesCommand))
+                .ToolTip("refresh events from all filtered venues").Margin(5);
 
             var menuTrigger = MenuTrigger(async () => await model.ShowMenu());
 
             var refreshAllProgress = new ProgressBar().Margin(horizontal: 5, 0)
-                .Bind(ProgressBar.ProgressProperty, nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues)
+                .Bind(ProgressBar.ProgressProperty, nameof(VenueCollection.RefreshMultipleVenuesProgress), source: model.Venues)
                 .ToolTip("the progress of refreshing the events of all venues ")
                 // hide when none is refreshing
-                .BindVisible(nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues,
+                .BindVisible(nameof(VenueCollection.RefreshMultipleVenuesProgress), source: model.Venues,
                     converter: Converters.Predicate<double>(progress => progress < 1d));
 
             Content = Grd(cols: [Auto, Star, Auto], rows: [Auto, Star, Auto, Auto], spacing: 0,

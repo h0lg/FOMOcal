@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace FomoCal.Gui.ViewModels;
@@ -8,7 +9,7 @@ partial class VenueCollection
     private readonly HashSet<Venue> refreshingVenues = [];
 
     internal event Action<Venue, HashSet<Event>>? EventsScraped;
-    [ObservableProperty] public partial double RefreshAllVenuesProgress { get; set; } = 1; // none is refreshing
+    [ObservableProperty] public partial double RefreshMultipleVenuesProgress { get; set; } = 1; // none is refreshing
 
     internal async Task RefreshByNameAsync(string venueName)
     {
@@ -29,12 +30,11 @@ partial class VenueCollection
         if (warning != null) await App.CurrentPage.DisplayAlertAsync("You may want to look into:", warning, "OK");
     }
 
-    [RelayCommand]
-    private async Task RefreshAllVenuesAsync()
+    internal async Task RefreshMultipleVenuesAsync(Collection<Venue> venues)
     {
         if (!await HasInternet()) return;
 
-        var refreshs = Observable.Select(venue => (venue, task: RefreshEvents(venue))).ToArray();
+        var refreshs = venues.Select(venue => (venue, task: RefreshEvents(venue, totalRefreshing: venues.Count))).ToArray();
         await Task.WhenAll(refreshs.Select(r => r.task));
         RefreshList();
         await SaveVenues();
@@ -69,21 +69,21 @@ partial class VenueCollection
     internal bool CanRefreshVenue(Venue? venue) => venue is not null && !IsRefreshing(venue);
     private bool IsRefreshing(Venue venue) => refreshingVenues.Contains(venue);
 
-    private void SetVenueRefreshing(Venue venue, bool isRefreshing)
+    private void SetVenueRefreshing(Venue venue, int totalRefreshing, bool isRefreshing)
     {
         if (isRefreshing) refreshingVenues.Add(venue);
         else refreshingVenues.Remove(venue);
 
         /* refreshing venues count against the progress, i.e. all refreshing => 0, none => 1
          * so that the bar progresses as venues finish refreshing */
-        RefreshAllVenuesProgress = (Observable.Count - refreshingVenues.Count) / (double)Observable.Count;
+        RefreshMultipleVenuesProgress = (totalRefreshing - refreshingVenues.Count) / (double)totalRefreshing;
 
         RefreshVenueCommand.NotifyCanExecuteChanged();
     }
 
-    private async Task<(List<Exception> errors, string? warning)> RefreshEvents(Venue venue)
+    private async Task<(List<Exception> errors, string? warning)> RefreshEvents(Venue venue, int totalRefreshing = 1)
     {
-        SetVenueRefreshing(venue, true);
+        SetVenueRefreshing(venue, totalRefreshing, true);
 
         try
         {
@@ -96,7 +96,7 @@ partial class VenueCollection
         }
         finally
         {
-            SetVenueRefreshing(venue, false);
+            SetVenueRefreshing(venue, totalRefreshing, false);
         }
     }
 
