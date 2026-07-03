@@ -89,7 +89,7 @@ public class ScrapeJob : IHaveAComment
                 ? TryGetXPathSelector(Selector!, out var xPathSelector)
                     ? selectable.SelectNodes(xPathSelector)
                     : [.. selectable.QuerySelectorAll(Selector!).Cast<IDomNode>()]
-                : [node];
+                : [node]; // use node itself if selector is empty to enable selecting an attribute value
 
             if (nodes.Count == 0) return null;
 
