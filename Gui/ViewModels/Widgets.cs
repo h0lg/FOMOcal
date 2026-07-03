@@ -216,10 +216,9 @@ internal static class Widgets
         Content = Lbl(text).StyleClass(Styles.Label.EndingEntryButton)
     };
 
-    internal static Button MenuTrigger(Action onTap, bool floatingAction = false)
+    internal static Button MenuTrigger(Action onTap)
     {
         var btn = Shell.Current == null ? Btn("• • •") : Btn("⋮").FontSize(24).Padding(0, verticalSize: -3);
-        string styleClass = floatingAction ? Styles.Button.Tertiary : Styles.Button.Transparent;
-        return btn.TapGesture(onTap).StyleClass(styleClass);
+        return btn.TapGesture(onTap).StyleClass(Styles.Button.Transparent);
     }
 }

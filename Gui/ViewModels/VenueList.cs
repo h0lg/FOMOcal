@@ -7,10 +7,19 @@ using static FomoCal.Gui.ViewModels.Widgets;
 
 namespace FomoCal.Gui.ViewModels;
 
-public partial class VenueList(INavigation navigation, VenueCollection venues, EventRepository eventRepo) : ObservableObject
+public partial class VenueList : ObservableObject
 {
-    private readonly VenueCollection Venues = venues;
-    private readonly INavigation navigation = navigation;
+    private readonly VenueCollection Venues;
+    private readonly INavigation navigation;
+    private readonly EventRepository eventRepo;
+
+    public VenueList(INavigation navigation, VenueCollection venues, EventRepository eventRepo)
+    {
+        Venues = venues;
+        this.eventRepo = eventRepo;
+        this.navigation = navigation;
+        venues.Observable.CollectionChanged += (o, e) => ApplyFilter();
+    }
 
     [RelayCommand] private Task AddVenue() => Venues.AddAsync(navigation);
     [RelayCommand] private Task EditVenueAsync(Venue original) => Venues.EditAsync(original, navigation);
@@ -36,6 +45,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
         public View(VenueList model)
         {
             BindingContext = model;
+            var search = BuildSearch();
 
             var list = new CollectionView()
             {
@@ -43,7 +53,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                 Footer = Lbl("The\nEnd").TextColor(Colors.Transparent).StyleClass(Styles.Label.Headline)
             }
                 .RowSpan(2) // span into next row so that buttons following it become floating action buttons
-                .Bind(ItemsView.ItemsSourceProperty, nameof(VenueCollection.Observable), source: model.Venues)
+                .Bind(ItemsView.ItemsSourceProperty, nameof(FilteredVenues))
                 .ItemTemplate(new DataTemplate(() =>
                 {
                     var name = BndLbl(nameof(Venue.Name)).FontSize(16).Wrap();
@@ -96,8 +106,7 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                 nameof(VenueCollection.RefreshAllVenuesCommand), source: model.Venues)
                 .ToolTip("refresh events from all venues").Margin(5);
 
-            bool isDesktop = Shell.Current == null;
-            var menuTrigger = MenuTrigger(async () => await model.ShowMenu(), floatingAction: !isDesktop);
+            var menuTrigger = MenuTrigger(async () => await model.ShowMenu());
 
             var refreshAllProgress = new ProgressBar().Margin(horizontal: 5, 0)
                 .Bind(ProgressBar.ProgressProperty, nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues)
@@ -106,23 +115,12 @@ public partial class VenueList(INavigation navigation, VenueCollection venues, E
                 .BindVisible(nameof(VenueCollection.RefreshAllVenuesProgress), source: model.Venues,
                     converter: Converters.Predicate<double>(progress => progress < 1d));
 
-            if (isDesktop) // desktop layout with Venue and Event list side by side
-            {
-                // title display and settings access are take care of by tabs in the Shell
-                var title = Lbl(Glyphs.Venue + "Venues").StyleClass(Styles.Label.Headline).CenterVertical();
-
-                Content = Grd(cols: [Star, Auto], rows: [44, Star, Auto, Auto], spacing: 0,
-                    title, menuTrigger.Column(2).End(),
-                    list.StyleClass(Styles.VisualElement.NormalBg).Row(1).ColumnSpan(2).RowSpan(3),
-                    refreshAllProgress.Row(2).ColumnSpan(2),
-                    addVenue.Row(3).Start(), refreshAll.Row(3).Column(1))
+            Content = Grd(cols: [Auto, Star, Auto], rows: [Auto, Star, Auto, Auto], spacing: 0,
+                search.ColumnSpan(2), menuTrigger.Column(2),
+                list.StyleClass(Styles.VisualElement.NormalBg).Row(1).ColumnSpan(3).RowSpan(3),
+                refreshAllProgress.Row(2).ColumnSpan(3),
+                addVenue.Row(3), refreshAll.Row(3).Column(1).ColumnSpan(2).End())
                     .StyleClass(Styles.VisualElement.ChromeBg);
-            }
-            else // shell layout displaying lists separately
-                Content = Grd(cols: [Auto, Star, Auto], rows: [Star, Auto, Auto], spacing: 0,
-                    list.ColumnSpan(3).RowSpan(3),
-                    refreshAllProgress.Row(1).ColumnSpan(3),
-                    addVenue.Row(2).Start(), refreshAll.Row(2).Column(1).CenterHorizontal(), menuTrigger.Margin(5).Row(2).Column(2));
         }
 
         private static void SwingPickaxeDuring(Button btn, ICommand cmd)
