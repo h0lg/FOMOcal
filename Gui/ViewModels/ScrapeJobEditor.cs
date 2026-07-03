@@ -295,8 +295,13 @@ public partial class ScrapeJobEditor : ObservableObject
             PreviewResults = [ValuePreview.Error(ex)];
         }
 
-        int errors = PreviewResults.CountSucceeded(false);
-        int successes = PreviewResults.CountSucceeded(true);
+        UpdatePreviewSummary();
+    }
+
+    private void UpdatePreviewSummary()
+    {
+        int errors = PreviewResults!.CountSucceeded(false);
+        int successes = PreviewResults!.CountSucceeded(true);
 
         string?[] states = [(errors > 0 ? errors + Glyphs.Error : null),
              (successes > 0 ? successes + "✅" : null)];
@@ -310,7 +315,20 @@ public partial class ScrapeJobEditor : ObservableObject
         if (DateScrapeJob == null || !Format.IsNullOrWhiteSpace() || !Culture.IsNullOrWhiteSpace())
             return;
 
-        var guesses = DateFormat.Guess([.. GetPreviewValues()], [.. PreferredDateCultures.Remembered]);
+        (string? culture, string? format)[]? guesses;
+
+        try
+        {
+            guesses = DateFormat.Guess([.. GetPreviewValues()], [.. PreferredDateCultures.Remembered],
+                reportError: async error => await ErrorReport.WriteAsyncAndShare(error, "guessing date"));
+        }
+        catch (Exception ex)
+        {
+            PreviewResults = [ValuePreview.Error(ex)];
+            UpdatePreviewSummary();
+            return;
+        }
+
         if (guesses.Length == 0) return;
 
         (string? culture, string? format) pick;

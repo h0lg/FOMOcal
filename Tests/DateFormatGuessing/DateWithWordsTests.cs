@@ -28,6 +28,13 @@ public class DateWithWordsTests : DateFormatGuessingTests
             expected: ["ddd. dd MMM yyyy", "ddd. d MMM yyyy"]);
 
     [TestMethod]
+    public void GermanWithDayShortWeekDayShortMonthAndTime()
+        => AssertFormat(inputs: ["Do29Okt20:00"],
+            preferredCultures: [german],
+            expectedError: @"Too many tokens to guess the date format from. Please select date the date cleanly, only including tokens for day, month and year:
+Do29Okt20:00");
+
+    [TestMethod]
     public void GermanWithShortWeekDayAndMonth()
         => AssertFormat(inputs: ["So. 22 Feb 2026", "Do. 5 Feb 2026"],
             preferredCultures: [german],

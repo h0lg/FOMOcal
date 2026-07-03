@@ -7,15 +7,33 @@ public static partial class DateFormat
 {
     private static readonly string[] weekDays = ["ddd", "dddd"];
 
-    public static (string? culture, string? format)[] Guess(string[] inputs, CultureInfo[] preferredCultures)
+    public static (string? culture, string? format)[] Guess(string[] inputs, CultureInfo[] preferredCultures, Action<string> reportError)
     {
         if (inputs.Length == 0) return [];
-        var formats = TokenizedGuess(inputs, preferredCultures);
-        if (formats.Length > 0) return [.. formats];
+        (string? culture, string format)[]? formats = null;
+        Exception? inputError = null;
+
+        try { formats = TokenizedGuess(inputs, preferredCultures); }
+        catch (Exception ex)
+        {
+            if (ex is ArgumentException inpex)
+                inputError = inpex;  // remember input error
+            else
+            {
+                var inpts = inputs.Prepend("inputs:").LineJoin();
+                var cultrs = preferredCultures.Select(c => c.ToString()).Prepend("preferred date cultures:").LineJoin();
+                reportError($"{inputs}\n\n{cultrs}\n\n{ex}");
+            }
+        }
+
+        if (formats?.Length > 0) return [.. formats];
 
         // fall-back to guessing from preferredDateCultures
         var found = TryParseWithCultures(inputs, preferredCultures);
-        return found == default ? [] : [.. found];
+
+        if (found.Any()) return [.. found];
+        if (inputError == null) return [];
+        throw inputError;
     }
 
     private static (string input, List<int> numbers, MatchCollection matches) FindInputWithUnambiguousNumbers(string[] inputs)
@@ -65,7 +83,12 @@ public static partial class DateFormat
 
         var yearToken = year == 0 ? null : numberMatches[numbers.IndexOf(year)].Value;
         var yearFormat = yearToken == null ? null : new string([.. Enumerable.Repeat('y', yearToken.Length)]);
-        var day = numbers.SingleOrDefault(n => n != year && MustBeDayOrYear(n));
+        var notMonth = numbers.Where(n => n != year && MustBeDayOrYear(n)).ToArray();
+
+        if (notMonth.Length > 1) throw new ArgumentException(
+            inputs.Prepend("Too many tokens to guess the date format from. Please select date the date cleanly, only including tokens for day, month and year:").LineJoin());
+
+        var day = notMonth.Length == 0 ? 0 : notMonth[0];
         var dayTokenMaybeMonth = false;
 
         if (day == 0)

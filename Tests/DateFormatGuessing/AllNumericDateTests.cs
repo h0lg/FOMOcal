@@ -8,14 +8,30 @@ public abstract class DateFormatGuessingTests
     protected readonly static CultureInfo german = new("de"),
         usEnglish = new("en-US"), gbEnglish = new("en-Gb");
 
-    protected static void AssertFormat(string[] inputs, CultureInfo[]? preferredCultures = null, string[] expected)
+    protected static void AssertFormat(string[] inputs, CultureInfo[]? preferredCultures = null,
+        string[]? expected = null, string? expectedError = null)
     {
-        var guesses = DateFormat.Guess(inputs, preferredCultures ?? []);
-        Assert.HasCount(expected.Length, guesses);
-        var expectedCulture = preferredCultures?.FirstOrDefault();
+        try
+        {
+            string? reportedError = null;
+            var guesses = DateFormat.Guess(inputs, preferredCultures ?? [], reportError: ex => reportedError = ex);
+            Assert.IsNull(reportedError);
+            Assert.HasCount(expected!.Length, guesses);
+            var expectedCulture = preferredCultures?.FirstOrDefault();
 
-        foreach (var expectedFormat in expected)
-            guesses.AssertContains(expectedCulture?.Name, expectedFormat);
+            foreach (var expectedFormat in expected)
+                guesses.AssertContains(expectedCulture?.Name, expectedFormat);
+
+            Assert.IsNull(expectedError);
+        }
+        catch (Exception ex)
+        {
+            // ignore warning because these asserts should only run in case of error
+#pragma warning disable MSTEST0058 // Do not use asserts in catch blocks
+            Assert.AreEqual(expectedError, ex.Message);
+            Assert.IsNull(expected);
+#pragma warning restore MSTEST0058
+        }
     }
 }
 
@@ -32,6 +48,12 @@ public class AllNumericDateTests : DateFormatGuessingTests
     [TestMethod]
     public void GermanWithAmbiguousDayMonthAndTwoDigitYear()
         => AssertFormat(inputs: ["01.02.26"], expected: ["dd.MM.yy", "MM.dd.yy"]);
+
+    [TestMethod]
+    public void GermanWithAmbiguousDayMonthTwoDigitYearAndTime()
+        => AssertFormat(inputs: ["01.02.26 19:00"],
+            expectedError: @"Too many tokens to guess the date format from. Please select date the date cleanly, only including tokens for day, month and year:
+01.02.26 19:00");
 
     [TestMethod]
     public void GermanWithTwoDigitYear() => AssertFormat(inputs: ["01.02.26", "13.02.26"], expected: ["dd.MM.yy"]);
