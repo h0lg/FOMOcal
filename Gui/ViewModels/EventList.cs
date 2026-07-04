@@ -149,7 +149,7 @@ public partial class EventList : ObservableObject
             options.Add(deletePast);
         }
 
-        var choice = await App.CurrentPage.DisplayActionSheetAsync("Gigs", null, null, [.. options]);
+        var choice = await App.CurrentPage.DisplayActionSheetAsync($"{Glyphs.Gigs}Gigs", null, null, [.. options]);
 
         if (choice == selectAll) SelectFilteredEvents();
         else if (choice == deselectAll) DeselectFilteredEvents();
@@ -181,7 +181,6 @@ public partial class EventList : ObservableObject
         public View(EventList model)
         {
             BindingContext = model;
-            bool isDesktop = DeviceInfo.Idiom == DeviceIdiom.Desktop;
             (SearchBar searchBar, ScrollView recentSearches) = BuildSearch(model);
 
             bool UseVerticalEventLayout() => Width < 800; // whether to stack image on top of event details
@@ -246,7 +245,7 @@ public partial class EventList : ObservableObject
                     .Bind(Selection.IsSelectedProperty, nameof(EventView.IsSelected))
                     .TapGesture(() => ToggleSelected((EventView)border.BindingContext, model));
 
-                if (isDesktop)
+                if (DeviceInfo.Idiom == DeviceIdiom.Desktop)
                 {
                     MenuFlyout menu = [
                         new MenuFlyoutItem() { Text = $"{Glyphs.Scrape} Refresh events from {Glyphs.Venue} venue" }.BindCommand(nameof(RefreshVenueCommand), source: model),
@@ -300,7 +299,6 @@ public partial class EventList : ObservableObject
             };
 
             var header = Grd(cols: [Auto, Star, Auto], rows: [Auto], spacing: 5,
-                Lbl("Gigs").StyleClass(Styles.Label.Headline).CenterVertical().Margins(left: 5).IsVisible(isDesktop),
                 searchBar.Column(1),
                 MenuTrigger(async () => await model.ShowMenu()).Margins(right: 5).Column(2))
                 .StyleClass(Styles.VisualElement.ChromeBg);

@@ -19,6 +19,7 @@ internal static class Glyphs
         EventPage = "📰 ",
         Export = "🎁",
         Genres = "🎶 ",
+        Gigs = "🎤 ",
         Html = "🌐 ",
         Link = "🔗",
         Lucky = "🍀 ",

@@ -45,7 +45,7 @@ public partial class VenueList : ObservableObject
         public View(VenueList model)
         {
             BindingContext = model;
-            var search = BuildSearch();
+            var search = Srch($"{Glyphs.Venue}venues", nameof(SearchText));
 
             var list = new CollectionView()
             {

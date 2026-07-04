@@ -221,4 +221,21 @@ internal static class Widgets
         var btn = Shell.Current == null ? Btn("• • •") : Btn("⋮").FontSize(24).Padding(0, verticalSize: -3);
         return btn.TapGesture(onTap).StyleClass(Styles.Button.Transparent);
     }
+
+    /// <summary>Builds a <see cref="SearchBar"/> with its <see cref="SearchBar.TextProperty"/>
+    /// bound to <paramref name="textPropertyPath"/> and different placeholders and tooltips for different platforms.
+    /// On the Desktop, without Shell Tabs, the placeholder serves as a title and displays
+    /// <paramref name="what"/> is searched, establishing the icon and linking it to the entity name.
+    /// The details about comma-separating search terms could be cut off in the narrower
+    /// Venue list Desktop layout - so they go into the tooltip, which also makes the placeholder less noisy.
+    /// In the Shell, without a pointer that can hover, the tooltip is less accessible.
+    /// So that detail can go into placeholder, which doesn't have to repeat the entity or icon.</summary>
+    internal static SearchBar Srch(string what, string textPropertyPath)
+    {
+        var forDesktop = Shell.Current == null;
+        var placeholder = forDesktop ? $"filter {what}" : "filter by comma, separated, terms";
+        SearchBar searchBar = new() { Placeholder = placeholder };
+        if (forDesktop) searchBar.ToolTip("comma, separate, multiple search terms");
+        return searchBar.Bind(SearchBar.TextProperty, textPropertyPath);
+    }
 }

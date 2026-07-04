@@ -71,9 +71,7 @@ partial class EventList
     {
         private static (SearchBar searchBar, ScrollView recentSearches) BuildSearch(EventList model)
         {
-            var searchBar = new SearchBar() { Placeholder = "filter by comma, separated, terms" }
-                .Bind(SearchBar.TextProperty, nameof(SearchText));
-
+            var searchBar = Srch($"{Glyphs.Gigs}gigs", nameof(SearchText));
             searchBar.SearchButtonPressed += (s, e) => model.SaveSearch();
 
             var recentSearches = new CollectionView
