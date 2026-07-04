@@ -128,8 +128,6 @@ public partial class VenueCollection(SetJsonFileRepository<Venue> repo, Scraper 
         await SaveVenues();
     }
 
-    internal void ShareFile() => repo.ShareFile("venues");
-
     private void RefreshList(IEnumerable<Venue>? venues = null)
         // Ensure UI updates on the main thread
         => MainThread.BeginInvokeOnMainThread(() => Refresh(venues));

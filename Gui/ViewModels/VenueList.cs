@@ -29,7 +29,7 @@ public partial class VenueList : ObservableObject
     private async Task ShowMenu()
     {
         const string import = "📥 Import",
-            share = Glyphs.Export + " Share",
+            share = Glyphs.Export + " Share filtered",
             openSettings = $"Open {Glyphs.Settings} Settings";
 
         List<string> options = [import, share];
@@ -37,7 +37,7 @@ public partial class VenueList : ObservableObject
         var choice = await App.CurrentPage.DisplayActionSheetAsync(Glyphs.Venue + "Venues", null, null, [.. options]);
 
         if (choice == import) await Venues.Import(navigation, eventRepo);
-        else if (choice == share) Venues.ShareFile();
+        else if (choice == share) await FilteredVenues.ExportAsJson(SearchText);
         else if (choice == openSettings) await Settings.Page.GoHere(navigation);
     }
 

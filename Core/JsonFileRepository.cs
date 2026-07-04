@@ -1,5 +1,4 @@
-﻿using System.Net.Mime;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace FomoCal;
@@ -8,7 +7,6 @@ public class SetJsonFileRepository<T>(JsonFileStore store, string fileName) wher
 {
     public async Task<HashSet<T>> LoadAllAsync() => await store.LoadAsync<HashSet<T>>(fileName) ?? [];
     public Task SaveCompleteAsync(ISet<T> items) => store.SaveAsync(fileName, items);
-    public void ShareFile(string label) => store.ShareFile(label, fileName);
 }
 
 public class SingletonJsonFileRepository<T>(JsonFileStore store, string fileName) where T : class
@@ -62,7 +60,4 @@ public class JsonFileStore(string storagePath)
 
     public static ValueTask<T?> DeserializeFromAsync<T>(Stream utf8Json)
         => JsonSerializer.DeserializeAsync<T>(utf8Json, jsonOptions);
-
-    internal void ShareFile(string fileLabel, string fileName)
-        => Export.ShareFile(fileLabel, GetFilePath(fileName), MediaTypeNames.Application.Json);
 }

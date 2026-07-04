@@ -38,8 +38,18 @@ public static partial class Export
             extension: "csv", contentType: MediaTypeNames.Text.Csv, Encoding.UTF8);
     }
 
-    private static async Task ExportFile(string fileTypeLabel, string contents,
-        string extension, string contentType, Encoding? encoding = null)
+    public static async Task ExportAsJson(this IEnumerable<Venue> venues, string searchText)
+    {
+        var fileNameAddition = searchText.IsNullOrWhiteSpace() ? "venue" : $"{searchText.Trim()} venue";
+
+        await ExportFile("JSON", contents: JsonFileStore.Serialize(venues), extension: "json",
+            /*  share as text/plain so that OS knows how to open it
+                because MediaTypeNames.Application.Json is often not mapped to an app */
+            contentType: MediaTypeNames.Text.Plain, Encoding.UTF8, fileNameAddition);
+    }
+
+    private static async Task ExportFile(string fileTypeLabel, string contents, string extension,
+        string contentType, Encoding? encoding = null, string fileNameAddition = "event")
     {
         const string share = "Share or copy the file.", open = "Open - to import or read it.";
 
@@ -48,7 +58,7 @@ public static partial class Export
 
         if (choice != open && choice != share) return; // nothing to do
 
-        string filePath = GetExportFilePath(extension);
+        string filePath = GetExportFilePath(fileNameAddition, extension);
         await fileSystem!.WriteAsync(filePath, contents, encoding);
 
         if (choice == open) await fileSystem!.OpenFileAsync(filePath, $"Open {fileTypeLabel} export", contentType);
@@ -59,6 +69,6 @@ public static partial class Export
     internal static void ShareFile(string fileTypeLabel, string filePath, string contentType)
         => fileSystem!.ShareFile(filePath, contentType, title: $"Share {fileTypeLabel} export");
 
-    private static string GetExportFilePath(string extension)
-        => Path.Combine(StoragePath!, $"{AppName} export {DateTime.Now:yyyy-MM-dd HH-mm-ss}.{extension}");
+    private static string GetExportFilePath(string fileNameAddition, string extension)
+        => Path.Combine(StoragePath!, $"{AppName} {fileNameAddition.MakeFileNameSafe()} export {DateTime.Now:yyyy-MM-dd HH-mm-ss}.{extension}");
 }
