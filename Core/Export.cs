@@ -41,22 +41,24 @@ public static partial class Export
     private static async Task ExportFile(string fileTypeLabel, string contents,
         string extension, string contentType, Encoding? encoding = null)
     {
-        string filePath = GetExportFilePath(extension);
-        await fileSystem!.WriteAsync(filePath, contents, encoding);
-
         const string share = "Share or copy the file.", open = "Open - to import or read it.";
 
         var choice = await DisplayActionSheet!(
             $"{fileTypeLabel} export generated.", null, null, [share, open, "Ignore it."]);
 
+        if (choice != open && choice != share) return; // nothing to do
+
+        string filePath = GetExportFilePath(extension);
+        await fileSystem!.WriteAsync(filePath, contents, encoding);
+
         if (choice == open) await fileSystem!.OpenFileAsync(filePath, $"Open {fileTypeLabel} export", contentType);
         else if (choice == share) ShareFile(fileTypeLabel, filePath, contentType);
+        // leave export file in FS after - otherwise opening or sharing fails
     }
 
     internal static void ShareFile(string fileTypeLabel, string filePath, string contentType)
         => fileSystem!.ShareFile(filePath, contentType, title: $"Share {fileTypeLabel} export");
 
     private static string GetExportFilePath(string extension)
-        => Path.Combine(StoragePath!, "exports",
-            $"{AppName} export {DateTime.Now:yyyy-MM-dd HH-mm-ss}.{extension}");
+        => Path.Combine(StoragePath!, $"{AppName} export {DateTime.Now:yyyy-MM-dd HH-mm-ss}.{extension}");
 }

@@ -80,7 +80,7 @@ public static class MauiProgram
 
         ErrorReport.Setup(fileHelper);
 
-        Export.Setup(fileHelper, AppInfo.Name, MauiProgram.GetAppVersion(), RepoUrl, StoragePath,
+        Export.Setup(fileHelper, AppInfo.Name, GetAppVersion(), RepoUrl, FileSystem.CacheDirectory,
             displayActionSheet: (title, c, d, options) => App.CurrentPage.DisplayActionSheetAsync(title, c, d, options));
 
         ScrapeLogFile.Setup(StoragePath, fileHelper,
