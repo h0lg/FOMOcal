@@ -6,14 +6,22 @@ public partial class VenueImport
 {
     internal static async Task<HashSet<Venue>?> ChooseSourceAndLoadAsync()
     {
-        const string fromFile = "From a local JSON file",
-            fromUrl = "From a URL on the web",
-            nowhere = "Nowhere.";
+        const string fromFile = "a local JSON file",
+            fromUrl = "a web link",
+            fromWiki = "the FOMOcal wiki",
+            nowhere = "nowhere";
 
         var source = await App.CurrentPage.DisplayActionSheetAsync(
-            "Where do you want to import venues from?", nowhere, null, fromUrl, fromFile);
+            "Import venues from", nowhere, null, fromWiki, fromFile, fromUrl);
 
         if (source == null || source == nowhere) return null;
+
+        if (source == fromWiki)
+        {
+            // use external browser app because WebView doesn't allow downloads
+            await Launcher.OpenAsync($"{MauiProgram.RepoUrl}/wiki/Venues-by-city");
+            return null;
+        }
 
         if (source == fromUrl)
         {
