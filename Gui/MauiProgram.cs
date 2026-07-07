@@ -8,7 +8,7 @@ namespace FomoCal.Gui;
 public static class MauiProgram
 {
     internal static string StoragePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppInfo.Name);
-    internal static readonly string RepoUrl = $"https://github.com/h0lg/{AppInfo.Name}";
+    internal const string RepoUrl = "https://github.com/h0lg/FOMOcal";
 
     public static MauiApp CreateMauiApp()
     {
