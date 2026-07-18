@@ -130,7 +130,8 @@ public partial class EventList : ObservableObject
         const string showPast = "👁 Show 🕞 past",
             deleteSelected = Glyphs.Delete + " Delete all ☑ selected",
             hidePast = "🙈 Hide 🕞 past",
-            deletePast = Glyphs.Delete + " Delete 🕞 past";
+            deletePast = Glyphs.Delete + " Delete 🕞 past",
+            openSettings = $"Open {Glyphs.Settings} Settings";
 
         string inView = ViewSelectedOnly ? SelectedEventCounters : EventCounters,
             selectAll = Glyphs.Select + "Select all " + inView,
@@ -149,6 +150,8 @@ public partial class EventList : ObservableObject
             options.Add(deletePast);
         }
 
+        if (Shell.Current == null) options.Add(openSettings); // add open settings menu entry outside of shell
+
         var choice = await App.CurrentPage.DisplayActionSheetAsync($"{Glyphs.Gigs}Gigs", null, null, [.. options]);
 
         if (choice == selectAll) SelectFilteredEvents();
@@ -157,6 +160,7 @@ public partial class EventList : ObservableObject
         else if (choice == showPast) ShowPastEvents = true;
         else if (choice == hidePast) ShowPastEvents = false;
         else if (choice == deletePast) await CleanUpPastEventsAsync();
+        else if (choice == openSettings) await Settings.Page.GoHere(navigation);
     }
 
     [RelayCommand] private Task EditVenueAsync(EventView view) => venues.EditAsync(view.Model.Venue, navigation);
