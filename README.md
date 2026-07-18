@@ -128,7 +128,7 @@ Sometimes you have to replace parts of the extracted text.
 E.g. if a program page uses a non-standard name for a particular month that you want to parse a date from.
 
 For these occasions, you can specify a comma-separated list of replacements in the form
-`Pattern => Replacement, Pattern2 =>` with every `Pattern` being plain text or a
+`Pattern }} Replacement || Pattern2 }}` with every `Pattern` being plain text or a
 [Regular Expression](https://en.wikipedia.org/wiki/Regular_expression) in .NET flavor that matches the part of the extracted text
 you want to swap out with the `Replacement`.
 
