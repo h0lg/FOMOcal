@@ -2,6 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="README.md" />
+    <File Path="ScrapeJob.md" />
   </Folder>
   <Project Path="Core/Core.csproj" Id="e0d1fdd2-615e-4b7b-9fb5-99a607da3176" />
   <Project Path="Gui/Gui.csproj" />
