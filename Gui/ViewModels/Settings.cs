@@ -38,13 +38,13 @@ public partial class Settings : ObservableObject
                 LuckyUrlSearchSettings.Expander(new()),
                 PreferredDateCultures.Expander(new()),
 
-                Expndr(Headline(Glyphs.Html + "HTML export"),
+                Expndr(Headline(Glyphs.Html + "HTML event export"),
                     ExportSection(includedFields), htmlExport.included,
                     ContextLabel(EventPropertySelection.IncludedInfo),
                     ExportSection(excludedFields),
                     htmlExport.excluded, ContextLabel(EventPropertySelection.ExcludedInfo)),
 
-                Expndr(Headline(Glyphs.Text + "Text export"),
+                Expndr(Headline(Glyphs.Text + "Text event export"),
                     HStack(5, Lbl("aligned with headers"), exportTextAlignedWithHeaders).CenterHorizontal(),
                     ContextLabel("whether to column-align the plain text export using spaces and include column headers"),
                     ExportSection(includedFields), textExport.included, ContextLabel(EventPropertySelection.IncludedInfo),
