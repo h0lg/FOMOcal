@@ -1,13 +1,12 @@
 # FOMOcal - discover & share local events
 
-<img src="./Gui/Resources/AppIcon/appiconfg.svg" align="right" height="50"
-    title="😱📅" />
+<img src="./Gui/Resources/AppIcon/appiconfg.svg" align="right" height="50" title="😱📅" />
 
 Tired of missing great shows? **FOMOcal** helps you stay on top of your local music scene by creating tailored event calendars based on venue listings.
 
 🎵 Discover events that match your taste.
-📅 Export them to your calendar.
-🤝 Share with friends to sync up.
+📅 Add them to your calendar.
+🤝 Share with friends to meet up for some good tunes.
 
 
 ## How it works
@@ -40,7 +39,7 @@ the 🏛 *Stage*, 🚪 *Doors* and 🎼 *Start* times, 💳 *Pre-sale* and 💵 
 an 📰 *Event page* and 🎫 *Tickets* links 📡 - and an 🖼 *Image*.
 
 
-## What do I need?
+## Where to get it?
 
 Look for the latest build for your operating system in the **Assets** at the bottom of the [latest release](https://github.com/h0lg/FOMOcal/releases/latest).
 
