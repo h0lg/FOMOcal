@@ -24,8 +24,13 @@ Tired of missing great shows? **FOMOcal** helps you stay on top of your local mu
 
 4. ✨ **Select the events** you want to attend or share.
 
-5. 🥡 **Export your selection** as an [📆 iCalendar (.ics)](https://en.wikipedia.org/wiki/ICalendar) file for your calendar app or as a [📊 CSV Data Export](https://en.wikipedia.org/wiki/Comma-separated_values) file.
-    Share even your venue configs with friends so they can pull and browse the same listings.
+5. 🥡 **Export your selection** as
+    - an [📆 iCalendar (.ics)](https://en.wikipedia.org/wiki/ICalendar) file for your calendar app
+    - a rich, interactive HTML document containing a paged, searchable and sortable table with navigable links
+    - plain text to share in a text message; in either a condensed format or column-aligned including headers
+    - a [📊 CSV Data Export](https://en.wikipedia.org/wiki/Comma-separated_values) file.
+
+    You can even share your venue configs with friends - so they can pull and browse the same listings.
 
 ### Event details
 ❗ *Name* and 📆 *Date* are **required**.
