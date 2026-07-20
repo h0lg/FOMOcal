@@ -41,7 +41,7 @@ partial class VenueEditor
         // using ErrorLoading to give user feedback about an invalid URL instead of validating before
         if (error == WebNavigationError.Failure)
         {
-            if (!ProgramUrl.IsSignificantValidUrl()) message += $" '{ProgramUrl}' is not a valid HTTP URL.";
+            if (!ProgramUrl.IsSignificantValidUrl()) message += $" '{ProgramUrl}' is not a valid web address.";
             else if (!App.HasInternet) message += " Loading the event listing requires an internet connection.";
         }
 

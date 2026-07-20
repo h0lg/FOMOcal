@@ -7,7 +7,7 @@ public partial class VenueImport
     internal static async Task<HashSet<Venue>?> ChooseSourceAndLoadAsync()
     {
         const string fromFile = "a local JSON file",
-            fromUrl = "a web link",
+            fromUrl = "a web address",
             fromWiki = "the FOMOcal wiki",
             nowhere = "nowhere";
 
@@ -34,7 +34,7 @@ public partial class VenueImport
             }
 
             var url = await App.CurrentPage.DisplayPromptAsync("Import venues from the web",
-                "Enter the URL to the JSON file to import",
+                "Enter the web address of the JSON file to import",
                 placeholder: "https://some.page/venues.json");
 
             if (url == null) return null;

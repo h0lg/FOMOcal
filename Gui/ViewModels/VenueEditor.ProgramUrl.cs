@@ -84,11 +84,11 @@ partial class VenueEditor
         string? suggestedUrl, LuckyUrlSearch.Engine? luckyEngine,
         LuckyUrlSearch.Engine[] triedLuckyEngines)
     {
-        const string previewSuggested = "👁 Preview suggested URL",
-            cancel = "🚫 Neither, let me rety",
+        const string previewSuggested = "👁 Preview suggested address",
+            cancel = "🚫 Neither, let me retry",
             openSettings = $"{Glyphs.Settings} Configure {Glyphs.Lucky}lucky search";
 
-        string useSuggested = $"{Glyphs.Target}Use suggested URL",
+        string useSuggested = $"{Glyphs.Target}Use suggested address",
             google = LabelSearch(LuckyUrlSearch.Engine.Google, originalQuery),
             duckDuckGo = LabelSearch(LuckyUrlSearch.Engine.DuckDuckGo, originalQuery);
 

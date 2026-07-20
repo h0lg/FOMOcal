@@ -9,7 +9,7 @@ public partial class WebViewPage : ContentPage, IQueryAttributable
     internal static Task OpenUrlAsync(string url, Dictionary<string, string?>? parameters = null)
     {
         if (!url.IsValidHttpUrl())
-            throw new ArgumentException(url + " is not a valid HTTP/S URL and won't be opened for your safety.", nameof(url));
+            throw new ArgumentException(url + " is not a valid web address and won't be opened for your safety.", nameof(url));
 
         // Launcher.OpenAsync expects a properly encoded URL
         if (Shell.Current == null) return Launcher.OpenAsync(BuildUrl(url, parameters));

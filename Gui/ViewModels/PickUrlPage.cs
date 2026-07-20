@@ -32,7 +32,7 @@ public partial class PickUrlPage : PickerPage<string>
         Title = "Pick the event listing page";
         WebView webView = new() { Source = url };
         webView.Navigated += (sender, e) => url = e.Url;
-        ToolbarItems.Add(new ToolbarItem(Glyphs.Target + "Use this URL", null, () => SetResult(url)));
+        ToolbarItems.Add(new ToolbarItem(Glyphs.Target + "Use this address", null, () => SetResult(url)));
         if (Shell.Current != null) Shell.SetTabBarIsVisible(this, false); // to avoid navigating to another tab
         Content = webView;
     }
